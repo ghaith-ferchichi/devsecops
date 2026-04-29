@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs ls:*)",
+      "Bash(docker exec devsecops-agent python3 -c ':*)",
+      "Bash(docker compose:*)",
+      "Bash(docker exec:*)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(python3 -m json.tool)",
+      "Bash(docker stats:*)",
+      "Bash(curl -sI http://localhost:3000/)",
+      "Bash(curl -s http://localhost:9090/prometheus/api/v1/rules)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(r['name'], r['state']\\) for g in d['data']['groups'] for r in g['rules']]\")",
+      "Bash(curl -s http://localhost:9090/prometheus/api/v1/targets)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(t['labels'].get\\('job','?'\\), t['health']\\) for t in d['data']['activeTargets']]\")"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+# Core
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+httpx>=0.27.0
+pydantic>=2.8.0
+pydantic-settings>=2.4.0
+
+# LangGraph brain
+langgraph>=0.4.0
+langchain-core>=0.3.0
+langchain-ollama>=0.3.0
+langgraph-checkpoint-postgres>=2.0.0
+
+# Database + cache
+psycopg[binary]>=3.2.0
+redis[hiredis]>=5.0.0
+
+# Observability
+structlog>=24.4.0
+prometheus-fastapi-instrumentator>=7.0.0
+prometheus-client>=0.20.0
+
+# Reliability
+tenacity>=8.5.0
+
+# Integrations
+slack-sdk>=3.31.0
+
+# Security scanners (Python-based)
+semgrep>=1.90.0
+checkov>=3.2.0

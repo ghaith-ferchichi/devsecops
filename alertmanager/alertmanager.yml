@@ -1,0 +1,45 @@
+global:
+  resolve_timeout: 5m
+
+# ── Routing tree ──────────────────────────────────────────────────────────
+route:
+  receiver: agent-webhook          # default: all alerts → agent for LLM triage
+  group_by: ['alertname', 'severity']
+  group_wait: 30s                  # collect alerts before first notification
+  group_interval: 5m               # how often to re-notify an ongoing group
+  repeat_interval: 4h              # silence repeated identical alerts for 4h
+
+  routes:
+    - match:
+        severity: critical
+      receiver: agent-webhook
+      continue: true               # also send to default receiver
+      repeat_interval: 1h          # critical alerts repeat every hour
+
+    - match:
+        severity: info
+      receiver: agent-webhook
+      repeat_interval: 24h         # info alerts: daily at most
+
+# ── Receivers ────────────────────────────────────────────────────────────
+receivers:
+  - name: agent-webhook
+    webhook_configs:
+      - url: http://devsecops-agent:8000/webhooks/alertmanager
+        send_resolved: true
+        max_alerts: 10             # batch at most 10 alerts per payload
+
+# ── Inhibition rules ─────────────────────────────────────────────────────
+inhibit_rules:
+  # If agent is down, suppress downstream agent-error alerts
+  - source_match:
+      alertname: AgentDown
+    target_match_re:
+      alertname: AgentHighErrorRate|AgentReviewBacklog
+    equal: ['job']
+  # If Ollama is down, suppress no-model-loaded info
+  - source_match:
+      alertname: OllamaDown
+    target_match:
+      alertname: OllamaNoModelLoaded
+    equal: ['job']

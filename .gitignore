@@ -1,0 +1,16 @@
+# Environment
+.env
+
+# Artifacts — raw scanner outputs and agent logs (can be large, may contain findings)
+artifacts/scans/
+artifacts/logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Docker
+*.log

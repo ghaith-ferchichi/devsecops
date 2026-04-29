@@ -1,0 +1,122 @@
+groups:
+
+  # ── Disk ─────────────────────────────────────────────────────────────────
+  - name: disk
+    rules:
+      - alert: DiskWarning
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} > 0.80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk usage above 80%"
+          description: "Root filesystem is {{ $value | humanizePercentage }} full."
+
+      - alert: DiskCritical
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} > 0.90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk usage above 90% — action required"
+          description: "Root filesystem is {{ $value | humanizePercentage }} full. Auto-cleanup triggered."
+
+      # Fallback using agent-reported metric (no node-exporter needed)
+      - alert: AgentDiskWarning
+        expr: agent_disk_used_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "VPS disk above 80%"
+          description: "Disk at {{ $value }}%."
+
+      - alert: AgentDiskCritical
+        expr: agent_disk_used_percent > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "VPS disk above 90% — critical"
+          description: "Disk at {{ $value }}%. Immediate cleanup required."
+
+  # ── Host (node-exporter) ─────────────────────────────────────────────────
+  - name: host
+    rules:
+      - alert: HostHighCPU
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "VPS CPU above 85%"
+          description: "Host CPU at {{ $value | humanize }}% — may impact LLM inference speed."
+
+      - alert: HostHighMemory
+        expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 88
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "VPS RAM above 88%"
+          description: "Host memory {{ $value | humanize }}% used — risk of OOM killing Ollama model."
+
+      - alert: HostDiskIOHigh
+        expr: rate(node_disk_io_time_seconds_total[5m]) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "VPS disk I/O saturation above 90%"
+          description: "Disk I/O may slow PostgreSQL and artifact writes."
+
+  # ── Agent health ─────────────────────────────────────────────────────────
+  - name: agent
+    rules:
+      - alert: AgentDown
+        expr: up{job="devsecops-agent"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "DevSecOps agent is DOWN"
+          description: "Agent has been unreachable for more than 1 minute."
+
+      - alert: AgentHighErrorRate
+        expr: rate(agent_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Agent error rate elevated"
+          description: "Agent errors: {{ $value | humanize }} per second."
+
+      - alert: AgentReviewBacklog
+        expr: agent_reviews_total offset 24h == agent_reviews_total
+        for: 1m
+        labels:
+          severity: info
+        annotations:
+          summary: "No PR reviews completed in 24h"
+          description: "Review pipeline may be stalled."
+
+  # ── Ollama ───────────────────────────────────────────────────────────────
+  - name: ollama
+    rules:
+      - alert: OllamaDown
+        expr: ollama_reachable == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Ollama LLM server is unreachable"
+          description: "Agent cannot reach Ollama for more than 5 minutes. PR reviews will fail."
+
+      - alert: OllamaNoModelLoaded
+        expr: ollama_models_loaded_total == 0
+        for: 60m
+        labels:
+          severity: info
+        annotations:
+          summary: "No model loaded in Ollama for 60+ minutes"
+          description: "Ollama is idle — first PR review will incur cold-start delay."

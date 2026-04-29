@@ -1,0 +1,161 @@
+{
+  "__inputs": [],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "8.0.0" },
+    { "type": "datasource", "id": "postgres", "name": "PostgreSQL", "version": "1.0.0" }
+  ],
+  "annotations": { "list": [] },
+  "description": "PR Security Review history from PostgreSQL",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "format": "time_series",
+          "group": [{ "params": ["1h", "none"], "type": "time" }],
+          "metricColumn": "none",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  date_trunc('hour', created_at) AS time,\n  COUNT(*) AS reviews\nFROM pr_reviews\nWHERE $__timeFilter(created_at)\nGROUP BY 1\nORDER BY 1",
+          "refId": "A",
+          "select": [[{ "params": ["*"], "type": "column" }]],
+          "table": "pr_reviews",
+          "timeColumn": "created_at",
+          "where": []
+        }
+      ],
+      "title": "Review Volume (per hour)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 0 },
+      "id": 2,
+      "options": {
+        "displayLabels": ["name", "percent"],
+        "legend": { "displayMode": "list", "placement": "right" },
+        "pieType": "pie",
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT risk_score AS metric, COUNT(*) AS value\nFROM pr_reviews\nWHERE $__timeFilter(created_at)\nGROUP BY risk_score\nORDER BY value DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Risk Score Distribution",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 },
+      "id": 3,
+      "options": {
+        "displayLabels": ["name", "percent"],
+        "legend": { "displayMode": "list", "placement": "right" },
+        "pieType": "donut",
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT verdict AS metric, COUNT(*) AS value\nFROM pr_reviews\nWHERE $__timeFilter(created_at)\nGROUP BY verdict\nORDER BY value DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Verdict Breakdown",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "ms" },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 4,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "right" },
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  created_at AS time,\n  duration_ms\nFROM pr_reviews\nWHERE $__timeFilter(created_at)\n  AND duration_ms IS NOT NULL\nORDER BY created_at",
+          "refId": "A"
+        }
+      ],
+      "title": "Pipeline Duration Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "risk_score" }, "properties": [{ "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "verdict" }, "properties": [{ "id": "custom.width", "value": 150 }] },
+          { "matcher": { "id": "byName", "options": "duration_ms" }, "properties": [{ "id": "unit", "value": "ms" }, { "id": "custom.width", "value": 100 }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 8 },
+      "id": 5,
+      "options": {
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "created_at" }]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  created_at,\n  repo_full_name AS repo,\n  pr_number,\n  pr_title,\n  pr_author AS author,\n  classification,\n  risk_score,\n  verdict,\n  duration_ms\nFROM pr_reviews\nWHERE $__timeFilter(created_at)\nORDER BY created_at DESC\nLIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent PR Reviews",
+      "type": "table"
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["devsecops", "pr-reviews"],
+  "time": { "from": "now-7d", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PR Security Reviews",
+  "uid": "pr-reviews-01",
+  "version": 1
+}

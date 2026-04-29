@@ -1,0 +1,295 @@
+[
+    {
+        "Id": "1ad8f11f94337b5f55eb50eb85fb3013162320cd58f0fa7c333afe72387ac61d",
+        "Created": "2026-04-20T18:45:39.742161322Z",
+        "Path": "/bin/ollama",
+        "Args": [
+            "serve"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 3287673,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-04-20T18:45:42.049213754Z",
+            "FinishedAt": "0001-01-01T00:00:00Z",
+            "Health": {
+                "Status": "healthy",
+                "FailingStreak": 0,
+                "Log": [
+                    {
+                        "Start": "2026-04-20T21:01:10.184734693Z",
+                        "End": "2026-04-20T21:01:10.254756824Z",
+                        "ExitCode": 0,
+                        "Output": "NAME                 ID              SIZE      MODIFIED    \nqwen2.5-coder:14b    9ec8897f747e    9.0 GB    11 days ago    \nqwen2.5-coder:7b     dae161e27b0e    4.7 GB    12 days ago    \n"
+                    },
+                    {
+                        "Start": "2026-04-20T21:01:40.255990816Z",
+                        "End": "2026-04-20T21:01:40.340872104Z",
+                        "ExitCode": 0,
+                        "Output": "NAME                 ID              SIZE      MODIFIED    \nqwen2.5-coder:14b    9ec8897f747e    9.0 GB    11 days ago    \nqwen2.5-coder:7b     dae161e27b0e    4.7 GB    12 days ago    \n"
+                    },
+                    {
+                        "Start": "2026-04-20T21:02:10.342048959Z",
+                        "End": "2026-04-20T21:02:10.432394514Z",
+                        "ExitCode": 0,
+                        "Output": "NAME                 ID              SIZE      MODIFIED    \nqwen2.5-coder:14b    9ec8897f747e    9.0 GB    11 days ago    \nqwen2.5-coder:7b     dae161e27b0e    4.7 GB    12 days ago    \n"
+                    },
+                    {
+                        "Start": "2026-04-20T21:02:40.434024681Z",
+                        "End": "2026-04-20T21:02:40.514607982Z",
+                        "ExitCode": 0,
+                        "Output": "NAME                 ID              SIZE      MODIFIED    \nqwen2.5-coder:14b    9ec8897f747e    9.0 GB    11 days ago    \nqwen2.5-coder:7b     dae161e27b0e    4.7 GB    12 days ago    \n"
+                    },
+                    {
+                        "Start": "2026-04-20T21:03:10.515722933Z",
+                        "End": "2026-04-20T21:03:10.606846151Z",
+                        "ExitCode": 0,
+                        "Output": "NAME                 ID              SIZE      MODIFIED    \nqwen2.5-coder:14b    9ec8897f747e    9.0 GB    11 days ago    \nqwen2.5-coder:7b     dae161e27b0e    4.7 GB    12 days ago    \n"
+                    }
+                ]
+            }
+        },
+        "Image": "sha256:e771d18fe56724f01a6f691a5773df544f36f565fb37c93f0ddc5957007b7766",
+        "ResolvConfPath": "/var/lib/docker/containers/1ad8f11f94337b5f55eb50eb85fb3013162320cd58f0fa7c333afe72387ac61d/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/1ad8f11f94337b5f55eb50eb85fb3013162320cd58f0fa7c333afe72387ac61d/hostname",
+        "HostsPath": "/var/lib/docker/containers/1ad8f11f94337b5f55eb50eb85fb3013162320cd58f0fa7c333afe72387ac61d/hosts",
+        "LogPath": "/var/lib/docker/containers/1ad8f11f94337b5f55eb50eb85fb3013162320cd58f0fa7c333afe72387ac61d/1ad8f11f94337b5f55eb50eb85fb3013162320cd58f0fa7c333afe72387ac61d-json.log",
+        "Name": "/ollama",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "docker-default",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "devsecops_ollama_data:/root/.ollama:rw"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "devsecops_devsecops-net",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "unless-stopped",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": null,
+            "DnsSearch": null,
+            "ExtraHosts": [],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 2147483648,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 45097156608,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 90194313216,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": [
+                {
+                    "Name": "nofile",
+                    "Hard": 65536,
+                    "Soft": 65536
+                }
+            ],
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "volume",
+                "Name": "devsecops_ollama_data",
+                "Source": "/var/lib/docker/volumes/devsecops_ollama_data/_data",
+                "Destination": "/root/.ollama",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            }
+        ],
+        "Config": {
+            "Hostname": "1ad8f11f9433",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "ExposedPorts": {
+                "11434/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "OLLAMA_FLASH_ATTENTION=1",
+                "OLLAMA_KV_CACHE_TYPE=q8_0",
+                "OLLAMA_NUM_THREAD=12",
+                "OLLAMA_MAX_LOADED_MODELS=1",
+                "OLLAMA_NUM_PARALLEL=1",
+                "OLLAMA_KEEP_ALIVE=20m",
+                "OLLAMA_METRICS=true",
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64",
+                "NVIDIA_DRIVER_CAPABILITIES=compute,utility",
+                "NVIDIA_VISIBLE_DEVICES=all",
+                "OLLAMA_HOST=0.0.0.0:11434"
+            ],
+            "Cmd": [
+                "serve"
+            ],
+            "Healthcheck": {
+                "Test": [
+                    "CMD",
+                    "ollama",
+                    "list"
+                ],
+                "Interval": 30000000000,
+                "Timeout": 10000000000,
+                "StartPeriod": 30000000000,
+                "Retries": 5
+            },
+            "Image": "ollama/ollama:latest",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": [
+                "/bin/ollama"
+            ],
+            "Labels": {
+                "com.docker.compose.config-hash": "b2836e29a841b38d944a799b57becf1b2477333659bcbfa22b4e445fc7e7434b",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "",
+                "com.docker.compose.image": "sha256:e771d18fe56724f01a6f691a5773df544f36f565fb37c93f0ddc5957007b7766",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "devsecops",
+                "com.docker.compose.project.config_files": "/opt/devsecops/docker-compose.yml",
+                "com.docker.compose.project.working_dir": "/opt/devsecops",
+                "com.docker.compose.replace": "ollama",
+                "com.docker.compose.service": "ollama",
+                "com.docker.compose.version": "5.0.2",
+                "org.opencontainers.image.version": "24.04"
+            }
+        },
+        "NetworkSettings": {
+            "SandboxID": "76fd0df52f0070b9da0989ada52d06e398af63247063b846903a49092606418f",
+            "SandboxKey": "/var/run/docker/netns/76fd0df52f00",
+            "Ports": {
+                "11434/tcp": null
+            },
+            "Networks": {
+                "devsecops_devsecops-net": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "ollama",
+                        "ollama"
+                    ],
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "7829f36828e68c20f5334d8c7bef36ffc2d030c2a4742bb268ce52a150ca8e4a",
+                    "EndpointID": "fca9b856b39e62a799dd786334de3611154836cc0ddc66e9ab9743a03ccbe8cf",
+                    "Gateway": "172.20.0.1",
+                    "IPAddress": "172.20.0.6",
+                    "MacAddress": "de:2c:b5:dc:32:1d",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": [
+                        "ollama",
+                        "1ad8f11f9433"
+                    ]
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:a3d43e89c1818f6c2cff4a924fd8d409d75b905b5f6e0dc63d1661e79cd02de8",
+            "size": 1065,
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]
