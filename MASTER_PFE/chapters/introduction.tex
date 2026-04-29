@@ -1,0 +1,46 @@
+\chapter*{Introduction générale}
+\addcontentsline{toc}{chapter}{Introduction générale}
+\markboth{Introduction générale}{}
+
+De nos jours, la sécurité du code source constitue un enjeu stratégique majeur pour tout
+établissement bancaire. La multiplication des cycles de développement logiciel, combinée à
+l'adoption généralisée des pratiques DevOps, a considérablement accéléré le rythme de
+livraison des fonctionnalités — mais a également élargi la surface d'attaque potentielle.
+Une seule vulnérabilité non détectée avant fusion — qu'il s'agisse d'une injection SQL dans
+une API de paiement, d'un secret d'authentification exposé dans un dépôt Git, ou d'une image
+Docker basée sur une librairie affectée par un CVE critique — peut compromettre l'intégrité
+du système d'information et engager la responsabilité de l'institution vis-à-vis de ses clients
+et des régulateurs. Or, le modèle traditionnel de revue de sécurité repose sur des experts
+humains qui examinent manuellement chaque \textit{Pull Request} : cette approche est lente,
+incohérente et ne passe pas à l'échelle à mesure que les équipes de développement grandissent.
+
+L'émergence des grands modèles de langage (LLM) capables d'analyser du code source, combinée
+à la maturité des outils d'analyse de sécurité statique (SAST), ouvre aujourd'hui une
+nouvelle voie : l'automatisation complète de la revue de sécurité, déclenchée à chaque
+\textit{Pull Request}, produisant en quelques minutes une analyse structurée selon l'OWASP
+Top 10 avec des suggestions de correction directement publiées sur GitHub. C'est dans ce
+contexte que s'inscrit ce projet de fin d'études, réalisé au sein de la Banque de Tunisie
+et des Emirats (BTE). Son objectif est de concevoir et déployer le \textbf{BTE Security AI
+Agent} : un moteur DevSecOps autonome piloté par l'intelligence artificielle locale, qui
+intercepte les événements de \textit{Pull Request} GitHub, orchestre en parallèle cinq outils
+d'analyse de sécurité, et produit une revue de sécurité complète en moins de sept minutes,
+sans qu'aucun code source ne quitte l'infrastructure interne de la banque.
+
+Pour répondre aux différentes exigences posées par le sujet, une bonne compréhension de toutes
+les perspectives s'avère indispensable. C'est la raison pour laquelle nous avons adopté le plan
+suivant. Le \textbf{premier chapitre} est un chapitre introductif qui a pour but de présenter
+l'organisme d'accueil et le cadre général du projet, la problématique ainsi que la solution
+proposée. Il présente également la méthodologie Agile Scrum adoptée et le déroulement du
+projet en sept sprints sur douze semaines. Le \textbf{deuxième chapitre} abordera les aspects
+fondamentaux du DevSecOps, de l'inférence locale par grands modèles de langage, et des outils
+d'analyse de sécurité statique, où nous expliquerons de façon détaillée les technologies
+utilisées tout au long de ce projet ainsi que la spécification des besoins fonctionnels et
+non fonctionnels. Le \textbf{troisième chapitre} présentera l'architecture logicielle de notre
+solution, détaillant le workflow LangGraph à neuf nœuds, l'architecture à deux modèles LLM,
+le schéma de la base de données, et la conception de l'assistant de chat opérationnel avec
+son système anti-hallucination. Le \textbf{quatrième chapitre} décrira l'environnement de
+déploiement et détaillera le travail réalisé phase par phase, notamment la configuration des
+services Docker, l'intégration des outils de sécurité, l'implémentation du pipeline LLM et
+la mise en place du système d'observabilité. Nous finirons ce rapport par une conclusion
+générale dans laquelle nous récapitulerons le travail réalisé et exposerons les perspectives
+d'amélioration envisagées.

@@ -1,0 +1,66 @@
+%============= Config new columns type ==============%
+\newcolumntype{L}{>{\raggedright\arraybackslash}}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}}
+\newcolumntype{C}{>{\centering\arraybackslash}}
+%==================================================%
+
+%========= Config the cover section ==========%
+
+\title{BTE Security AI Agent — Moteur DevSecOps Autonome Piloté par l'Intelligence Artificielle}
+
+\author{Ghaith FERCHICHI}
+
+\diplomaName{Diplôme National De Mastère Professionnel}
+\speciality{Sécurité des Systèmes D'Information et des Infrastructures}
+
+%% Encadrant professionnel
+\proFramerName{Monsieur Kamel KAOUECH}
+\proFramerSpeciality{Expert Infrastructure}
+
+%% Encadrant académique
+\academicFramerName{Madame Ghayet El Mouna ZHIOUA}
+\academicFramerSpeciality{Maître Assistant(e)}
+
+%% Entreprise d'accueil
+\companyName{Banque de Tunisie et des Emirats}
+
+%% Année universitaire
+\collegeYear{2025-2026}
+
+%%%%%% Signatures section %%%%%%
+\proSignSentence{J'autorise l'étudiant \textbf{Ghaith FERCHICHI} à déposer son rapport de stage en vue d'une soutenance.}
+\academicSignSentence{J'autorise l'étudiant \textbf{Ghaith FERCHICHI} à déposer son rapport de stage en vue d'une soutenance.}
+
+%%% AR
+\arabicAbstract{%
+يهدف هذا المشروع إلى بناء محرك أمني متكامل مدفوع بالذكاء الاصطناعي المحلي لمراجعة طلبات الدمج (Pull Requests) تلقائياً على منصة GitHub. يعتمد النظام على خط أنابيب متوازٍ من خمسة أدوات تحليل أمني (Trivy وGitleaks وSemgrep وCheckov وOSV-Scanner)، مع استخدام نموذجَي لغة محليَّين (7B للتصنيف و14B للتحليل الأمني) عبر Ollama. النظام مدعوم بمكون LangGraph للتنسيق، وPostgreSQL لحفظ السياق، وRedis للتخزين المؤقت، ومنظومة رصد شاملة (Prometheus وGrafana) دون الاعتماد على أي خدمة سحابية خارجية.%
+}
+
+\arabicAbstractKeywords{%
+DevSecOps، ذكاء اصطناعي، نموذج لغة محلي، Ollama، LangGraph، FastAPI، Trivy، Gitleaks، Semgrep، Checkov، OSV-Scanner، Prometheus، Grafana، Docker، GitHub Webhooks%
+}
+
+%%% FR
+\frenchAbstract{%
+Ce projet présente la conception et le déploiement du BTE Security AI Agent, un moteur DevSecOps autonome piloté par l'intelligence artificielle locale. Le système intercepte les événements de Pull Request GitHub via webhook (validé HMAC-SHA256), orchestre en parallèle cinq outils d'analyse de sécurité (Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner) et produit une revue de sécurité complète (OWASP Top 10, score de risque, verdict) en moins de 7 minutes. L'inférence LLM s'exécute entièrement en local via Ollama (\texttt{qwen2.5-coder:7b/14b}) sans aucune exfiltration de code. La plateforme comprend 12 conteneurs Docker, un assistant de chat opérationnel avec 20 outils de monitoring, et une stack d'observabilité complète (Prometheus, Grafana, AlertManager, VictoriaMetrics, node-exporter) avec 12 règles d'alerte.%
+}
+
+\frenchAbstractKeywords{%
+DevSecOps, Intelligence Artificielle, LLM Local, Ollama, LangGraph, FastAPI, Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner, Prometheus, Grafana, Docker, GitHub Webhooks, OWASP, PostgreSQL, Redis%
+}
+
+%%% EN
+\englishAbstract{%
+This project presents the design and deployment of the BTE Security AI Agent, an autonomous DevSecOps engine powered by local AI inference. The system intercepts GitHub Pull Request webhook events (HMAC-SHA256 validated), orchestrates five security scanning tools in parallel (Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner), and produces a full security review (OWASP Top 10, risk score, verdict) in under 7 minutes. LLM inference runs entirely on-premise via Ollama (\texttt{qwen2.5-coder:7b/14b}) — no code or diffs leave the infrastructure. The platform includes 12 Docker containers, an operational chat assistant with 20 live monitoring tools, and a full observability stack (Prometheus, Grafana, AlertManager, VictoriaMetrics, node-exporter) with 12 alert rules.%
+}
+
+\englishAbstractKeywords{%
+DevSecOps, Artificial Intelligence, Local LLM, Ollama, LangGraph, FastAPI, Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner, Prometheus, Grafana, Docker, GitHub Webhooks, OWASP, PostgreSQL, Redis%
+}
+
+\setboolean{wantToTypeCompanyAddress}{true}
+\companyEmail{contact@bte.com.tn}
+\companyTel{71 126 000}
+\companyFax{71 126 001}
+\companyAddressAR{نهج بحيرة ملاران، ضفاف البحيرة، تونس}
+\companyAddressFR{Rue du Lac Malaren, Les Berges du Lac, 1053 Tunis}

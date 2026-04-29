@@ -1,0 +1,601 @@
+\chapter{Réalisation et résultats}
+
+\minitoc
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Dans ce chapitre, nous présenterons l'environnement matériel et logiciel adopté pour
+obtenir le produit final, puis nous détaillerons la mise en œuvre de la solution proposée
+phase par phase. Ce chapitre est composé de trois parties. La première décrit l'environnement
+de déploiement. La seconde présente l'implémentation de chaque phase du projet avec les
+configurations et extraits de code clés, ainsi que les défis rencontrés et les solutions
+apportées. La troisième partie expose les résultats obtenus sur des \textit{Pull Requests}
+réelles.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Environnement de travail}
+
+    \subsection{Environnement matériel}
+
+        Le tableau \ref{tab:vps_env} présente les caractéristiques du VPS de production
+        sur lequel l'ensemble de la plateforme a été déployé.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{3cm}|m{3cm}|m{4.5cm}|m{2.5cm}|}
+        \hline
+        \textbf{Composant} & \textbf{Valeur} & \textbf{Détail} & \textbf{Contrainte} \\
+        \hline
+        CPU & 12 cœurs & Intel Haswell, AVX2 & \texttt{libggml-cpu-haswell.so} \\
+        \hline
+        RAM & 45 Go & \textasciitilde41 Go disponibles & Ollama limité à 42 Go \\
+        \hline
+        Disque & 290 Go & \textasciitilde245 Go libres & Après urgence 233 Go récupérés \\
+        \hline
+        GPU & Aucun & CPU-only AVX2 & 14B à \textasciitilde3–6 tok/s \\
+        \hline
+        OS & Ubuntu Linux & kernel 6.14.0-37 & Docker 29.4.0 \\
+        \hline
+        \end{tabular}
+        \caption{Environnement matériel — VPS de production BTE}
+        \label{tab:vps_env}
+        \end{table}
+
+    \subsection{Environnement logiciel}
+
+        Le tableau \ref{tab:soft_env} présente les versions des principaux composants
+        logiciels utilisés dans la solution.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{4.5cm}|m{3cm}|m{5cm}|}
+        \hline
+        \textbf{Logiciel} & \textbf{Version} & \textbf{Rôle} \\
+        \hline
+        Docker Engine & 29.4.0 & Conteneurisation \\
+        \hline
+        Python & 3.12-slim & Runtime FastAPI + LangGraph \\
+        \hline
+        FastAPI & 0.135+ & Framework API asynchrone \\
+        \hline
+        LangGraph & 1.1+ & Orchestration workflow LLM \\
+        \hline
+        PostgreSQL & 16-alpine & Base de données \\
+        \hline
+        Redis & 7-alpine & Cache et déduplication \\
+        \hline
+        Semgrep & 1.157+ & SAST OWASP \\
+        \hline
+        Checkov & 3.2.517+ & Scan IaC \\
+        \hline
+        Trivy & 0.69+ & Scan CVE \\
+        \hline
+        Gitleaks & 8.30+ & Détection de secrets \\
+        \hline
+        OSV-Scanner & 2.3+ & Scan de dépendances \\
+        \hline
+        \end{tabular}
+        \caption{Environnement logiciel — versions des composants clés}
+        \label{tab:soft_env}
+        \end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Implémentation de la solution}
+
+    \subsection{Phase 1 — Fondations : VPS, Docker et webhook GitHub}
+
+        La première phase du projet a consisté à mettre en place l'ensemble de
+        l'infrastructure Docker \cite{Docker} et à valider la réception des webhooks GitHub. La
+        configuration de performance d'Ollama est critique pour un fonctionnement CPU-only.
+        Sans tuning, le modèle 14B consomme plus de onze Go de mémoire KV à seize mille
+        tokens de contexte avec les paramètres par défaut. La figure \ref{fig:ollama_compose}
+        présente la configuration Ollama dans le fichier \texttt{docker-compose.yml}.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/ollama_docker_compose}}
+            \caption{Configuration Ollama dans docker-compose.yml — tuning CPU Haswell}
+            \label{fig:ollama_compose}
+        \end{figure}
+
+        La variable \texttt{OLLAMA\_FLASH\_ATTENTION=1} réduit la complexité mémoire du
+        cache KV de O(n²) à O(n), économisant environ 650 Mo à seize mille tokens de
+        contexte. La variable \texttt{OLLAMA\_KV\_CACHE\_TYPE=q8\_0} applique une
+        quantisation huit bits au cache KV, divisant sa consommation mémoire par deux.
+        La mémoire partagée est fixée à deux Go pour les buffers de synchronisation
+        des threads, contre une valeur par défaut de soixante-quatre Mo insuffisante
+        pour douze cœurs parallèles. La limite mémoire de quarante-deux Go protège les
+        autres services du VPS tout en permettant au modèle 14B (neuf Go) de fonctionner
+        avec une marge suffisante.
+
+        Lors de l'intégration du webhook GitHub, un défi technique a été rencontré :
+        nginx configuré en HTTP/1.0 par défaut manglait les corps chunked des requêtes
+        GitHub, provoquant systématiquement des erreurs 500. La figure \ref{fig:nginx_fix}
+        présente le correctif appliqué dans la configuration nginx.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/nginx_webhook_fix}}
+            \caption{Correctif nginx — proxy HTTP/1.1 pour les webhooks GitHub}
+            \label{fig:nginx_fix}
+        \end{figure}
+
+        L'ajout de \texttt{proxy\_http\_version 1.1} et \texttt{proxy\_set\_header Connection ""}
+        a résolu ce problème en forçant nginx à utiliser des connexions persistantes
+        HTTP/1.1 avec l'agent, éliminant le mangling des corps chunked.
+
+    \subsection{Phase 2 — Pipeline de sécurité : scanners et LLM}
+
+        La deuxième phase a consisté à intégrer les cinq scanners de sécurité et le
+        modèle LLM 14B dans le workflow LangGraph. Une première amélioration significative
+        par rapport au diff de l'API GitHub a été mise en place : la génération d'un diff
+        local avec quinze lignes de contexte au lieu des trois lignes retournées par
+        défaut par l'API GitHub. La figure \ref{fig:diff_comparison} illustre la différence
+        de qualité entre les deux approches sur un exemple de vulnérabilité SQL injection.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/diff_comparison}}
+            \caption{Comparaison diff API GitHub (-U3) vs diff local (-U15) — contexte SQL injection}
+            \label{fig:diff_comparison}
+        \end{figure}
+
+        L'exécution parallèle des scanners via \texttt{asyncio.gather()} est un élément
+        clé des performances du pipeline. Chaque scanner s'exécute dans sa propre coroutine
+        avec isolation des erreurs, et son résultat est mis en cache dans Redis. La figure
+        \ref{fig:scan_parallel} montre le résultat de cette exécution parallèle avec les
+        sorties des cinq scanners.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/scanners_parallel_output}}
+            \caption{Exécution parallèle des cinq scanners — résultats et mise en cache Redis}
+            \label{fig:scan_parallel}
+        \end{figure}
+
+    \subsection{Phase 3 — Revue combinée et commentaires inline GitHub}
+
+        La troisième phase a introduit l'optimisation principale du pipeline : la fusion
+        des deux appels 14B séquentiels en un seul appel combiné. Le tableau
+        \ref{tab:combined_perf} présente l'impact de cette optimisation sur les performances.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{5cm}|m{3cm}|m{3cm}|m{2cm}|}
+        \hline
+        \textbf{Configuration} & \textbf{Avant Sprint 5} & \textbf{Après Sprint 5} & \textbf{Gain} \\
+        \hline
+        Appels LLM 14B par PR & 2 séquentiels & 1 combiné & -1 appel \\
+        \hline
+        Durée totale analyse & 13–23 min & 6–11 min & -50\% \\
+        \hline
+        \texttt{num\_ctx} utilisé & 2 × 8 192 & 12 288 & +contexte \\
+        \hline
+        \end{tabular}
+        \caption{Impact de la fusion des appels LLM sur la performance du pipeline}
+        \label{tab:combined_perf}
+        \end{table}
+
+        La figure \ref{fig:github_review} montre le résultat de la revue de sécurité
+        publiée directement sur la \textit{Pull Request} GitHub, avec le commentaire
+        global dans l'onglet Conversation.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.92\columnwidth]{img/github_pr_review_comment}
+            \caption{Revue de sécurité publiée sur la PR GitHub — score HIGH, REQUEST\_CHANGES}
+            \label{fig:github_review}
+        \end{figure}
+
+        La figure \ref{fig:inline_suggestions} présente les commentaires inline avec
+        suggestions de correction visibles dans l'onglet Files Changed, comportant le
+        bouton Apply permettant d'appliquer directement la correction proposée.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.92\columnwidth]{img/github_inline_suggestions}
+            \caption{Commentaires inline avec suggestions de correction (bouton Apply)}
+            \label{fig:inline_suggestions}
+        \end{figure}
+
+    \subsection{Phase 4 — Opérations autonomes et urgence disque}
+
+        \subsubsection{Urgence disque du 20 avril 2026}
+
+        Au cours du sprint trois, un incident critique s'est produit. Un téléchargement
+        partiel du modèle \texttt{qwen2.5-coder:32b}, interrompu sans nettoyage, a laissé
+        un blob de 242 Go sur le disque sans manifeste associé, le rendant inutilisable
+        mais occupant l'espace. Combiné au cache Docker build et au modèle
+        \texttt{llama3.2:3b} non utilisé, le disque a atteint 92\% d'utilisation. La
+        figure \ref{fig:disk_emergency} présente la résolution de cet incident.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/disk_emergency_resolution}}
+            \caption{Résolution de l'urgence disque — 233 Go libérés, aucun service interrompu}
+            \label{fig:disk_emergency}
+        \end{figure}
+
+        Cet incident a directement motivé l'implémentation du gardien disque autonome,
+        qui surveille l'utilisation du disque toutes les trente minutes, met à jour les
+        jauges Prometheus et déclenche automatiquement \texttt{docker builder prune -f}
+        lorsque le seuil de 90\% est atteint.
+
+        \subsubsection{Scheduler autonome et health digest}
+
+        La figure \ref{fig:scheduler} présente le scheduler autonome avec ses deux tâches
+        asyncio permanentes : le gardien disque et le health digest quotidien.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/scheduler_tasks}}
+            \caption{Scheduler autonome — gardien disque et health digest quotidien}
+            \label{fig:scheduler}
+        \end{figure}
+
+        La figure \ref{fig:slack_digest} montre un exemple du health digest Slack publié
+        quotidiennement à 09:00 UTC, récapitulant l'état du disque, de tous les conteneurs,
+        du modèle Ollama chargé et des alertes Prometheus actives.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.70\columnwidth]{img/slack_health_digest}}
+            \caption{Health digest quotidien Slack — état complet de la plateforme BTE}
+            \label{fig:slack_digest}
+        \end{figure}
+
+    \subsection{Phase 5 — Stack de monitoring Prometheus et Grafana}
+
+        \subsubsection{Correction des métriques Prometheus}
+
+        Lors du premier démarrage de la stack de monitoring, les trois cibles Prometheus
+        configurées affichaient toutes l'état \texttt{down}. Le diagnostic a révélé que
+        Prometheus et AlertManager s'exécutent avec l'option \texttt{--web.route-prefix},
+        qui préfixe l'ensemble de leurs chemins HTTP, y compris \texttt{/metrics}. Les
+        chemins de scrape par défaut étaient donc incorrects. La figure
+        \ref{fig:prom_targets_before} montre l'état des cibles avant correction.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/prometheus_targets_down}}
+            \caption{Cibles Prometheus en état down — avant correction des metrics\_path}
+            \label{fig:prom_targets_before}
+        \end{figure}
+
+        Après l'ajout des paramètres \texttt{metrics\_path} explicites (\texttt{/prometheus/metrics}
+        pour Prometheus et \texttt{/alertmanager/metrics} pour AlertManager), ainsi que
+        l'ajout de la cible node-exporter, les quatre cibles sont passées à l'état
+        \texttt{up}, comme le montre la figure \ref{fig:prom_targets_after}.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/prometheus_targets_green}}
+            \caption{Cibles Prometheus — 4 cibles vertes après correction des chemins}
+            \label{fig:prom_targets_after}
+        \end{figure}
+
+        \subsubsection{Dashboards Grafana}
+
+        Trois dashboards Grafana ont été provisionnés pour assurer la surveillance complète
+        de la plateforme. La figure \ref{fig:grafana_vps} présente le dashboard VPS Host
+        Monitoring, basé sur les métriques node-exporter.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.92\columnwidth]{img/grafana_vps_host_dashboard}
+            \caption{Dashboard Grafana VPS Host Monitoring — 13 panneaux node-exporter}
+            \label{fig:grafana_vps}
+        \end{figure}
+
+        La figure \ref{fig:grafana_agent} présente le dashboard DevSecOps AI Agent,
+        comportant trente-trois panneaux organisés en cinq lignes couvrant la santé
+        VPS, le pipeline PR, le chat opérationnel, les LLM Ollama et les I/O réseau.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.92\columnwidth]{img/grafana_agent_dashboard}
+            \caption{Dashboard Grafana DevSecOps AI Agent — 33 panneaux sur 5 lignes}
+            \label{fig:grafana_agent}
+        \end{figure}
+
+        La figure \ref{fig:grafana_pr} présente le dashboard PR Security Reviews, alimenté
+        par les données PostgreSQL, avec les panneaux de volume de revues, distribution
+        des risques et répartition des verdicts.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.88\columnwidth]{img/grafana_pr_reviews_dashboard}
+            \caption{Dashboard Grafana PR Security Reviews — données PostgreSQL}
+            \label{fig:grafana_pr}
+        \end{figure}
+
+    \subsection{Phase 6 — Monitoring host et optimisation du chat}
+
+        \subsubsection{Déploiement de node-exporter}
+
+        Le déploiement de node-exporter \cite{NodeExporter} a nécessité une configuration
+        spécifique car ce
+        conteneur doit s'exécuter en dehors du réseau Docker bridge pour avoir accès aux
+        métriques réelles du système hôte. Il utilise \texttt{pid: host} et
+        \texttt{network\_mode: host} pour accéder aux systèmes de fichiers \texttt{/proc}
+        et \texttt{/sys} du host. Une règle iptables a été ajoutée pour autoriser le
+        bridge Docker à joindre le port 9100 du host. La figure \ref{fig:node_exporter}
+        présente la configuration déployée.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/node_exporter_config}}
+            \caption{Configuration node-exporter — pid:host et network\_mode:host}
+            \label{fig:node_exporter}
+        \end{figure}
+
+        \subsubsection{Optimisation du chat agent}
+
+        Le benchmark des quatre modèles disponibles a abouti au résultat présenté dans
+        le tableau \ref{tab:benchmark_result}. Les modèles \texttt{qwen2.5-coder:7b} et
+        \texttt{14b} atteignent la même précision de 80\%, mais le 7b est 43\% plus rapide
+        par token. Il a donc été retenu comme modèle par défaut du chat. Par ailleurs, la
+        compression du prompt système de 11 794 à 7 577 caractères (réduction de 36\%)
+        a significativement réduit le cache KV et accéléré les réponses.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{4cm}|m{2cm}|m{2.5cm}|m{2.5cm}|m{2.5cm}|}
+        \hline
+        \textbf{Modèle} & \textbf{Taille} & \textbf{Vitesse} & \textbf{Précision} & \textbf{Décision} \\
+        \hline
+        \texttt{qwen2.5-coder:7b} & 4,7 Go & \textasciitilde5 tok/s & 80\% & Chat défaut \\
+        \hline
+        \texttt{qwen2.5-coder:14b} & 9,0 Go & \textasciitilde3,2 tok/s & 80\% & Revue PR \\
+        \hline
+        \texttt{llama3.2:3b} & 2,0 Go & \textasciitilde8 tok/s & 0\% & Expérimental \\
+        \hline
+        \texttt{granite3.1-dense:2b} & 1,6 Go & \textasciitilde8,5 tok/s & 0\% & Incompatible \\
+        \hline
+        \end{tabular}
+        \caption{Résultats du benchmark — décision finale par modèle}
+        \label{tab:benchmark_result}
+        \end{table}
+
+    \subsection{Phase 7 — Audit VPS et durcissement}
+
+        \subsubsection{Audit VPS du 28 avril 2026}
+
+        Un audit complet de la plateforme a révélé cinq découvertes critiques requérant
+        une correction immédiate. Le tableau \ref{tab:audit} présente ces découvertes et
+        les corrections appliquées.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{3.5cm}|m{4cm}|m{5cm}|}
+        \hline
+        \textbf{Découverte} & \textbf{Cause racine} & \textbf{Correction} \\
+        \hline
+        VictoriaMetrics en panne 9 jours & Panic disque-plein, restart: unless-stopped non relancé après libération disque & docker compose restart, 10,9M lignes récupérées \\
+        \hline
+        AlertManager sans alertes reçues & path\_prefix manquant dans prometheus.yml & Ajout path\_prefix: /alertmanager/ \\
+        \hline
+        GET / retourne 404 & Absence de location par défaut dans nginx & Ajout return 301 /ui \\
+        \hline
+        Grafana live dashboards cassés & Headers WebSocket manquants dans nginx & Ajout Upgrade et Connection headers \\
+        \hline
+        Chat UI publiquement accessible & Absence d'authentification & HTTP Basic Auth via nginx htpasswd \\
+        \hline
+        \end{tabular}
+        \caption{Découvertes et corrections de l'audit VPS du 28 avril 2026}
+        \label{tab:audit}
+        \end{table}
+
+        La figure \ref{fig:alertmanager_fix} illustre la correction de la configuration
+        AlertManager dans \texttt{prometheus.yml}. L'absence du paramètre
+        \texttt{path\_prefix: /alertmanager/} entraînait l'envoi de chaque alerte vers
+        \texttt{/api/v2/alerts} au lieu de \texttt{/alertmanager/api/v2/alerts}, générant
+        une erreur 404 silencieuse depuis le premier déploiement.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/alertmanager_fix}}
+            \caption{Correction AlertManager — ajout du path\_prefix dans prometheus.yml}
+            \label{fig:alertmanager_fix}
+        \end{figure}
+
+        \subsubsection{Implémentation du système anti-hallucination}
+
+        La figure \ref{fig:hallucination_comparison} illustre la différence de comportement
+        du chat agent avant et après l'implémentation du système anti-hallucination.
+        Avant les corrections du sprint 7, le modèle inventait des valeurs de métriques
+        plausibles sans appeler aucun outil. Après les corrections, tout appel sur une
+        donnée live déclenche systématiquement l'appel d'outil correspondant et la réponse
+        cite uniquement des valeurs présentes dans les observations.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/hallucination_before_after}}
+            \caption{Comportement du chat agent — avant hallucination vs après correction}
+            \label{fig:hallucination_comparison}
+        \end{figure}
+
+        La figure \ref{fig:chat_ui} présente l'interface du BTE Security AI Agent avec
+        les blocs de raisonnement et d'appels d'outils visibles, montrant la transparence
+        du processus de génération de la réponse.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.92\columnwidth]{img/chat_ui_screenshot}
+            \caption{Interface BTE Security AI Agent — chat opérationnel avec raisonnement visible}
+            \label{fig:chat_ui}
+        \end{figure}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Tests de validation}
+
+    Afin de vérifier le bon fonctionnement de chaque mécanisme de sécurité et de résilience
+    de la solution, nous avons conduit une série de tests unitaires sur les composants
+    critiques de la plateforme. Ces tests reproduisent des conditions réelles d'erreur ou
+    d'attaque pour valider les comportements attendus.
+
+    \subsection{Test de la validation HMAC-SHA256}
+
+        Le premier test vérifie que l'agent rejette correctement les webhooks dont la
+        signature est invalide ou absente. La figure \ref{fig:test_hmac} présente le
+        résultat du test : un webhook avec une signature incorrecte reçoit un code HTTP
+        403 Forbidden, tandis qu'un webhook correctement signé est accepté avec un code 202.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/test_hmac_validation}}
+            \caption{Test HMAC — rejet 403 sur signature invalide, acceptation 202 sur signature correcte}
+            \label{fig:test_hmac}
+        \end{figure}
+
+    \subsection{Test de la déduplication Redis}
+
+        Le deuxième test vérifie que deux webhooks identiques (même dépôt, même numéro
+        de PR, même SHA de commit) ne déclenchent qu'un seul pipeline. La figure
+        \ref{fig:test_dedup} montre que le second webhook retourne un code 202 mais que
+        l'agent l'ignore silencieusement grâce à la clé de déduplication Redis
+        \texttt{SET NX}, laissant le premier pipeline se terminer sans interruption.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/test_deduplication}}
+            \caption{Test déduplication Redis — second webhook ignoré, pipeline unique exécuté}
+            \label{fig:test_dedup}
+        \end{figure}
+
+    \subsection{Test du circuit breaker LLM}
+
+        Le troisième test vérifie le comportement de l'agent lorsque Ollama est
+        indisponible. Après trois échecs consécutifs d'appels LLM, le circuit breaker
+        passe en état OPEN et active le fallback de classification regex. La figure
+        \ref{fig:test_circuit} montre que le pipeline continue de fonctionner — avec une
+        classification basée sur les extensions de fichiers — sans bloquer sur
+        l'indisponibilité du modèle.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/test_circuit_breaker}}
+            \caption{Test circuit breaker — fallback regex activé quand Ollama est indisponible}
+            \label{fig:test_circuit}
+        \end{figure}
+
+    \subsection{Test du gardien disque}
+
+        Le quatrième test vérifie le déclenchement automatique du nettoyage Docker
+        lorsque l'utilisation du disque dépasse 90\%. En simulant un seuil critique via
+        la jauge Prometheus \texttt{agent\_disk\_used\_percent}, nous avons vérifié que
+        la commande \texttt{docker builder prune -f} est exécutée automatiquement et
+        que le résultat est transmis sur Slack, comme le montre la figure
+        \ref{fig:test_disk_guard}.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.75\columnwidth]{img/test_disk_guard}}
+            \caption{Test gardien disque — nettoyage automatique déclenché et notifié sur Slack}
+            \label{fig:test_disk_guard}
+        \end{figure}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Résultats}
+
+    \subsection{Résultats des revues de Pull Requests réelles}
+
+        Le pipeline a été validé sur deux \textit{Pull Requests} réelles sur le dépôt
+        \texttt{GhaiethFerchichi/Vunl-application}. La figure \ref{fig:pr_full_result}
+        montre la revue complète publiée sur la PR \#11.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.92\columnwidth]{img/pr_review_full_result}
+            \caption{PR \#11 — revue de sécurité complète publiée sur GitHub (HIGH, REQUEST\_CHANGES)}
+            \label{fig:pr_full_result}
+        \end{figure}
+
+        Le tableau \ref{tab:pr_results} récapitule les résultats des deux revues effectuées.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        \textbf{PR} & \textbf{Risque} & \textbf{Verdict} & \textbf{Classification} & \textbf{Durée} & \textbf{Commentaires} \\
+        \hline
+        \#11 & HIGH & REQUEST\_CHANGES & infrastructure & \textasciitilde6 min & 4 inline \\
+        \hline
+        \#12 & HIGH & REQUEST\_CHANGES & infrastructure & \textasciitilde5,6 min & 3 inline \\
+        \hline
+        \end{tabular}
+        \caption{Résultats des revues PR réelles — dépôt GhaiethFerchichi/Vunl-application}
+        \label{tab:pr_results}
+        \end{table}
+
+    \subsection{Résultats de l'analyse de conformité et observabilité}
+
+        La figure \ref{fig:prom_alerts_ok} présente l'état des douze règles d'alerte
+        Prometheus, toutes inactives, confirmant l'absence d'incident en production lors
+        de la validation finale.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/prometheus_alerts_inactive}}
+            \caption{Prometheus — 12 règles d'alerte inactives, aucun incident en production}
+            \label{fig:prom_alerts_ok}
+        \end{figure}
+
+    \subsection{Validation de la plateforme}
+
+        Le tableau \ref{tab:validation} présente la checklist de validation complète
+        effectuée sur la plateforme avant la présentation finale.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{6cm}|m{5cm}|c|}
+        \hline
+        \textbf{Vérification} & \textbf{Méthode} & \textbf{Statut} \\
+        \hline
+        Pipeline PR end-to-end & PR réelle → commentaire < 7 min & \checkmark \\
+        \hline
+        5 scanners exécutés & Artefacts dans ./artifacts/scans/ & \checkmark \\
+        \hline
+        LLM local (aucune fuite) & Port 11434 interne uniquement & \checkmark \\
+        \hline
+        4 cibles Prometheus vertes & /prometheus/targets & \checkmark \\
+        \hline
+        12 règles d'alerte inactives & /prometheus/alerts & \checkmark \\
+        \hline
+        AlertManager → Slack fonctionnel & Test alert → message Slack reçu & \checkmark \\
+        \hline
+        3 dashboards Grafana chargés & Données réelles dans chaque panneau & \checkmark \\
+        \hline
+        VictoriaMetrics données 90j & Requête Grafana > 30 jours & \checkmark \\
+        \hline
+        Anti-hallucination chat validé & "CPU usage?" → appel outil + valeur réelle & \checkmark \\
+        \hline
+        Gardien disque actif & Jauge agent\_disk\_used\_percent Prometheus & \checkmark \\
+        \hline
+        Health digest Slack quotidien & Message reçu à 09:00 UTC & \checkmark \\
+        \hline
+        Métriques host node-exporter & PromQL node\_memory\_MemAvailable & \checkmark \\
+        \hline
+        nginx Basic Auth /ui protégé & Accès refusé sans credentials & \checkmark \\
+        \hline
+        Base de données PR reviews & SELECT pr\_reviews — 2 enregistrements & \checkmark \\
+        \hline
+        \end{tabular}
+        \caption{Checklist de validation complète de la plateforme}
+        \label{tab:validation}
+        \end{table}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+Ce chapitre représente la réalisation et la mise en place du BTE Security AI Agent. Nous
+avons décrit les environnements matériel et logiciel sur lesquels la plateforme a été
+construite, puis présenté l'implémentation phase par phase avec les défis rencontrés et
+les solutions apportées. La résolution de l'urgence disque, la correction des cibles
+Prometheus, le déploiement de node-exporter, l'implémentation du système anti-hallucination
+et la correction de l'AlertManager constituent les moments clés de cette réalisation, tous
+découverts et résolus grâce à la méthodologie Agile itérative adoptée. Nous avons clôturé
+ce chapitre par la présentation des résultats obtenus, notamment les deux revues de
+\textit{Pull Requests} réelles produites en moins de sept minutes avec des commentaires
+inline et des suggestions de correction directement sur GitHub.

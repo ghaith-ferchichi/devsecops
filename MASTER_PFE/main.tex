@@ -1,0 +1,139 @@
+
+\documentclass[]{./tpl/isipfe}
+\graphicspath{{./img/}}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[hidelinks]{hyperref}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{float}
+\usepackage{acronym}
+\usepackage{textcomp}
+\usepackage{enumitem}
+\usepackage{rotating}
+\usepackage{pdflscape}
+\usepackage{comment}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+
+% Code listings — syntax highlighting
+\usepackage{listings}
+\lstset{
+    basicstyle=\footnotesize\ttfamily,
+    breaklines=true,
+    breakatwhitespace=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=5pt,
+    xleftmargin=15pt,
+    xrightmargin=5pt,
+    showstringspaces=false,
+    tabsize=4,
+    captionpos=b,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{green!60!black}\itshape,
+    stringstyle=\color{red!70!black},
+    backgroundcolor=\color{gray!8},
+    rulecolor=\color{gray!40},
+}
+\lstdefinestyle{yaml}{
+    language={},
+    basicstyle=\footnotesize\ttfamily,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red!70!black},
+    commentstyle=\color{green!60!black},
+    frame=single,
+    backgroundcolor=\color{gray!8},
+    breaklines=true,
+}
+\lstdefinestyle{bash}{
+    language=bash,
+    basicstyle=\footnotesize\ttfamily,
+    keywordstyle=\color{blue}\bfseries,
+    frame=single,
+    backgroundcolor=\color{gray!8},
+    breaklines=true,
+}
+
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\newtcolorbox{infobox}[1][]{
+    colback=blue!5!white,
+    colframe=blue!50!black,
+    fonttitle=\bfseries,
+    title=#1,
+    breakable
+}
+\newtcolorbox{warningbox}[1][]{
+    colback=orange!5!white,
+    colframe=orange!70!black,
+    fonttitle=\bfseries,
+    title=#1,
+    breakable
+}
+
+\usepackage{titlesec}
+\input{./tpl/new_commands}
+\makeindex
+
+\begin{document}
+    \input{global_config}
+
+    \frontmatter
+        \input{tpl/cover_page}
+        \include{tpl/cover_page_black}
+        \input{tpl/signatures}
+
+        \setcounter{page}{1}
+        \input{remerciement}
+        \thispagestyle{frontmatter}
+
+        \setcounter{secnumdepth}{3}
+        \setcounter{tocdepth}{3}
+        \dominitoc
+        \tableofcontents
+        \adjustmtc
+        \thispagestyle{frontmatter}
+
+        \listoffigures
+        \thispagestyle{frontmatter}
+
+        \listoftables
+        \thispagestyle{frontmatter}
+
+        \input{acronymes}
+        \thispagestyle{frontmatter}
+        \adjustmtc
+
+    \mainmatter
+        \input{chapters/introduction}
+        \clearpage
+
+        \input{chapters/chapter_1}
+        \clearpage
+
+        \input{chapters/chapitre_2}
+        \clearpage
+
+        \input{chapters/chapitre_3}
+        \clearpage
+
+        \input{chapters/chapitre_4}
+        \clearpage
+
+        \input{chapters/conclusion}
+        \clearpage
+
+    \backmatter
+        \nocite{*}
+        \bibliographystyle{unsrt}
+        \bibliography{biblio}
+        \addcontentsline{toc}{chapter}{Webographie}
+
+        \input{./tpl/resume}
+
+\end{document}

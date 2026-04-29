@@ -480,8 +480,12 @@ agent/
     │   │                           # POST /webhooks/alertmanager ← NEW
     │   ├── callbacks.py            # POST /callbacks/slack — LangGraph resume
     │   ├── health.py               # GET /health, GET /metrics
-    │   └── chat.py                 # BTE Security AI Agent chat — ReAct loop + SSE streaming
-    │                               # num_ctx=16384 for 16K context window ← UPDATED
+    │   └── chat.py                 # GET /ui, GET /chat/models (annotated with benchmark metadata)
+    │                               # POST /chat/stream — 7b default, num_ctx=6144, num_predict=800, temp=0.0
+    │                               # no-tool guard (step-0 intercept for live-data questions)
+    │                               # ANTI-HALLUCINATION system prompt block (5 hard rules)
+    │                               # tool-result cache (14 tools, per-tool TTLs 10–120s)
+    │                               # dedup guard (blocks repeated tool+args), custom ReAct + SSE ← UPDATED Sprint 7
     ├── services/
     │   ├── artifact_store.py       # Saves raw SAST JSONs per PR + final summary
     │   ├── cache.py                # Redis: init/close, dedup, rate limit, scan cache
@@ -511,8 +515,10 @@ agent/
         │   ├── edges.py            # route_scans(), route_risk()
         │   └── state.py            # PRReviewState — added base_branch field ← UPDATED
         └── ops_assistant/
-            ├── graph.py            # BTE system prompt (7,577 chars / ~1,894 tokens) + TOOL_MAP (20 tools)
-            └── tools.py            # 20 infrastructure monitoring tools (read-only)
+            ├── graph.py            # SYSTEM_PROMPT (8,186 chars / ~2,047 tokens)
+            │                       # includes ANTI-HALLUCINATION block (5 hard rules) ← UPDATED Sprint 7
+            │                       # TOOL_MAP + _tool_list_text() — 20 tools
+            └── tools.py            # 20 infrastructure monitoring tools + ALL_TOOLS registry
                                     # includes query_prometheus_range() for trend/history queries
 ```
 
@@ -1246,12 +1252,35 @@ This project is a strong fit for **Agile Scrum** — specifically 2-week sprints
 - AlertManager + Prometheus alert rules
 - Disk guard scheduler + daily health digest
 
-**Sprint 4 — Quality & Performance (this session)**
+**Sprint 4 — Quality & Performance**
 - Combined `analyze_review_node` (two 14B calls → one): -U15 local diff, SAST token reduction
 - `ollama_reachable` metric + monitoring fixes (Prometheus scrape targets, alert expressions)
 - Grafana PostgreSQL datasource + PR review dashboard
 - Open WebUI
 - README full-system reports
+
+**Sprint 5 — Host Monitoring + Chat Precision**
+- `node-exporter` added (`pid: host`, `network_mode: host`) — full host CPU/RAM/disk/network visibility
+- 12 alert rules (4 groups) — new `host` group: HostHighCPU, HostHighMemory, HostDiskIOHigh
+- nginx DNS fix (`resolver 127.0.0.11`) — prevents 502 after container recreation
+- Chat default model changed to `qwen2.5-coder:14b`; explicit tool-selection rules in system prompt
+- 4 ready-to-use PromQL patterns injected into system prompt for node-exporter queries
+
+**Sprint 6 — Chat Speed + Model Benchmarking**
+- Pulled `llama3.2:3b` + `granite3.1-dense:2b`; ran 5-query benchmark — confirmed `qwen2.5-coder:7b` as default (same 80% accuracy as 14b, 43% faster)
+- System prompt compressed from 2,948 tokens → 1,894 tokens (36% reduction)
+- `num_ctx` reduced to `4096`; `num_predict` capped at `600`
+- Tool result cache added (14 tools, per-tool TTLs 10–120s)
+- Dedup guard: blocks repeated `tool:args` per response, injects hard stop
+- `query_prometheus_range()` added as 20th tool — enables trend/history queries
+- UI: copy buttons on code blocks, response timing (`⏱ Xs`), colour-coded model tag badges
+
+**Sprint 7 — VPS Audit + Anti-Hallucination**
+- VictoriaMetrics restarted after 9-day silent crash (disk-full panic on 2026-04-19)
+- AlertManager 404 fixed — `path_prefix: /alertmanager/` added to Prometheus config
+- nginx hardened: root redirect → `/ui`, Grafana WebSocket headers, Basic Auth on `/ui` + `/chat/`
+- 3 Grafana dashboards: VPS Host Monitoring (NEW), DevSecOps AI Agent (rebuilt, 33 panels), PR Security Reviews
+- Anti-hallucination: `temperature=0.0`, `num_ctx=6144`, `num_predict=800`, no-tool guard, ANTI-HALLUCINATION system prompt block (5 hard rules)
 
 Each sprint delivered a **working, deployed increment** — validated by real PR reviews running through the pipeline.
 

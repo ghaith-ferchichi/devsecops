@@ -1,0 +1,53 @@
+\chapter*{Conclusion générale et Perspectives}
+\addcontentsline{toc}{chapter}{Conclusion générale et Perspectives}
+\markboth{Conclusion générale et Perspectives}{}
+
+Ce projet nous a permis de concevoir et de déployer le BTE Security AI Agent, un moteur
+DevSecOps autonome piloté par l'intelligence artificielle locale, depuis un VPS Ubuntu
+vide jusqu'à une plateforme de production à douze conteneurs entièrement opérationnelle.
+L'objectif principal — automatiser la détection des vulnérabilités dans les \textit{Pull
+Requests} en moins de sept minutes, sans externaliser le code source, avec une couverture
+exhaustive de l'OWASP Top 10 — a été pleinement atteint et validé sur des \textit{Pull
+Requests} réelles.
+
+La combinaison du modèle \texttt{qwen2.5-coder:7b} pour la classification rapide et du
+modèle \texttt{qwen2.5-coder:14b} pour l'analyse de sécurité approfondie, tous deux
+exécutés localement via Ollama, a permis de respecter les exigences de confidentialité
+bancaire tout en produisant des revues de qualité. La fusion des deux appels LLM
+séquentiels en un seul appel combiné a divisé la durée du pipeline par deux, passant
+de treize à vingt-trois minutes à six à onze minutes. La réduction de 52\% des tokens
+SAST envoyés au LLM a optimisé l'utilisation de la fenêtre de contexte et amélioré
+la qualité des analyses. Le système anti-hallucination à six couches a éliminé la
+fabrication de métriques d'infrastructure dans l'assistant de chat.
+
+Diverses technologies ont été mises en œuvre au sein de ce projet afin de garantir la
+sécurité, la fiabilité et l'observabilité de la plateforme. L'orchestration LangGraph avec
+persistance PostgreSQL garantit la survie du pipeline aux redémarrages. Le circuit breaker
+et les fallbacks assurent la résilience face aux indisponibilités ponctuelles des services.
+Les douze règles d'alerte Prometheus et les trois dashboards Grafana offrent une visibilité
+complète sur l'état de l'infrastructure. La méthodologie Agile Scrum, avec ses sept sprints
+itératifs, a permis d'absorber les découvertes de production imprévues — urgence disque,
+AlertManager cassé depuis le déploiement, VictoriaMetrics en panne neuf jours — et de les
+transformer en améliorations concrètes déployées dans le sprint suivant.
+
+Nous projetons de continuer à améliorer cette plateforme en nous concentrant sur plusieurs
+axes prioritaires. Sur le plan de la sécurité, la suppression des ports hôte non nécessaires
+(Redis, Prometheus, AlertManager, VictoriaMetrics, agent) et l'ajout d'un mot de passe Redis
+constitueront le durcissement de la surface d'exposition. La mise en place de HTTPS via
+Let's Encrypt chiffrera l'ensemble du trafic externe, répondant ainsi à une exigence
+fondamentale pour un environnement bancaire. Sur le plan de la résilience, un système de
+sauvegarde PostgreSQL quotidien protégera la base de connaissances sécurité et les
+checkpoints LangGraph. L'ajout de healthchecks Docker sur les six conteneurs actuellement
+sans surveillance permettra une détection automatique plus rapide des pannes. Sur le plan
+de l'intelligence, l'exploration de modèles de langage plus récents ou de l'optimisation
+par fine-tuning sur des CVE bancaires spécifiques pourrait améliorer encore la précision
+des revues de sécurité. Enfin, l'objectif à long terme est d'étendre la plateforme à
+l'ensemble des dépôts de la BTE, avec un tableau de bord de risques consolidé permettant
+au RSSI de visualiser en temps réel la posture de sécurité de l'organisation.
+
+Ce projet a été une opportunité d'apprentissage professionnel qui nous a permis d'acquérir
+des compétences précieuses dans l'automatisation de la sécurité des infrastructures,
+l'ingénierie des grands modèles de langage, et la mise en place de systèmes d'observabilité
+en production. Nous avons surmonté de nombreux défis techniques et mis en place une solution
+pérenne qui apporte une valeur significative à la Banque de Tunisie et des Emirats dans
+sa transformation DevSecOps.

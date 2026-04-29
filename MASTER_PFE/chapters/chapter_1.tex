@@ -1,0 +1,336 @@
+\chapter{Étude préalable du sujet}
+
+\minitoc
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Dans ce chapitre introductif, nous allons définir le cadre global de notre projet en
+présentant l'organisme d'accueil, la Banque de Tunisie et des Emirats, au sein de laquelle
+ce stage a été réalisé. Nous analyserons ensuite le contexte du projet afin d'identifier
+les limites du processus de revue de sécurité existant, ce qui nous permettra de formuler
+la problématique et de décrire la solution proposée. Nous présenterons enfin la méthodologie
+adoptée ainsi que le déroulement du projet sur cinq mois.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Présentation de l'organisme d'accueil}
+
+    \subsection{Présentation générale}
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.5\columnwidth]{img/bte_logo}}
+            \caption{Logo de la Banque de Tunisie et des Emirats}
+            \label{fig:bte_logo}
+        \end{figure}
+
+        Fondée le 10 août 1982 suite à une convention signée entre le gouvernement tunisien
+        et l'Abu Dhabi Investment Authority (ADIA), la Banque de Tunisie et des Emirats
+        (BTE) \cite{BTE}, dont le logo est présenté dans la figure \ref{fig:bte_logo}, occupe une place
+        stratégique dans le paysage financier tunisien. Initialement conçue comme une banque
+        d'investissement, elle a su opérer une transformation majeure en 2004 pour devenir
+        une banque universelle, offrant aujourd'hui une gamme complète de produits et
+        services financiers à destination des particuliers, des professionnels et des
+        grandes entreprises. Forte de son identité binationale, la BTE se distingue par sa
+        volonté d'innovation, notamment à travers sa plateforme digitale \textbf{NEO BTE},
+        et par son engagement dans le financement de projets structurants pour l'économie
+        nationale. Avec un réseau d'agences en pleine expansion et un siège social moderne
+        situé au Centre Urbain Nord de Tunis, la banque place la qualité de service et la
+        proximité avec le client au cœur de sa stratégie de développement.
+
+        Le tableau \ref{tab:bte_fiche} présente la fiche d'identité de l'établissement.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{4.5cm}|m{8.5cm}|}
+        \hline
+        \textbf{Dénomination} & Banque de Tunisie et des Emirats (BTE) \\
+        \hline
+        \textbf{Date de création} & 10 août 1982 \\
+        \hline
+        \textbf{Forme juridique} & Société anonyme cotée en bourse \\
+        \hline
+        \textbf{Actionnariat} & Partenariat entre l'État Tunisien et l'Abu Dhabi
+                                Investment Authority (ADIA) \\
+        \hline
+        \textbf{Siège social} & Boulevard Béji Caïed Essebsi, Centre Urbain Nord,
+                                1082 Tunis \\
+        \hline
+        \textbf{Secteur d'activité} & Banque universelle (Particuliers, Professionnels,
+                                      Entreprises) \\
+        \hline
+        \textbf{Produits clés} & Crédits, épargne, e-banking (NEO BTE), services
+                                 internationaux, leasing \\
+        \hline
+        \end{tabular}
+        \caption{Fiche d'identité de la Banque de Tunisie et des Emirats}
+        \label{tab:bte_fiche}
+        \end{table}
+
+        Dans le cadre de sa transformation numérique, la BTE a mis en place une Direction
+        des Systèmes d'Information (DSI) chargée d'assurer la disponibilité, la sécurité
+        et l'évolution continue de ses infrastructures informatiques. C'est au sein du
+        département Informatique et Digital de cette direction — responsable de la
+        modernisation des systèmes d'information et de la plateforme NEO BTE — que s'est
+        déroulé notre stage, avec pour mission de renforcer les pratiques DevSecOps
+        de l'organisation.
+
+    \subsection{Secteur d'activité}
+
+        La BTE a développé son activité autour de trois piliers complémentaires qui lui
+        permettent de couvrir l'ensemble des besoins financiers de ses clients. En premier
+        lieu, elle intervient dans les services bancaires aux particuliers et aux
+        professionnels : comptes courants, épargne, crédits à la consommation, cartes
+        bancaires et packs dédiés (Packs Professionnels, Médecins, etc.). En second lieu,
+        elle accompagne les entreprises dans leur financement à travers des crédits
+        d'investissement, des lignes de crédit, des opérations de leasing et des services
+        de commerce international — lettre de crédit, remises documentaires, transferts
+        SWIFT — domaine dans lequel la BTE a acquis une expertise reconnue sur le marché
+        tunisien. En troisième lieu, elle s'engage dans la transformation digitale à travers
+        sa plateforme \textbf{NEO BTE}, qui modernise l'ensemble des interfaces client et
+        des systèmes d'information de la banque. C'est dans ce contexte de modernisation
+        digitale accélérée que s'inscrit notre projet de stage, visant à renforcer la
+        sécurité des développements logiciels par l'intelligence artificielle.
+
+    \subsection{Organigramme}
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.85\columnwidth]{img/organigramme_dsi}}
+            \caption{Organigramme de la Direction des Systèmes d'Information — BTE}
+            \label{fig:organigramme}
+        \end{figure}
+
+        La figure \ref{fig:organigramme} présente l'organigramme de la Direction des
+        Systèmes d'Information, organisée en plusieurs pôles fonctionnels : développement
+        applicatif, infrastructure et réseaux, sécurité informatique et support utilisateurs.
+        Notre projet de stage s'est déroulé au sein du pôle Sécurité Informatique, en
+        collaboration avec les équipes de développement et d'infrastructure afin de mettre
+        en place une solution DevSecOps transversale à l'ensemble de la DSI.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Présentation du projet}
+
+    Dans le cadre de notre projet d'automatisation de la sécurité des développements,
+    nous avons l'intention de réviser complètement l'approche de revue de code de la BTE
+    en intégrant l'intelligence artificielle locale et des outils d'analyse de sécurité
+    statique. En automatisant non seulement le déclenchement des analyses mais également
+    la génération des recommandations contextualisées, cette approche permet de renforcer
+    la posture de sécurité de l'organisation, d'améliorer l'efficacité opérationnelle et
+    de répondre avec agilité aux exigences de conformité du secteur bancaire.
+
+    \subsection{Étude de l'existant}
+
+        La BTE déploie ses développements logiciels via un pipeline GitHub avec des revues
+        manuelles effectuées par des développeurs senior ou des référents sécurité. Les
+        \textit{Pull Requests} sont examinées de façon ponctuelle, uniquement lorsque la
+        charge de travail des reviewers le permet, sans aucun outil d'analyse statique de
+        sécurité intégré au pipeline. Aucun scanner de vulnérabilités — qu'il s'agisse des
+        CVE de dépendances, des secrets exposés ou des misconfigurations d'infrastructure
+        — n'est systématiquement exécuté avant la fusion du code. Les résultats des revues
+        effectuées ne sont pas centralisés dans une base de données commune, rendant
+        impossible l'analyse de tendances de risques sur le temps ou la détection de
+        patterns récurrents de vulnérabilités.
+
+    \subsection{Critique de l'existant}
+
+        Lors de notre analyse approfondie, plusieurs défis cruciaux ont été mis en lumière,
+        exigeant une approche intégrée pour automatiser la sécurité des développements.
+        Les délais prolongés de revue — pouvant dépasser quarante-huit heures — constituent
+        à la fois une source d'inefficacité opérationnelle et une vulnérabilité potentielle,
+        exposant les systèmes à des risques pendant des périodes critiques. De plus, la
+        qualité de la revue dépend entièrement de la disponibilité et de l'expertise du
+        reviewer disponible, engendrant une incohérence notable dans la couverture de
+        sécurité. Par ailleurs, l'absence totale de gate automatisé dans le pipeline CI/CD
+        signifie qu'une \textit{Pull Request} contenant une vulnérabilité critique peut être
+        fusionnée sans aucun blocage. Enfin, la gestion manuelle de l'ensemble du processus
+        expose l'organisation à des erreurs humaines et à des lacunes de couverture sur des
+        catégories de risques telles que les secrets exposés ou les dépendances vulnérables.
+
+    \subsection{Problématique}
+
+        Comment automatiser la détection des vulnérabilités de sécurité dans les
+        \textit{Pull Requests} d'un établissement bancaire, en fournissant des
+        recommandations contextualisées et des suggestions de correction directement
+        sur la plateforme de développement, sans externaliser le code source vers des
+        services d'intelligence artificielle tiers, et en moins de dix minutes par
+        \textit{Pull Request} ?
+
+    \subsection{Solution proposée}
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=\textwidth]{img/solution_overview}}
+            \caption{Vue d'ensemble de la solution BTE Security AI Agent}
+            \label{fig:solution_overview}
+        \end{figure}
+
+        Face à ces défis, nous proposons le \textbf{BTE Security AI Agent}, un moteur
+        d'automatisation DevSecOps piloté par l'intelligence artificielle locale, dont la
+        vue d'ensemble est présentée dans la figure \ref{fig:solution_overview}. La solution
+        repose sur l'interception des événements GitHub via un webhook sécurisé HMAC-SHA256,
+        l'orchestration d'un workflow LangGraph à neuf nœuds, et l'utilisation de deux
+        modèles de langage locaux exécutés entièrement via Ollama sur le VPS de la BTE.
+        Cinq outils d'analyse s'exécutent en parallèle selon la classification de la
+        \textit{Pull Request} : Trivy pour les CVE, Gitleaks pour la détection de secrets,
+        Semgrep pour les failles OWASP, Checkov pour les misconfigurations d'infrastructure,
+        et OSV-Scanner pour les dépendances vulnérables. Le résultat — une revue de sécurité
+        complète avec score de risque, verdict, et commentaires inline avec suggestions de
+        correction — est publié directement sur la \textit{Pull Request} GitHub en moins
+        de sept minutes. La totalité de l'inférence s'exécute en local, garantissant
+        qu'aucun code source ne quitte l'infrastructure de la BTE.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Approche méthodologique}
+
+    L'adoption d'une méthodologie appropriée est cruciale pour gérer efficacement un projet
+    de développement en contexte de production. Elle permet de mettre en place une approche
+    structurée pour planifier, exécuter et clôturer le projet dans les délais impartis,
+    tout en restant capable de réagir rapidement aux découvertes imprévues qui surgissent
+    inévitablement en production.
+
+    \subsection{Généralités}
+
+        Le cycle de vie d'un projet désigne l'ensemble des étapes de développement, partant
+        de sa conception jusqu'à sa mise en production et sa maintenance. De façon générale,
+        ce cycle comprend l'analyse de l'existant et la spécification des besoins, la
+        conception du système, la réalisation, les tests de fonctionnalités, l'exploitation
+        et la maintenance. Pour assurer le bon déroulement d'un projet, plusieurs méthodes
+        de gestion existent : le découpage en phases avec le cycle en V, le découpage en
+        activités WBS, et les méthodes Agiles. Les méthodes classiques présentent des risques
+        inhérents, notamment la mauvaise interprétation des besoins du client, les changements
+        fonctionnels en cours de projet et les dépassements de délais. Une recherche a montré
+        que seul un quart des projets est considéré comme réussi avec les anciennes méthodes,
+        ce qui justifie le recours aux méthodes Agiles dans notre contexte \cite{Agile}.
+
+    \subsection{Méthode Agile Scrum adaptée}
+
+        La méthode Agile se distingue par son approche itérative, progressive et centrée
+        sur la livraison continue de valeur. Elle intègre activement les retours du terrain
+        dans le processus afin de répondre efficacement aux besoins réels, y compris ceux
+        qui n'étaient pas prévisibles en début de projet. Nous avons opté pour une
+        méthodologie \textbf{Agile Scrum adaptée au contexte d'un développeur unique}
+        \cite{Scrum}, comme illustrée dans la figure \ref{fig:agile_scrum}. Les cérémonies
+        conçues pour les équipes — daily standup, planning poker, Scrum Master — ont été
+        simplifiées, mais la structure fondamentale a été conservée intégralement : sprints
+        de deux semaines, backlog priorisé, jalons de livraison et définition de terminé.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.82\columnwidth]{img/agile_scrum_cycle}}
+            \caption{Cycle Agile Scrum adapté — sprints de deux semaines avec jalons}
+            \label{fig:agile_scrum}
+        \end{figure}
+
+        Au sein de chaque sprint, une discipline \textbf{Kanban} \cite{Kanban} est appliquée
+        avec une limite WIP (Work In Progress) de 1. Cette règle garantit qu'une seule tâche
+        est en cours à tout moment — elle est entièrement déployée et validée en production
+        avant d'en démarrer une autre. Le tableau Kanban de la figure \ref{fig:kanban_board}
+        visualise ce flux avec quatre colonnes : Backlog, En cours (WIP=1), Bloqué et
+        Terminé.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/kanban_board}}
+            \caption{Tableau Kanban interne — WIP=1, flux continu au sein de chaque sprint}
+            \label{fig:kanban_board}
+        \end{figure}
+
+        Cette combinaison présente un avantage majeur : les incidents de production sont
+        traités comme des cartes prioritaires remontant immédiatement en tête du backlog,
+        sans déstabiliser la structure globale du projet. C'est ainsi que l'urgence disque
+        du 20 avril, la découverte d'AlertManager silencieusement cassé et la panne de
+        VictoriaMetrics ont été absorbées et résolues dans le sprint en cours, puis
+        documentées comme améliorations dans les sprints suivants.
+
+    \subsection{Définition de terminé}
+
+        Une fonctionnalité est considérée comme \textbf{terminée} lorsque les cinq
+        conditions suivantes sont satisfaites simultanément. Premièrement, elle est déployée
+        et en cours d'exécution sur le VPS de production. Deuxièmement, les logs de l'agent
+        sont propres, sans aucune erreur sur le nouveau code path. Troisièmement, les
+        métriques Prometheus reflètent le nouveau comportement lorsque cela est applicable.
+        Quatrièmement, elle est validée par un événement réel : webhook PR, alerte
+        Prometheus, ou requête chat. Cinquièmement, la section correspondante de la
+        documentation est mise à jour. Cette définition garantit qu'aucune fonctionnalité
+        à moitié terminée n'existe dans le système final.
+
+    \subsection{Déroulement du projet}
+
+        Le projet s'est déroulé sur cinq mois, dont quatre mois de développement actif
+        organisés en huit sprints de deux semaines, suivis d'un mois dédié à la rédaction
+        du rapport et à la préparation de la soutenance. Le diagramme de Gantt de la
+        figure \ref{fig:gantt} illustre la répartition et l'évolution du projet tout au
+        long de la période du stage.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=\textwidth]{img/gantt_chart}}
+            \caption{Diagramme de Gantt — BTE Security AI Agent (5 mois, 8 sprints)}
+            \label{fig:gantt}
+        \end{figure}
+
+        Le tableau \ref{tab:sprints} détaille les objectifs et livrables de chaque sprint,
+        ainsi que les jalons de livraison associés.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|c|m{1.8cm}|m{3cm}|m{2cm}|m{5cm}|}
+        \hline
+        \textbf{Sprint} & \textbf{Semaines} & \textbf{Objectif} & \textbf{Jalon} & \textbf{Livrables clés} \\
+        \hline
+        S1 & 1–2 & Fondations & — &
+            VPS, Docker Compose, FastAPI, webhook GitHub validé, PostgreSQL \\
+        \hline
+        S2 & 3–4 & LLM + Classification & \textbf{M1} &
+            Modèle 7B, LangGraph, première PR analysée end-to-end \\
+        \hline
+        S3 & 5–6 & Pipeline scanners & — &
+            5 scanners parallèles, réduction tokens SAST 52\%, cache Redis \\
+        \hline
+        S4 & 7–8 & Revue LLM 14B & \textbf{M2} &
+            Appel combiné, revue publiée sur GitHub, commentaires inline \\
+        \hline
+        S5 & 9–10 & Autonomie + Chat & \textbf{M3} &
+            Disk guard, Slack, AlertManager, assistant chat 20 outils \\
+        \hline
+        S6 & 11–12 & Observabilité & \textbf{M4} &
+            4 cibles Prometheus, 12 alertes, 3 dashboards Grafana \\
+        \hline
+        S7 & 13–14 & Optimisation & — &
+            Benchmark modèles, anti-hallucination, compression prompt 36\% \\
+        \hline
+        S8 & 15–16 & Durcissement & \textbf{M5} &
+            Audit VPS, corrections sécurité, validation complète \\
+        \hline
+        — & 17–20 & Documentation & — &
+            Rapport final, slides soutenance \\
+        \hline
+        \end{tabular}
+        \caption{Déroulement du projet — 8 sprints sur 4 mois de développement}
+        \label{tab:sprints}
+        \end{table}
+
+        Les cinq jalons définis structurent la progression visible du projet. Le jalon M1
+        marque l'existence d'un pipeline vivant — une \textit{Pull Request} réelle analysée
+        de bout en bout. Le jalon M2 certifie l'intelligence complète du système avec les
+        cinq scanners et la revue LLM publiée sur GitHub. Le jalon M3 valide l'autonomie
+        opérationnelle du système — alertes, Slack et scheduler sans intervention humaine.
+        Le jalon M4 confirme l'observabilité complète avec toutes les cibles Prometheus
+        vertes et les dashboards Grafana chargés. Enfin, le jalon M5 atteste le durcissement
+        de production après l'audit VPS complet.
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+Dans ce premier chapitre, nous avons présenté le contexte général du projet au sein de
+la Banque de Tunisie et des Emirats, puis nous avons étudié en profondeur le processus
+de revue de sécurité existant et ses limites. Cela nous a permis de formuler la
+problématique et de présenter le BTE Security AI Agent comme solution à ces lacunes.
+La méthodologie Agile Scrum adaptée, combinant la structure en sprints pour la visibilité
+des jalons et la discipline Kanban pour la gestion quotidienne du flux, offre le cadre
+le plus approprié pour un projet solo de cinq mois en environnement de production.
+
+Le chapitre suivant porte sur la présentation des différentes technologies sur lesquelles
+repose notre solution, avec une étude comparative entre les alternatives disponibles pour
+chaque composant, ainsi que la spécification des besoins fonctionnels et non fonctionnels.

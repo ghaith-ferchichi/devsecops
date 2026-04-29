@@ -1121,10 +1121,14 @@ Live audit (2026-04-28) revealed several services with host port bindings that s
 
 | Service | Port | Risk | Fix |
 |---------|------|------|-----|
-| `redis` | `6379` host, **no auth** | Anyone can read/write cached scan results, dedup keys, rate limit counters | Remove `ports:` from docker-compose.yml |
+| `redis` | `6379` host, **no auth** | Anyone can read/write cached scan results, dedup keys, rate limit counters | Remove `ports:` from docker-compose.yml; add `--requirepass` |
 | `prometheus` | `9090` host, no auth | Exposes all scrape targets, alert rules, and metric values | Remove `ports:` — access via nginx `/prometheus/` |
 | `alertmanager` | `9093` host, no auth | Alert silence/inhibit API publicly accessible | Remove `ports:` |
 | `victoriametrics` | `8428` host, no auth | Long-term metrics queryable without auth; bots found scanning it | Remove `ports:` |
+| `devsecops-agent` | `8000` host | Direct port access bypasses nginx Basic Auth on `/ui` and `/chat/` | Remove `ports:` — nginx is the only entry point |
+| `open-webui` | `3001` host, `ENABLE_SIGNUP=true` | Anyone can create an account and use Ollama models directly, bypassing all pipeline controls | Remove `ports:`; set `ENABLE_SIGNUP=false` after first admin account is created |
+| `jenkins` | `8080`, `50000` host | Direct access bypasses nginx routing and exposes Jenkins build infrastructure | Remove `ports:`; route exclusively via nginx `/jenkins/` |
+| `grafana` | `3000` host | Accessible directly — Grafana has its own auth but direct binding is unnecessary | Optional: remove `ports:`, access only via nginx `/grafana/` |
 
 All inter-container communication uses the Docker network (`devsecops-net`) and does not require host port bindings. Only `nginx:80/443` needs public exposure.
 
