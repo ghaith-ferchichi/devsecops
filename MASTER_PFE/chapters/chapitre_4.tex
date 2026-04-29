@@ -53,27 +53,27 @@ réelles.
         \hline
         \textbf{Logiciel} & \textbf{Version} & \textbf{Rôle} \\
         \hline
-        Docker Engine & 29.4.0 & Conteneurisation \\
+        Docker Engine \cite{Docker} & 29.4.0 & Conteneurisation \\
         \hline
         Python & 3.12-slim & Runtime FastAPI + LangGraph \\
         \hline
-        FastAPI & 0.135+ & Framework API asynchrone \\
+        FastAPI \cite{FastAPI} & 0.135+ & Framework API asynchrone \\
         \hline
-        LangGraph & 1.1+ & Orchestration workflow LLM \\
+        LangGraph \cite{LangGraph} & 1.1+ & Orchestration workflow LLM \\
         \hline
-        PostgreSQL & 16-alpine & Base de données \\
+        PostgreSQL \cite{PostgreSQL} & 16-alpine & Base de données \\
         \hline
-        Redis & 7-alpine & Cache et déduplication \\
+        Redis \cite{Redis} & 7-alpine & Cache et déduplication \\
         \hline
-        Semgrep & 1.157+ & SAST OWASP \\
+        Semgrep \cite{Semgrep} & 1.157+ & SAST OWASP \\
         \hline
-        Checkov & 3.2.517+ & Scan IaC \\
+        Checkov \cite{Checkov} & 3.2.517+ & Scan IaC \\
         \hline
-        Trivy & 0.69+ & Scan CVE \\
+        Trivy \cite{Trivy} & 0.69+ & Scan CVE \\
         \hline
-        Gitleaks & 8.30+ & Détection de secrets \\
+        Gitleaks \cite{Gitleaks} & 8.30+ & Détection de secrets \\
         \hline
-        OSV-Scanner & 2.3+ & Scan de dépendances \\
+        OSV-Scanner \cite{OSVScanner} & 2.3+ & Scan de dépendances \\
         \hline
         \end{tabular}
         \caption{Environnement logiciel — versions des composants clés}
@@ -87,7 +87,7 @@ réelles.
 
         La première phase du projet a consisté à mettre en place l'ensemble de
         l'infrastructure Docker \cite{Docker} et à valider la réception des webhooks GitHub. La
-        configuration de performance d'Ollama est critique pour un fonctionnement CPU-only.
+        configuration de performance d'Ollama \cite{Ollama} est critique pour un fonctionnement CPU-only.
         Sans tuning, le modèle 14B consomme plus de onze Go de mémoire KV à seize mille
         tokens de contexte avec les paramètres par défaut. La figure \ref{fig:ollama_compose}
         présente la configuration Ollama dans le fichier \texttt{docker-compose.yml}.
@@ -127,8 +127,10 @@ réelles.
 
     \subsection{Phase 2 — Pipeline de sécurité : scanners et LLM}
 
-        La deuxième phase a consisté à intégrer les cinq scanners de sécurité et le
-        modèle LLM 14B dans le workflow LangGraph. Une première amélioration significative
+        La deuxième phase a consisté à intégrer les cinq scanners de sécurité — Trivy
+        \cite{Trivy}, Gitleaks \cite{Gitleaks}, Semgrep \cite{Semgrep}, Checkov
+        \cite{Checkov} et OSV-Scanner \cite{OSVScanner} — et le modèle LLM 14B dans le
+        workflow LangGraph \cite{LangGraph}. Une première amélioration significative
         par rapport au diff de l'API GitHub a été mise en place : la génération d'un diff
         local avec quinze lignes de contexte au lieu des trois lignes retournées par
         défaut par l'API GitHub. La figure \ref{fig:diff_comparison} illustre la différence
@@ -249,9 +251,10 @@ réelles.
 
         \subsubsection{Correction des métriques Prometheus}
 
-        Lors du premier démarrage de la stack de monitoring, les trois cibles Prometheus
-        configurées affichaient toutes l'état \texttt{down}. Le diagnostic a révélé que
-        Prometheus et AlertManager s'exécutent avec l'option \texttt{--web.route-prefix},
+        Lors du premier démarrage de la stack de monitoring Prometheus \cite{Prometheus},
+        les trois cibles configurées affichaient toutes l'état \texttt{down}. Le diagnostic
+        a révélé que Prometheus et AlertManager \cite{AlertManager} s'exécutent avec
+        l'option \texttt{--web.route-prefix},
         qui préfixe l'ensemble de leurs chemins HTTP, y compris \texttt{/metrics}. Les
         chemins de scrape par défaut étaient donc incorrects. La figure
         \ref{fig:prom_targets_before} montre l'état des cibles avant correction.
@@ -277,9 +280,9 @@ réelles.
 
         \subsubsection{Dashboards Grafana}
 
-        Trois dashboards Grafana ont été provisionnés pour assurer la surveillance complète
-        de la plateforme. La figure \ref{fig:grafana_vps} présente le dashboard VPS Host
-        Monitoring, basé sur les métriques node-exporter.
+        Trois dashboards Grafana \cite{Grafana} ont été provisionnés pour assurer la
+        surveillance complète de la plateforme. La figure \ref{fig:grafana_vps} présente
+        le dashboard VPS Host Monitoring, basé sur les métriques node-exporter \cite{NodeExporter}.
 
         \begin{figure}[H]
             \centering
