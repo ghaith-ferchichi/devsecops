@@ -76,8 +76,10 @@ async def post_pr_review(
         event: "COMMENT" | "APPROVE" | "REQUEST_CHANGES"
     """
     url = f"{GITHUB_API}/repos/{repo}/pulls/{pr_number}/reviews"
+    # NOTE: structlog reserves the `event` field for the log message itself —
+    # passing event=event here causes "multiple values for argument 'event'".
     log.info("posting_pr_review", repo=repo, pr=pr_number,
-             inline_count=len(comments), event=event)
+             inline_count=len(comments), review_event=event)
 
     # Normalise comments — GitHub requires `side` and expects no extra keys
     clean_comments = []

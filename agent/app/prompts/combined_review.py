@@ -65,14 +65,40 @@ Lines starting with "   -" are removed lines — do NOT reference their line num
 
 ---
 
-## OUTPUT FORMAT
+## OUTPUT FORMAT — JSON FIRST, then markdown
 
-First write the full security review in this exact markdown structure:
+═══════════════════════════════════════════════════════════════════
+**STEP 1 — MANDATORY JSON BLOCK (must be the FIRST content of your reply):**
+═══════════════════════════════════════════════════════════════════
+
+Output the JSON object below on its very first line. No prose, no fences,
+no leading whitespace before it. Replace the placeholders.
+
+{{"risk_score": "<CRITICAL|HIGH|MEDIUM|LOW|INFO>", "verdict": "<APPROVE|REQUEST_CHANGES|BLOCK>", "code_review_summary": "<2-4 sentence overall code quality assessment>", "comments": [{{"file": "<path as shown in diff>", "line": <integer>, "severity": "<critical|high|medium|low>", "type": "<security|bug|performance|style|maintainability>", "title": "<max 60 chars>", "description": "<1-3 sentences>", "suggestion": "<corrected code or empty string>"}}]}}
+
+RULES for the JSON block:
+- It MUST be the very FIRST line of your reply (before any markdown).
+- It MUST be valid JSON parseable by Python json.loads() — single-line, no fences.
+- If there are no inline issues, output `"comments": []`.
+
+RULES for comments[]:
+- Only reference lines appearing in the annotated diff above.
+- `line` must match exactly a line number shown — never invent numbers.
+- `suggestion` must contain only replacement code, or empty string.
+- Output the 5–8 most important comments, prioritising security and bugs.
+- For every security finding you mention in the markdown below (SQL injection,
+  XSS, path traversal, command injection, weak crypto, IDOR, CSRF, insecure
+  deserialization, hardcoded secrets), include a matching comment in this
+  JSON block IF the line appears in the annotated diff.
+
+═══════════════════════════════════════════════════════════════════
+**STEP 2 — MARKDOWN SECURITY REVIEW (after the JSON, on a new line):**
+═══════════════════════════════════════════════════════════════════
 
 ### Security Review — PR #{pr_number}
 
-**Risk Score:** [CRITICAL / HIGH / MEDIUM / LOW / INFO]
-**Verdict:** [APPROVE / REQUEST_CHANGES / BLOCK]
+**Risk Score:** [must match the JSON `risk_score`]
+**Verdict:** [must match the JSON `verdict`]
 
 #### Code Analysis
 (OWASP Top 10: injection, XSS, SSRF, path traversal, command injection,
@@ -93,15 +119,4 @@ hardcoded secrets. Cite file:line for each finding.)
 
 #### Recommendations
 (Numbered list, ordered by severity.)
-
-Then output EXACTLY this JSON on its own line (raw JSON, no markdown fences):
-
-{{"risk_score": "<CRITICAL|HIGH|MEDIUM|LOW|INFO>", "verdict": "<APPROVE|REQUEST_CHANGES|BLOCK>", "code_review_summary": "<2-4 sentence overall code quality assessment>", "comments": [{{"file": "<path as shown in diff>", "line": <integer>, "severity": "<critical|high|medium|low>", "type": "<security|bug|performance|style|maintainability>", "title": "<max 60 chars>", "description": "<1-3 sentences>", "suggestion": "<corrected code or empty string>"}}]}}
-
-RULES for comments:
-- Only reference lines appearing in the annotated diff above.
-- line must match exactly a line number shown — never invent numbers.
-- suggestion must contain only replacement code, or empty string.
-- Limit to the 8 most important comments, prioritising security and bugs.
-- If no inline issues found, use an empty comments array.
 """

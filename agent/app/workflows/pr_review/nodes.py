@@ -545,8 +545,9 @@ async def analyze_node(state: PRReviewState) -> dict:
         verdict = "REQUEST_CHANGES"
 
         json_match = re.search(
-            r'\{"risk_score"\s*:\s*"(CRITICAL|HIGH|MEDIUM|LOW|INFO)"\s*,\s*"verdict"\s*:\s*"(APPROVE|REQUEST_CHANGES|BLOCK)"\}',
+            r'\{\s*"risk_score"\s*:\s*"(CRITICAL|HIGH|MEDIUM|LOW|INFO)"\s*,\s*"verdict"\s*:\s*"(APPROVE|REQUEST_CHANGES|BLOCK)"',
             review_text,
+            re.DOTALL,
         )
         if json_match:
             risk_score = json_match.group(1)
@@ -679,27 +680,103 @@ async def analyze_review_node(state: PRReviewState) -> dict:
         code_review_summary = ""
         raw_comments: list[dict] = []
 
+        # Allow whitespace/newlines between { and "risk_score" — the LLM
+        # frequently pretty-prints the JSON tail with leading newline + indent.
         json_match = re.search(
-            r'\{"risk_score"\s*:\s*"(?P<rs>CRITICAL|HIGH|MEDIUM|LOW|INFO)"\s*,'
-            r'\s*"verdict"\s*:\s*"(?P<v>APPROVE|REQUEST_CHANGES|BLOCK)"'
-            r'.*?\}',
+            r'\{\s*"risk_score"\s*:\s*"(?P<rs>CRITICAL|HIGH|MEDIUM|LOW|INFO)"\s*,'
+            r'\s*"verdict"\s*:\s*"(?P<v>APPROVE|REQUEST_CHANGES|BLOCK)"',
             raw,
             re.DOTALL,
         )
         if json_match:
-            try:
-                # Find the full JSON object starting at the match
-                json_start = json_match.start()
-                data = json.loads(raw[json_start:])
-                risk_score = data.get("risk_score", "MEDIUM")
-                verdict = data.get("verdict", "REQUEST_CHANGES")
-                code_review_summary = data.get("code_review_summary", "")
-                raw_comments = data.get("comments", [])
-            except json.JSONDecodeError:
-                risk_score = json_match.group("rs")
-                verdict = json_match.group("v")
+            # Always set risk/verdict from the regex groups (cheap, always works).
+            risk_score = json_match.group("rs")
+            verdict = json_match.group("v")
+            # Try to extract the full JSON object (for comments + summary).
+            # Walk forward from the match to find the matching closing brace,
+            # tolerating trailing markdown like ``` fences after the object.
+            json_start = json_match.start()
+            depth = 0
+            in_string = False
+            escape = False
+            json_end = -1
+            for i in range(json_start, len(raw)):
+                ch = raw[i]
+                if escape:
+                    escape = False
+                    continue
+                if ch == "\\":
+                    escape = True
+                    continue
+                if ch == '"' and not escape:
+                    in_string = not in_string
+                    continue
+                if in_string:
+                    continue
+                if ch == "{":
+                    depth += 1
+                elif ch == "}":
+                    depth -= 1
+                    if depth == 0:
+                        json_end = i + 1
+                        break
+            if json_end > json_start:
+                try:
+                    data = json.loads(raw[json_start:json_end])
+                    code_review_summary = data.get("code_review_summary", "")
+                    raw_comments = data.get("comments", [])
+                except json.JSONDecodeError as exc:
+                    log.warning("analyze_review_json_parse_failed",
+                                pr=state["pr_number"], error=str(exc))
+        else:
+            # No JSON tail at all — extract risk/verdict from markdown body.
+            # Models occasionally skip the JSON block despite the instruction;
+            # this fallback at least preserves the verdict/risk consistency.
+            md_risk = re.search(
+                r'\*?\*?Risk\s*(?:Score)?\s*:\s*\*?\*?\s*(CRITICAL|HIGH|MEDIUM|LOW|INFO)',
+                raw, re.IGNORECASE,
+            )
+            md_verdict = re.search(
+                r'\*?\*?Verdict\s*:\s*\*?\*?\s*(APPROVE|REQUEST_CHANGES|BLOCK)',
+                raw, re.IGNORECASE,
+            )
+            if md_risk:
+                risk_score = md_risk.group(1).upper()
+            if md_verdict:
+                verdict = md_verdict.group(1).upper()
+            log.warning(
+                "analyze_review_no_json_tail",
+                pr=state["pr_number"],
+                fallback_risk=risk_score,
+                fallback_verdict=verdict,
+            )
 
-        review_text = raw[:json_match.start()].strip() if json_match else raw
+        # JSON is now the FIRST line of the response (prompt restructured 2026-05-01).
+        # Markdown review follows the JSON. If JSON parsing succeeded, the review
+        # is everything AFTER the JSON object. Fall back to the raw response if
+        # the model put markdown before JSON (older format) or if JSON missing.
+        if json_match:
+            if json_end > json_start:
+                # JSON parsed cleanly — markdown is after it
+                review_text = raw[json_end:].strip()
+                # Some models wrap the markdown in ``` after the JSON — strip that
+                if review_text.startswith("```"):
+                    review_text = re.sub(r'^```\w*\n?|\n?```$', '', review_text)
+                # If markdown body is empty (very rare — model truncated after JSON),
+                # synthesise a minimal review from the JSON metadata for the PR comment
+                if not review_text:
+                    review_text = (
+                        f"### Security Review — PR #{state['pr_number']}\n\n"
+                        f"**Risk Score:** {risk_score}\n"
+                        f"**Verdict:** {verdict}\n\n"
+                        f"{code_review_summary or 'See inline comments for details.'}"
+                    )
+            else:
+                # JSON match found but couldn't extract complete object —
+                # use the part of raw that's NOT the JSON header
+                review_text = raw[json_match.end():].strip() or raw
+        else:
+            review_text = raw
 
         # Validate inline comment line numbers against actual diff
         valid_comments: list[dict] = []
