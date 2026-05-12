@@ -24,19 +24,17 @@ adoptée ainsi que le déroulement du projet sur cinq mois.
             \label{fig:bte_logo}
         \end{figure}
 
-        Fondée le 10 août 1982 suite à une convention signée entre le gouvernement tunisien
-        et l'Abu Dhabi Investment Authority (ADIA), la Banque de Tunisie et des Emirats
-        (BTE) \cite{BTE}, dont le logo est présenté dans la figure \ref{fig:bte_logo}, occupe une place
-        stratégique dans le paysage financier tunisien. Initialement conçue comme une banque
-        d'investissement, elle a su opérer une transformation majeure en 2004 pour devenir
-        une banque universelle, offrant aujourd'hui une gamme complète de produits et
-        services financiers à destination des particuliers, des professionnels et des
-        grandes entreprises. Forte de son identité binationale, la BTE se distingue par sa
-        volonté d'innovation, notamment à travers sa plateforme digitale \textbf{NEO BTE},
-        et par son engagement dans le financement de projets structurants pour l'économie
-        nationale. Avec un réseau d'agences en pleine expansion et un siège social moderne
-        situé au Centre Urbain Nord de Tunis, la banque place la qualité de service et la
-        proximité avec le client au cœur de sa stratégie de développement.
+        La Banque de Tunisie et des Emirats (BTE) \cite{BTE}, dont le logo est présenté
+        dans la figure \ref{fig:bte_logo}, a été fondée le 10 août 1982 à la suite d'une
+        convention signée entre le gouvernement tunisien et l'Abu Dhabi Investment
+        Authority (ADIA). Conçue à l'origine comme banque d'investissement, elle est
+        passée en 2004 au statut de banque universelle et propose désormais une gamme
+        complète de produits et services financiers aux particuliers, aux professionnels
+        et aux grandes entreprises. Son actionnariat binational lui donne une couverture
+        forte sur les opérations de commerce international, et sa plateforme digitale
+        \textbf{NEO BTE} traduit son orientation actuelle vers la modernisation des
+        canaux client. Le siège social, situé au Centre Urbain Nord de Tunis, accueille
+        un réseau d'agences en cours d'extension.
 
         Le tableau \ref{tab:bte_fiche} présente la fiche d'identité de l'établissement.
 
@@ -77,20 +75,20 @@ adoptée ainsi que le déroulement du projet sur cinq mois.
 
     \subsection{Secteur d'activité}
 
-        La BTE a développé son activité autour de trois piliers complémentaires qui lui
-        permettent de couvrir l'ensemble des besoins financiers de ses clients. En premier
-        lieu, elle intervient dans les services bancaires aux particuliers et aux
-        professionnels : comptes courants, épargne, crédits à la consommation, cartes
-        bancaires et packs dédiés (Packs Professionnels, Médecins, etc.). En second lieu,
-        elle accompagne les entreprises dans leur financement à travers des crédits
-        d'investissement, des lignes de crédit, des opérations de leasing et des services
-        de commerce international — lettre de crédit, remises documentaires, transferts
-        SWIFT — domaine dans lequel la BTE a acquis une expertise reconnue sur le marché
-        tunisien. En troisième lieu, elle s'engage dans la transformation digitale à travers
-        sa plateforme \textbf{NEO BTE}, qui modernise l'ensemble des interfaces client et
-        des systèmes d'information de la banque. C'est dans ce contexte de modernisation
-        digitale accélérée que s'inscrit notre projet de stage, visant à renforcer la
-        sécurité des développements logiciels par l'intelligence artificielle.
+        L'activité de la BTE se déploie sur trois domaines qui couvrent l'ensemble des
+        besoins financiers de ses clients. Le premier est la banque de détail :
+        comptes courants, épargne, crédits à la consommation, cartes bancaires et packs
+        dédiés (Packs Professionnels, Médecins, etc.). Le second est le financement des
+        entreprises, à travers des crédits d'investissement, des lignes de crédit, des
+        opérations de leasing et des services de commerce international (lettres de
+        crédit, remises documentaires, transferts SWIFT) ; sur ce dernier point, la BTE
+        a construit une expertise reconnue sur le marché tunisien grâce à son
+        actionnariat binational. Le troisième domaine est la transformation digitale
+        autour de la plateforme \textbf{NEO BTE}, qui rénove progressivement les
+        interfaces client et les systèmes d'information de la banque. C'est cette
+        dynamique de modernisation qui a rendu pertinent notre stage : renforcer la
+        sécurité des développements logiciels en s'appuyant sur l'intelligence
+        artificielle locale.
 
     \subsection{Organigramme}
 
@@ -134,18 +132,19 @@ adoptée ainsi que le déroulement du projet sur cinq mois.
 
     \subsection{Critique de l'existant}
 
-        Lors de notre analyse approfondie, plusieurs défis cruciaux ont été mis en lumière,
-        exigeant une approche intégrée pour automatiser la sécurité des développements.
-        Les délais prolongés de revue — pouvant dépasser quarante-huit heures — constituent
-        à la fois une source d'inefficacité opérationnelle et une vulnérabilité potentielle,
-        exposant les systèmes à des risques pendant des périodes critiques. De plus, la
-        qualité de la revue dépend entièrement de la disponibilité et de l'expertise du
-        reviewer disponible, engendrant une incohérence notable dans la couverture de
-        sécurité. Par ailleurs, l'absence totale de gate automatisé dans le pipeline CI/CD
-        signifie qu'une \textit{Pull Request} contenant une vulnérabilité critique peut être
-        fusionnée sans aucun blocage. Enfin, la gestion manuelle de l'ensemble du processus
-        expose l'organisation à des erreurs humaines et à des lacunes de couverture sur des
-        catégories de risques telles que les secrets exposés ou les dépendances vulnérables.
+        L'analyse du processus existant fait apparaître plusieurs limites qui justifient
+        une automatisation. Les délais de revue dépassent fréquemment quarante-huit heures,
+        ce qui ralentit la livraison des fonctionnalités et laisse des vulnérabilités
+        exposées plus longtemps que nécessaire. La qualité de la revue elle-même dépend
+        de la disponibilité et de l'expertise du relecteur du jour : selon les
+        \textit{Pull Requests}, la couverture de sécurité varie sensiblement d'un cas à
+        l'autre. L'absence de \textit{gate} automatisé dans le pipeline CI/CD est sans
+        doute la limite la plus directe : une \textit{Pull Request} contenant une
+        vulnérabilité critique peut aujourd'hui être fusionnée sans aucun blocage
+        technique. Et la gestion entièrement manuelle du processus laisse régulièrement
+        passer des catégories de risques pour lesquelles l'œil humain n'est pas le bon
+        outil, en particulier les secrets accidentellement commités et les dépendances
+        vulnérables introduites en transitif.
 
     \subsection{Problématique}
 
@@ -183,25 +182,25 @@ adoptée ainsi que le déroulement du projet sur cinq mois.
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Approche méthodologique}
 
-    L'adoption d'une méthodologie appropriée est cruciale pour gérer efficacement un projet
-    de développement en contexte de production. Elle permet de mettre en place une approche
-    structurée pour planifier, exécuter et clôturer le projet dans les délais impartis,
-    tout en restant capable de réagir rapidement aux découvertes imprévues qui surgissent
-    inévitablement en production.
+    Le choix d'une méthodologie de travail conditionne directement la capacité d'un
+    projet à tenir ses délais sans pour autant ignorer les imprévus qui apparaissent dès
+    qu'on déploie en production. Dans notre cas, nous voulions une structure suffisamment
+    cadrée pour rester lisible côté encadrement, et suffisamment souple pour absorber
+    les corrections d'urgence sans casser la planification.
 
     \subsection{Généralités}
 
-        Le cycle de vie d'un projet désigne l'ensemble des étapes de développement, partant
-        de sa conception jusqu'à sa mise en production et sa maintenance. De façon générale,
-        ce cycle comprend l'analyse de l'existant et la spécification des besoins, la
-        conception du système, la réalisation, les tests de fonctionnalités, l'exploitation
-        et la maintenance. Pour assurer le bon déroulement d'un projet, plusieurs méthodes
-        de gestion existent : le découpage en phases avec le cycle en V, le découpage en
-        activités WBS, et les méthodes Agiles. Les méthodes classiques présentent des risques
-        inhérents, notamment la mauvaise interprétation des besoins du client, les changements
-        fonctionnels en cours de projet et les dépassements de délais. Une recherche a montré
-        que seul un quart des projets est considéré comme réussi avec les anciennes méthodes,
-        ce qui justifie le recours aux méthodes Agiles dans notre contexte \cite{Agile}.
+        Le cycle de vie d'un projet logiciel couvre l'analyse de l'existant, la
+        spécification des besoins, la conception, la réalisation, les tests,
+        l'exploitation et la maintenance. Plusieurs familles de méthodes encadrent ce
+        cycle : le cycle en V, qui découpe le projet en phases successives ; le découpage
+        en activités de type WBS ; et les méthodes Agiles, qui privilégient les
+        itérations courtes et l'ajustement continu. Les méthodes classiques restent
+        vulnérables à la mauvaise interprétation des besoins, aux changements
+        fonctionnels en cours de route et aux dépassements de délais ; les chiffres
+        régulièrement cités dans la littérature font état d'environ un quart de projets
+        réussis sous ces approches \cite{Agile}, ce qui rend l'option Agile plus
+        pertinente dans le contexte de notre stage.
 
     \subsection{Méthode Agile Scrum adaptée}
 
@@ -245,15 +244,15 @@ adoptée ainsi que le déroulement du projet sur cinq mois.
 
     \subsection{Définition de terminé}
 
-        Une fonctionnalité est considérée comme \textbf{terminée} lorsque les cinq
-        conditions suivantes sont satisfaites simultanément. Premièrement, elle est déployée
-        et en cours d'exécution sur le VPS de production. Deuxièmement, les logs de l'agent
-        sont propres, sans aucune erreur sur le nouveau code path. Troisièmement, les
-        métriques Prometheus reflètent le nouveau comportement lorsque cela est applicable.
-        Quatrièmement, elle est validée par un événement réel : webhook PR, alerte
-        Prometheus, ou requête chat. Cinquièmement, la section correspondante de la
-        documentation est mise à jour. Cette définition garantit qu'aucune fonctionnalité
-        à moitié terminée n'existe dans le système final.
+        Une fonctionnalité n'est considérée comme \textbf{terminée} que si elle remplit
+        cinq conditions simultanées : elle est effectivement déployée et en exécution sur
+        le VPS de production ; les logs de l'agent restent propres après le passage du
+        nouveau code, sans exception ni avertissement ; les métriques Prometheus reflètent
+        son comportement lorsque cela est applicable ; elle a été déclenchée par un
+        événement réel (webhook PR, alerte Prometheus ou requête chat) et a produit le
+        résultat attendu ; enfin, la section correspondante de la documentation est à
+        jour. Cette définition est volontairement stricte : elle évite que des
+        fonctionnalités à moitié intégrées ne s'accumulent dans le système.
 
     \subsection{Déroulement du projet}
 

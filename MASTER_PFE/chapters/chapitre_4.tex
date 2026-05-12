@@ -5,13 +5,13 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
-Dans ce chapitre, nous présenterons l'environnement matériel et logiciel adopté pour
-obtenir le produit final, puis nous détaillerons la mise en œuvre de la solution proposée
-phase par phase. Ce chapitre est composé de trois parties. La première décrit l'environnement
-de déploiement. La seconde présente l'implémentation de chaque phase du projet avec les
-configurations et extraits de code clés, ainsi que les défis rencontrés et les solutions
-apportées. La troisième partie expose les résultats obtenus sur des \textit{Pull Requests}
-réelles.
+Ce chapitre rend compte de la réalisation effective du projet sur le VPS de la BTE.
+Il s'ouvre sur la description de l'environnement matériel et logiciel sur lequel la
+plateforme a été déployée, puis enchaîne sur l'implémentation phase par phase, en
+suivant l'ordre chronologique des sprints : pour chaque phase, nous reportons les
+configurations clés, les extraits de code représentatifs et les obstacles rencontrés
+en production avec la manière dont nous les avons résolus. La dernière partie présente
+les résultats obtenus sur des \textit{Pull Requests} réelles.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Environnement de travail}
@@ -574,39 +574,30 @@ else:
 
     \subsection{Phase 9 — Évaluation d'un second backend d'inférence (Post-Sprint 8)}
 
-        Une fois le Sprint 8 clôturé et la plateforme stabilisée en production, nous
-        avons profité de la phase de documentation pour répondre à une question qui
-        traînait depuis le premier jour : Ollama est-il réellement le bon moteur
-        d'inférence pour ce VPS, ou un concurrent ferait-il mieux sur le même matériel
-        et le même modèle ? Le choix d'Ollama \cite{Ollama} avait été acté en Sprint 1
-        sur la base de sa réputation \og CPU-first \fg{}, jamais mesuré directement
-        contre une alternative. Conformément à la règle énoncée en section 1.2 de
-        notre méthodologie — \og la production fait toujours des surprises, et seule
-        la mesure directe les révèle \fg{} — nous avons décidé d'instrumenter une
-        comparaison croisée plutôt que de laisser ce choix initial reposer sur du
-        folklore.
+        Le Sprint 8 clôturé et la plateforme stabilisée, la phase de documentation a
+        été l'occasion de revenir sur une question restée ouverte depuis le premier
+        jour. Ollama \cite{Ollama} avait été choisi en Sprint 1 pour sa réputation
+        d'efficacité sur CPU, mais ce choix n'avait jamais été comparé à un moteur
+        alternatif servant exactement le même modèle. Avant de clore le projet, nous
+        voulions transformer cette intuition en mesure.
 
         \subsubsection{Motivation et cadre du micro-sprint}
 
-        Trois raisons motivaient l'évaluation d'un second backend. La première était
-        la validation expérimentale du choix Ollama lui-même : le débit d'inférence
-        en tokens par seconde n'avait jamais été comparé à un moteur alternatif
-        exécutant exactement le même modèle. La deuxième tenait à l'élargissement du
-        catalogue de modèles disponibles : LocalAI \cite{LocalAI} consomme nativement
-        les fichiers GGUF \cite{GGUF} publiés sur le Hub Hugging Face
-        \cite{HuggingFaceHub}, ce qui ouvrait l'accès à des modèles absents de la
-        bibliothèque Ollama comme Phi-4 ou Gemma 3. La troisième relevait de
-        l'architecture logicielle : valider que le routeur de chat de l'agent pouvait
-        accueillir un second backend sans réécriture de la boucle ReAct, c'était
-        garantir qu'un moteur futur (vLLM, llama.cpp en mode serveur) pourrait être
-        intégré au prix d'une simple bifurcation de configuration.
+        Plusieurs raisons justifiaient cette évaluation. La principale était l'absence
+        de point de comparaison : le débit d'Ollama en tokens par seconde sur notre
+        matériel n'avait jamais été mis en regard d'un autre moteur exécutant le même
+        GGUF. À cela s'ajoutait un intérêt pratique pour LocalAI \cite{LocalAI}, qui
+        consomme nativement les fichiers GGUF \cite{GGUF} publiés sur le Hub Hugging
+        Face \cite{HuggingFaceHub} et donne ainsi accès à des modèles absents de la
+        bibliothèque Ollama, notamment Phi-4 et Gemma 3. L'exercice était également
+        l'occasion de vérifier que le routeur de chat pouvait accueillir un second
+        moteur sans réécriture de la boucle ReAct, ce qui faciliterait l'intégration
+        future d'autres backends comme vLLM ou llama.cpp en mode serveur.
 
-        Le travail a été conduit comme un micro-sprint isolé, conformément à la
-        discipline Kanban WIP=1 qui a structuré l'ensemble du projet : un seul
-        livrable, déployé en sandbox parallèle, sans aucune perturbation du
-        \textit{stack} de production. Le pipeline de revue de PR continue de tourner
-        exclusivement sur Ollama ; LocalAI n'est lancé qu'à la demande, via un
-        fichier Compose distinct.
+        Le travail a été mené comme un micro-sprint isolé : un seul livrable, déployé
+        dans une sandbox parallèle, sans aucune modification du stack de production.
+        Le pipeline de revue de PR continue de tourner exclusivement sur Ollama.
+        LocalAI ne démarre qu'à la demande, via un fichier Compose distinct.
 
         \subsubsection{Mise en place de la sandbox LocalAI}
 
@@ -620,17 +611,17 @@ else:
         un volume Docker nommé \texttt{localai\_models}, ce qui les protège des
         redémarrages du conteneur.
 
-        L'installation des modèles s'effectue par deux voies. Pour les modèles
-        présents dans la galerie LocalAI (\texttt{gemma-3-4b-it},
-        \texttt{gemma-3-12b-it}, \texttt{qwen3-coder-30b-a3b-instruct}), un
-        \texttt{POST /models/apply} suffit à déclencher le téléchargement.
-        Pour les GGUF HuggingFace hors galerie — c'est notre cas pour le modèle
-        \texttt{qwen2.5-coder-7b} identique à celui d'Ollama —, il faut écrire un
-        fichier YAML par modèle qui décrit la source et les paramètres d'exécution.
-        Une particularité de LocalAI v3 nous a fait perdre du temps : le moteur ne
-        scrute que la racine du dossier \texttt{/build/models/} pour les
-        configurations, ignorant les sous-dossiers comme \texttt{config/}. Chaque
-        YAML doit donc être monté individuellement dans le bon emplacement.
+        L'installation des modèles passe par deux voies. Les modèles présents dans
+        la galerie LocalAI (\texttt{gemma-3-4b-it}, \texttt{gemma-3-12b-it},
+        \texttt{qwen3-coder-30b-a3b-instruct}) se déclenchent par un simple
+        \texttt{POST /models/apply}. Les GGUF HuggingFace hors galerie, comme le
+        \texttt{qwen2.5-coder-7b} que nous avons choisi pour répliquer le modèle
+        d'Ollama, demandent un fichier YAML par modèle décrivant la source et les
+        paramètres d'exécution. Une particularité de LocalAI v3 nous a fait perdre du
+        temps à ce stade : le moteur ne scrute que la racine du dossier
+        \texttt{/build/models/} et ignore les sous-dossiers comme \texttt{config/}.
+        Chaque YAML doit donc être monté individuellement dans le bon emplacement
+        plutôt que regroupé dans un répertoire dédié.
 
         \begin{lstlisting}[style=yaml, caption={Configuration LocalAI du modèle Qwen2.5-Coder 7B, identique à celui servi par Ollama}, label={lst:localai_qwen_yaml}]
 name: qwen2.5-coder-7b
@@ -644,9 +635,9 @@ mmap: true
 
         Le format ChatML utilisé par la famille Qwen 2.5 est détecté automatiquement
         par LocalAI à partir des métadonnées du fichier GGUF, ce qui nous a évité de
-        déclarer un \textit{template} explicite — un détail confirmé après coup par
-        la cohérence sémantique des réponses produites par les deux backends sur le
-        même prompt.
+        déclarer un \textit{template} explicite. La cohérence sémantique des réponses
+        produites par les deux backends sur un même prompt a confirmé après coup que
+        cette détection fonctionnait correctement.
 
         \subsubsection{Architecture du routeur dual-backend}
 
@@ -703,23 +694,23 @@ else:  # localai - API compatible OpenAI
         secondes, indépendant du timeout global de la requête (réglé à quinze
         minutes dans notre configuration). Or, sur notre VPS douze cœurs sans GPU,
         le chargement d'un modèle 15 B quantisé en Q4\_K\_M comme Phi-4 (8,5 Go sur
-        disque) suivi du traitement du \textit{prompt} système de l'agent
-        (\textasciitilde{}1\,900 tokens) dépasse régulièrement les cent-vingt
-        secondes avant que le premier token utile ne soit produit. Le chien de
-        garde tuait le flux pendant que le modèle finissait de se charger en RAM.
+        disque), suivi du traitement du \textit{prompt} système de l'agent qui pèse
+        environ 1\,900 tokens, dépasse régulièrement les cent-vingt secondes avant
+        que le premier token utile ne soit produit. Le chien de garde tuait donc le
+        flux pendant que le modèle finissait de se charger en RAM.
 
-        La correction a combiné trois ajustements coopérants. Le premier a consisté
-        à désactiver le chien de garde par chunk en passant
+        La correction tient en trois ajustements complémentaires. Le plus direct a
+        été de désactiver le chien de garde par chunk en passant
         \texttt{stream\_chunk\_timeout=None} au constructeur \texttt{ChatOpenAI} :
         sur un backend local situé sur le même \textit{bridge} Docker que l'agent,
-        le \textit{keepalive} TCP du noyau suffit à détecter une connexion
-        réellement morte, le chien de garde applicatif n'apporte rien et coûte
-        beaucoup. Le deuxième a été l'ajout d'un \textit{prime} explicite du modèle
-        avant le démarrage du streaming : une petite requête synchrone
-        \texttt{POST /v1/chat/completions} avec \texttt{max\_tokens=4} et un
-        message \og hi \fg{} force LocalAI à charger le GGUF en mémoire, à
-        initialiser le backend d'inférence et à le maintenir résident, de sorte
-        que la requête réelle suivante arrive sur un moteur déjà chaud.
+        le \textit{keepalive} TCP du noyau suffit à détecter une connexion morte,
+        et le chien de garde applicatif ne fait que tuer prématurément des requêtes
+        longues mais légitimes. Le deuxième ajustement a été d'ajouter un
+        \textit{prime} explicite du modèle avant le démarrage du streaming. Une
+        petite requête synchrone \texttt{POST /v1/chat/completions} avec
+        \texttt{max\_tokens=4} et un message \og hi \fg{} suffit à forcer LocalAI à
+        charger le GGUF en mémoire avant que LangChain ne commence à attendre des
+        tokens. Quand la requête réelle arrive ensuite, le moteur est déjà chaud.
 
         \begin{lstlisting}[language=Python, caption={Aide-mémoire de \og pre-warm \fg{} pour le backend LocalAI}, label={lst:localai_prime}]
 async def _prime_localai_model(model: str) -> None:
@@ -738,38 +729,36 @@ async def _prime_localai_model(model: str) -> None:
         log.warning("localai_prime_failed", model=model, error=str(exc))
         \end{lstlisting}
 
-        Le troisième ajustement, plus mineur mais déterminant pour l'ergonomie, a
-        été l'émission de deux événements SSE de progression — \og Warming up
-        phi-4\ldots{} \fg{} puis \og Generating\ldots{} \fg{} — pendant les soixante
-        à cent-vingt secondes du chargement à froid. L'interface remplace son
-        bandeau de statut à chaque événement reçu, ce qui évite à l'utilisateur la
-        sensation d'écran figé sur \og Loading\ldots{} \fg{} qui avait été la
-        première remontée du test.
+        Le troisième ajustement est cosmétique mais important. Pendant les soixante
+        à cent-vingt secondes du chargement à froid, l'interface n'avait aucun signe
+        de progression et restait figée sur \og Loading\ldots{} \fg{}, ce qui avait
+        été la première remontée du test utilisateur. Nous avons ajouté deux
+        événements SSE intermédiaires, \og Warming up phi-4\ldots{} \fg{} puis
+        \og Generating\ldots{} \fg{}, qui remplacent successivement le bandeau de
+        statut au fur et à mesure que la requête avance.
 
         \subsubsection{Benchmark croisé sur modèle identique}
 
         Une fois le routeur stabilisé, nous avons construit un protocole de mesure
-        rigoureux pour comparer les deux backends sur exactement le même modèle.
-        Le piège classique de ce genre de comparaison consiste à benchmarker un
-        modèle dense Qwen 2.5 servi par Ollama contre un modèle MoE Qwen 3 servi
-        par LocalAI : la différence observée mélangerait alors les écarts
-        d'architecture du modèle avec les écarts du moteur. Pour neutraliser cette
-        confusion, nous avons écrit un fichier YAML de configuration LocalAI qui
-        pointe sur exactement le même GGUF que celui distribué par Ollama, à savoir
+        pour comparer les deux backends. Comparer un modèle dense Qwen 2.5 servi par
+        Ollama contre un MoE Qwen 3 servi par LocalAI aurait mélangé deux écarts
+        distincts, celui des architectures de modèles et celui des moteurs
+        d'inférence. Nous voulions isoler le second. Le fichier YAML LocalAI pointe
+        donc sur exactement le même GGUF que celui distribué par Ollama, à savoir
         \texttt{bartowski/Qwen2.5-Coder-7B-Instruct-Q4\_K\_M.gguf}, soit 4,7 Go.
 
-        Le script \texttt{scripts/benchmark-backends.sh} suit la même méthodologie
-        que le banc d'essai mono-backend introduit en Sprint 6 : une passe à froid
-        de quatre tokens, jetée et non chronométrée, sert à amener le modèle en
-        RAM ; la passe chaude suivante de quatre-vingts tokens — sur un prompt
-        identique demandant un résumé OWASP Top 10 d'une application PHP, à
-        température 0,1 — est mesurée au chronomètre et le débit en tokens par
-        seconde est calculé en parsant le champ \texttt{usage.completion\_tokens}
-        de la réponse JSON. Pour garantir l'équité de la comparaison, les deux
-        appels sont émis depuis l'intérieur du conteneur \texttt{devsecops-agent}
-        au moyen de la bibliothèque \texttt{httpx} : Ollama n'étant pas publié sur
-        le port hôte (et son image officielle n'embarquant pas \texttt{curl}),
-        cette approche commune élimine tout biais de surcoût d'environnement.
+        Le script \texttt{scripts/benchmark-backends.sh} reprend la méthodologie du
+        banc d'essai mono-backend introduit en Sprint 6. Une passe à froid de quatre
+        tokens, non chronométrée, amène d'abord le modèle en RAM. La passe chaude
+        qui suit, sur un prompt identique demandant un résumé OWASP Top 10 d'une
+        application PHP à température 0,1, est mesurée au chronomètre et limitée à
+        quatre-vingts tokens. Le débit est ensuite calculé en parsant le champ
+        \texttt{usage.completion\_tokens} de la réponse JSON. Pour rendre la
+        comparaison équitable, les deux appels sont émis depuis l'intérieur du
+        conteneur \texttt{devsecops-agent} avec la bibliothèque \texttt{httpx}.
+        Ollama n'étant pas publié sur le port hôte et son image officielle
+        n'embarquant pas \texttt{curl}, cette approche commune élimine tout biais
+        de surcoût d'environnement entre les deux mesures.
 
         Les résultats obtenus le 12 mai 2026 sur le VPS de production sont
         présentés dans le tableau \ref{tab:benchmark_backends}.
@@ -794,27 +783,23 @@ async def _prime_localai_model(model: str) -> None:
         Sur le même matériel et avec exactement le même fichier de poids, Ollama
         produit un débit supérieur de 22\,\% à celui de LocalAI (5,49 contre 4,50
         tokens par seconde). Les deux backends produisent des énumérations OWASP
-        sémantiquement identiques — la légère différence de longueur s'explique
-        par le fait qu'Ollama s'arrête naturellement après les dix risques tandis
-        que LocalAI continue d'élaborer jusqu'à saturer la limite de
-        quatre-vingts tokens. L'écart de débit s'explique vraisemblablement par
-        l'intégration plus serrée d'Ollama avec sa bibliothèque sous-jacente
-        \texttt{llama.cpp} et par les optimisations spécifiques au jeu
-        d'instructions AVX2 qu'il active (\texttt{OLLAMA\_FLASH\_ATTENTION=1},
+        sémantiquement équivalentes. La légère différence de longueur vient du fait
+        qu'Ollama s'arrête naturellement après les dix risques, tandis que LocalAI
+        continue d'élaborer jusqu'à atteindre la limite des quatre-vingts tokens.
+        L'écart de débit s'explique vraisemblablement par l'intégration plus serrée
+        d'Ollama avec \texttt{llama.cpp} et par les options qu'il active à
+        l'exécution (\texttt{OLLAMA\_FLASH\_ATTENTION=1},
         \texttt{OLLAMA\_KV\_CACHE\_TYPE=q8\_0}, \texttt{OLLAMA\_NUM\_THREAD=12}),
-        tandis que LocalAI s'appuie sur une couche d'orchestration plus générique
-        couvrant plusieurs runtimes.
+        contre une couche d'orchestration plus générique côté LocalAI qui doit
+        couvrir plusieurs runtimes.
 
-        La décision qui découle de cette mesure est sans surprise : Ollama reste
-        le backend de production, mais ce choix s'appuie désormais sur une preuve
-        directe plutôt que sur la réputation de l'outil. LocalAI conserve une
-        place utile dans l'écosystème du projet en tant que sandbox optionnelle,
-        accessible aux modèles HuggingFace hors galerie Ollama et prête à
-        accueillir une future évaluation lorsqu'un nouveau moteur d'inférence
-        deviendra pertinent. La leçon méthodologique est la même que celle qui
-        nous a guidés à travers les huit sprints : un choix architectural fait
-        sur la base d'une réputation, aussi solide soit-elle, mérite tôt ou tard
-        d'être confronté à la mesure réelle.
+        Le choix opérationnel ne change pas : Ollama reste le backend de production.
+        Ce qui change, c'est le statut de ce choix. Avant cette mesure, il reposait
+        sur la réputation de l'outil et sur notre habitude de l'utiliser. Il repose
+        maintenant sur un chiffre. LocalAI garde une place utile dans le projet
+        comme sandbox optionnelle, à la fois pour accéder à des modèles
+        HuggingFace absents de la bibliothèque Ollama et pour préparer une future
+        comparaison lorsqu'un nouveau moteur d'inférence deviendra pertinent.
 
         \begin{table}[H]
         \centering
@@ -837,11 +822,10 @@ async def _prime_localai_model(model: str) -> None:
         \label{tab:phase9_files}
         \end{table}
 
-        \textbf{Livrable Post-Sprint 8 :} sandbox LocalAI opérationnelle en parallèle
-        d'Ollama, routeur de chat dual-backend validé, bug de \textit{cold-load}
-        diagnostiqué et corrigé en trois ajustements coopérants, et choix
-        architectural initial d'Ollama re-validé par une mesure directe (avance
-        de 22\,\% en débit sur modèle identique).
+        \textbf{Livrable Post-Sprint 8 :} la sandbox LocalAI tourne en parallèle
+        d'Ollama, le routeur de chat accepte les deux backends, le bug de
+        \textit{cold-load} est corrigé, et le choix initial d'Ollama est désormais
+        appuyé par une mesure (22\,\% de débit en plus sur modèle identique).
 
     \subsection{Phase 10 — Expansion de l'observabilité et correction du \textit{template} Phi-4 (Sprint 8.1)}
 
@@ -1270,13 +1254,18 @@ template:
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-Ce chapitre représente la réalisation et la mise en place du BTE Security AI Agent. Nous
-avons décrit les environnements matériel et logiciel sur lesquels la plateforme a été
-construite, puis présenté l'implémentation phase par phase avec les défis rencontrés et
-les solutions apportées. La résolution de l'urgence disque, la correction des cibles
-Prometheus, le déploiement de node-exporter, l'implémentation du système anti-hallucination
-et la correction de l'AlertManager constituent les moments clés de cette réalisation, tous
-découverts et résolus grâce à la méthodologie Agile itérative adoptée. Nous avons clôturé
-ce chapitre par la présentation des résultats obtenus, notamment les deux revues de
-\textit{Pull Requests} réelles produites en moins de sept minutes avec des commentaires
-inline et des suggestions de correction directement sur GitHub.
+Ce chapitre a couvert la réalisation effective du BTE Security AI Agent. Nous avons
+décrit l'environnement matériel et logiciel sur lequel la plateforme a été construite,
+puis détaillé sprint par sprint l'implémentation, en gardant à chaque fois l'obstacle
+rencontré en production et la manière dont nous l'avons levé. Plusieurs épisodes ont
+particulièrement marqué la réalisation : l'urgence disque d'avril, la remise en état
+des cibles Prometheus restées \og down \fg{} après le premier déploiement, le travail
+sur node-exporter et la règle iptables associée, la mise en place du système
+anti-hallucination du chat, la correction de l'AlertManager silencieusement cassé
+depuis le déploiement initial, et la réécriture du parser de revue PR au Sprint 8.
+Aucun de ces problèmes n'apparaissait dans le plan initial ; tous ont été détectés
+en production puis transformés en cartes prioritaires du sprint en cours, ce qui
+illustre l'intérêt concret de la méthodologie itérative adoptée. La dernière section
+du chapitre a présenté les résultats obtenus sur des \textit{Pull Requests} réelles,
+avec des revues complètes produites en moins de sept minutes, commentaires inline et
+suggestions de correction publiés directement sur GitHub.

@@ -5,14 +5,12 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
-Dans ce chapitre, nous nous concentrerons sur la conception architecturale du BTE Security
-AI Agent. Nous analyserons les interactions entre les différentes couches du système en
-utilisant des diagrammes et des schémas pour illustrer les processus clés : l'architecture
-globale à douze conteneurs, le workflow LangGraph à neuf nœuds, l'architecture à deux
-modèles LLM, la conception du parser de diff, le schéma de la base de données, et
-l'architecture de l'assistant de chat opérationnel avec son système anti-hallucination.
-Cette analyse nous fournira une base théorique solide pour la mise en œuvre pratique
-décrite dans le chapitre suivant.
+Ce chapitre décrit la conception architecturale du BTE Security AI Agent. Nous y
+détaillons, schémas à l'appui, l'architecture globale à douze conteneurs, le workflow
+LangGraph à neuf nœuds, l'architecture à deux modèles LLM, le parser de diff, le
+schéma de la base de données, et l'assistant de chat opérationnel avec son système
+anti-hallucination. L'objectif est de fixer toutes les décisions de conception avant
+d'aborder la réalisation au chapitre suivant.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Architecture globale du système}
@@ -550,15 +548,17 @@ décrite dans le chapitre suivant.
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-Dans ce chapitre, nous avons détaillé la conception de l'ensemble du système BTE Security
-AI Agent. Nous avons présenté l'architecture globale à douze conteneurs, l'architecture
-à deux modèles LLM, le workflow LangGraph à neuf nœuds avec ses arêtes conditionnelles,
-et les diagrammes d'interaction illustrant les trois flux principaux du système : réception
-du webhook, exécution du pipeline de revue, et boucle ReAct du chat. Nous avons également
-conçu le parser de diff pour l'élimination des hallucinations de numéros de lignes, le
-schéma de la base de données à six tables applicatives, et le système anti-hallucination
-à six couches. Cette phase de conception est primordiale avant d'entamer la phase de
-réalisation, qui sera détaillée dans le chapitre suivant.
+Ce chapitre a couvert la conception complète du BTE Security AI Agent. L'architecture
+globale repose sur douze conteneurs Docker organisés en couches, et l'inférence est
+prise en charge par deux modèles LLM dont les rôles sont distincts. Le pipeline de
+revue de PR est piloté par un workflow LangGraph à neuf nœuds, avec des arêtes
+conditionnelles qui adaptent la suite d'actions au type de \textit{Pull Request}
+classifiée. Trois diagrammes d'interaction illustrent les flux principaux : la
+réception du webhook GitHub, l'exécution du pipeline et la boucle ReAct de l'assistant
+de chat. Le parser de diff a été spécifiquement conçu pour éliminer les hallucinations
+de numéros de lignes, et le système anti-hallucination du chat agit à six niveaux.
+Toutes ces décisions de conception sont reprises et concrétisées dans le chapitre
+suivant, consacré à la réalisation.
 
 Le chapitre suivant présentera la mise en œuvre concrète de cette architecture, phase par
 phase, avec les interfaces graphiques, les configurations et les résultats obtenus.

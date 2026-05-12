@@ -5,28 +5,27 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
-Dans ce chapitre, nous allons explorer les concepts fondamentaux nécessaires à la
-compréhension de notre projet. Nous aborderons les notions de DevOps et de CI/CD, les
-principes du DevSecOps et de l'OWASP, les grands modèles de langage et l'inférence
-locale, l'orchestration de workflows IA, ainsi que les outils d'analyse de sécurité
-statique, afin de vous donner une base solide pour la suite de notre travail. Nous
-procéderons ensuite à l'étude comparative des technologies et justifierons les choix
-retenus. Nous conclurons par la définition des besoins fonctionnels et non fonctionnels.
+Ce chapitre rassemble les notions sur lesquelles notre solution s'appuie. Nous y
+revenons sur le DevOps et la chaîne CI/CD, sur l'extension DevSecOps et son rapport
+à l'OWASP, sur les grands modèles de langage et l'inférence locale, sur
+l'orchestration des workflows IA, ainsi que sur les outils d'analyse de sécurité
+statique. Une étude comparative des technologies disponibles pour chaque composant
+permet ensuite de justifier les choix retenus. Le chapitre se clôt sur la définition
+des besoins fonctionnels et non fonctionnels du projet.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{DevOps et CI/CD}
 
     \subsection{DevOps}
 
-        DevOps est la combinaison de philosophies culturelles, de pratiques et d'outils
-        qui augmentent la capacité d'une organisation à livrer des applications et des
-        services à grande vitesse, en faisant évoluer et en améliorant les produits à un
-        rythme plus rapide que les organisations employant des méthodes classiques de
-        développement. La méthodologie DevOps repose sur trois principes fondamentaux :
-        la collaboration entre les équipes de développement et d'opérations, l'automatisation
-        des tâches répétitives pour réduire les erreurs et améliorer l'efficacité, et le
-        monitoring continu des performances pour détecter rapidement les problèmes et
-        obtenir des retours pour améliorer les futures versions.
+        Le DevOps regroupe un ensemble de pratiques, d'outils et de choix culturels qui
+        cherchent à raccourcir le cycle de livraison logicielle tout en gardant le produit
+        stable. Il s'organise autour de trois axes : la collaboration au quotidien entre
+        développement et exploitation, là où le modèle classique séparait les deux ;
+        l'automatisation des tâches répétitives de la chaîne (build, tests, déploiement)
+        pour limiter l'erreur humaine et libérer du temps ; et le suivi continu en
+        production, qui permet de détecter rapidement les régressions et d'alimenter les
+        itérations suivantes.
 
         \begin{figure}[H]
             \centering
@@ -83,12 +82,12 @@ retenus. Nous conclurons par la définition des besoins fonctionnels et non fonc
     \subsection{Définition et principes}
 
         DevSecOps est la contraction de Development, Security et Operations \cite{DevSecOps}.
-        Il s'agit d'une extension de la philosophie DevOps qui intègre la sécurité comme une
-        responsabilité partagée à chaque étape du cycle de vie du développement logiciel,
-        plutôt que de la confiner à une phase de validation terminale \cite{NIST_DevSecOps}. En adoptant une approche DevSecOps, les
-        organisations cherchent à détecter et corriger les vulnérabilités le plus tôt possible
-        dans le cycle de développement, réduisant ainsi considérablement le coût et le risque
-        associés à leur correction tardive.
+        C'est une extension du DevOps qui place la sécurité comme une responsabilité
+        partagée tout au long du cycle de développement logiciel, au lieu de la cantonner
+        à une phase de validation finale \cite{NIST_DevSecOps}. L'objectif est de
+        détecter les vulnérabilités au plus tôt, là où elles coûtent le moins cher à
+        corriger ; un bug de sécurité repéré sur une \textit{Pull Request} avant fusion
+        n'a presque aucun coût comparé à la même faille découverte en production.
 
         \begin{figure}[H]
             \centering
@@ -97,14 +96,15 @@ retenus. Nous conclurons par la définition des besoins fonctionnels et non fonc
             \label{fig:devsecops}
         \end{figure}
 
-        Comme le montre la figure \ref{fig:devsecops}, la méthodologie DevSecOps repose sur
-        trois principes fondamentaux. Le premier est le \textit{Security as Code} : les
-        politiques de sécurité sont définies en code, versionnées et déployées automatiquement
-        comme toute autre configuration. Le deuxième est le \textit{Shift Left} : la détection
-        des vulnérabilités est avancée le plus tôt possible dans le cycle, idéalement à
-        l'étape de \textit{Pull Request} avant toute fusion. Le troisième est le feedback
-        continu : les résultats des analyses sont publiés directement aux développeurs
-        concernés, sur leur outil de travail, en temps quasi-réel.
+        Comme le montre la figure \ref{fig:devsecops}, le DevSecOps s'appuie sur trois
+        idées qui structurent toute la chaîne. La première, le \textit{Security as Code},
+        consiste à exprimer les politiques de sécurité sous forme de code versionné et
+        déployé automatiquement, exactement comme une configuration applicative. Vient
+        ensuite le \textit{Shift Left} : déplacer la détection des vulnérabilités le
+        plus en amont possible, idéalement au moment de la \textit{Pull Request}, avant
+        toute fusion. La troisième idée est le \textit{feedback} continu, qui consiste
+        à remettre les résultats des analyses directement aux développeurs concernés,
+        sur leur outil de travail, dès qu'ils sont disponibles.
 
     \subsection{L'OWASP Top 10}
 
@@ -508,17 +508,15 @@ retenus. Nous conclurons par la définition des besoins fonctionnels et non fonc
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-Tout au long de ce chapitre, nous avons introduit les notions de DevOps et de CI/CD comme
-fondements de l'approche DevSecOps. Nous avons ensuite exploré les concepts liés à
-l'inférence LLM locale et aux outils d'analyse de sécurité statique. Nous avons procédé
-à une étude comparative des technologies disponibles pour chaque composant, justifiant
-le choix d'Ollama \cite{Ollama} pour la confidentialité bancaire, de LangGraph
-\cite{LangGraph} pour la persistance d'état, et de la combinaison de cinq outils SAST
-pour une couverture exhaustive des risques. Nous avons également identifié les besoins
-fonctionnels et non fonctionnels qui guident la conception de notre solution.
-
-Dans le chapitre suivant, nous entamerons la tâche de la conception de notre projet en
-présentant l'architecture globale du système et les interactions entre ses composants.
-
-Le chapitre suivant présentera la conception architecturale détaillée du BTE Security AI
-Agent, en s'appuyant sur les choix technologiques établis dans ce chapitre.
+Ce chapitre a posé les bases conceptuelles du projet. Nous y avons rappelé les
+principes du DevOps et de la CI/CD, puis ceux du DevSecOps qui les prolongent en
+intégrant la sécurité à chaque étape. Nous avons ensuite décrit le fonctionnement des
+grands modèles de langage et les compromis spécifiques à l'inférence locale, présenté
+LangGraph comme moteur d'orchestration, et passé en revue les cinq outils d'analyse
+SAST sur lesquels reposera la couverture du pipeline. L'étude comparative menée à
+chaque étape a permis de justifier les choix retenus : Ollama \cite{Ollama} pour
+respecter les exigences de confidentialité bancaire, LangGraph \cite{LangGraph} pour
+la persistance native de l'état, et la combinaison Trivy / Gitleaks / Semgrep /
+Checkov / OSV-Scanner pour couvrir l'ensemble du spectre des vulnérabilités visées.
+Les besoins fonctionnels et non fonctionnels recensés en fin de chapitre encadreront
+la conception détaillée présentée dans le chapitre suivant.

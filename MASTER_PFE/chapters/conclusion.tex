@@ -2,15 +2,15 @@
 \addcontentsline{toc}{chapter}{Conclusion générale et Perspectives}
 \markboth{Conclusion générale et Perspectives}{}
 
-Ce projet nous a permis de concevoir et de déployer le BTE Security AI Agent, un moteur
-DevSecOps autonome piloté par l'intelligence artificielle locale, depuis un VPS Ubuntu
-vide jusqu'à une plateforme de production à douze conteneurs entièrement opérationnelle,
-complétée par une treizième sandbox LocalAI activable à la demande pour l'évaluation
-comparative de modèles d'inférence alternatifs.
-L'objectif principal — automatiser la détection des vulnérabilités dans les \textit{Pull
-Requests} en moins de sept minutes, sans externaliser le code source, avec une couverture
-exhaustive de l'OWASP Top 10 — a été pleinement atteint et validé sur des \textit{Pull
-Requests} réelles.
+Ce projet nous a permis de concevoir et de déployer le BTE Security AI Agent, un
+moteur DevSecOps autonome piloté par de l'intelligence artificielle locale. Le point
+de départ était un VPS Ubuntu vide ; le point d'arrivée est une plateforme de
+production à douze conteneurs, complétée par une treizième sandbox LocalAI activable
+à la demande pour évaluer des moteurs d'inférence alternatifs. L'objectif posé au
+départ — automatiser la détection des vulnérabilités dans les \textit{Pull Requests}
+en moins de sept minutes, sans externaliser le code source et avec une couverture
+complète de l'OWASP Top 10 — a été atteint et vérifié sur des \textit{Pull Requests}
+réelles ouvertes pendant le stage.
 
 La combinaison du modèle \texttt{qwen2.5-coder:7b} pour la classification rapide et du
 modèle \texttt{qwen2.5-coder:14b} pour l'analyse de sécurité approfondie, tous deux
@@ -47,26 +47,29 @@ fondamentale pour un environnement bancaire. Sur le plan de la résilience, un s
 sauvegarde PostgreSQL quotidien protégera la base de connaissances sécurité et les
 checkpoints LangGraph. L'ajout de healthchecks Docker sur les six conteneurs actuellement
 sans surveillance permettra une détection automatique plus rapide des pannes. Sur le plan
-de l'intelligence, une évaluation post-Sprint-8 d'un second backend d'inférence
-(LocalAI, exécutant exactement le même modèle Qwen2.5-Coder 7B que la production)
-a déjà permis de valider le choix initial d'Ollama par une preuve directe : un débit
-supérieur de 22\,\% (5,49 contre 4,50 tokens par seconde) sur le même matériel et la
-même quantification. Le sprint 8.1 a prolongé ce travail en instrumentant les deux
+de l'intelligence, une évaluation post-Sprint 8 d'un second moteur d'inférence
+(LocalAI, servant le même modèle Qwen2.5-Coder 7B que la production) a fourni
+une preuve directe pour le choix initial d'Ollama : 5,49 contre 4,50 tokens par
+seconde sur le même matériel, soit 22\,\% de débit en plus. Le sprint 8.1 a prolongé ce travail en instrumentant les deux
 backends de chat avec une télémétrie A/B couvrant la latence du premier \textit{token},
 la durée totale et le débit en sortie par couple
 \texttt{backend}~$\times$~\texttt{model}, et a permis au passage de diagnostiquer et de
 corriger un bug latent du \textit{template} \texttt{ChatML-with-im\_sep} du modèle Phi-4
 qui retournait silencieusement zéro \textit{token} — un bug qui n'aurait pu être détecté
-sans la nouvelle instrumentation. L'exploration de modèles plus récents — notamment Qwen3-Coder
-MoE 30B/3B-actifs, désormais accessible via la sandbox LocalAI — ou l'optimisation
-par \textit{fine-tuning} sur des CVE bancaires spécifiques constitueront les
-prochaines étapes pour améliorer encore la précision des revues de sécurité. Enfin, l'objectif à long terme est d'étendre la plateforme à
+sans la nouvelle instrumentation. La sandbox LocalAI ouvre par ailleurs l'accès à des modèles
+absents de la bibliothèque Ollama, comme Qwen3-Coder MoE 30B/3B-actifs.
+L'optimisation par \textit{fine-tuning} sur des CVE bancaires spécifiques reste
+à explorer pour gagner en précision sur les revues de sécurité. Enfin, l'objectif à long terme est d'étendre la plateforme à
 l'ensemble des dépôts de la BTE, avec un tableau de bord de risques consolidé permettant
 au RSSI de visualiser en temps réel la posture de sécurité de l'organisation.
 
-Ce projet a été une opportunité d'apprentissage professionnel qui nous a permis d'acquérir
-des compétences précieuses dans l'automatisation de la sécurité des infrastructures,
-l'ingénierie des grands modèles de langage, et la mise en place de systèmes d'observabilité
-en production. Nous avons surmonté de nombreux défis techniques et mis en place une solution
-pérenne qui apporte une valeur significative à la Banque de Tunisie et des Emirats dans
-sa transformation DevSecOps.
+Sur le plan personnel, ce stage a été l'occasion de pratiquer concrètement
+l'automatisation de la sécurité d'une chaîne CI/CD, le déploiement et l'exploitation
+de grands modèles de langage en local, et la mise en place d'un système
+d'observabilité capable de détecter ses propres pannes. Plusieurs des obstacles
+rencontrés en cours de route — l'urgence disque, le parser de revue PR à réécrire,
+le bug de cold-load de LocalAI — n'auraient pas été visibles sans un déploiement en
+conditions réelles, et c'est probablement la leçon la plus durable que nous tirons
+de ce projet. La plateforme livrée à la BTE est prête à servir au-delà du périmètre
+du stage : elle apporte à la banque un outil tangible pour soutenir sa transformation
+DevSecOps.
