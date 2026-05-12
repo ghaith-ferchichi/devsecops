@@ -430,6 +430,684 @@ réelles.
             \label{fig:chat_ui}
         \end{figure}
 
+    \subsection{Phase 8 — Robustesse du parser de revue PR (Sprint 8)}
+
+        Lors de la phase de validation finale, deux \textit{Pull Requests} successives
+        (PR \#14 et PR \#15) ont produit des revues de sécurité où le commentaire global
+        s'affichait correctement, mais où aucun commentaire inline n'apparaissait sur
+        l'onglet \textit{Files Changed}. L'analyse approfondie des journaux a révélé trois
+        bugs cumulatifs dans le code de parsing du nœud \texttt{analyze\_review\_node}.
+
+        \subsubsection{Investigation du bug}
+
+        Le journal de l'agent indiquait systématiquement \texttt{comments=0} et un
+        \texttt{risk\_score} forcé à la valeur par défaut \texttt{MEDIUM} alors que le
+        modèle 14B avait correctement identifié des vulnérabilités de niveau \texttt{HIGH}
+        dans son texte. La figure \ref{fig:parser_bug_analysis} illustre les trois
+        défauts identifiés et leurs interactions.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/parser_bug_analysis}}
+            \caption{Analyse des trois bugs cumulatifs du parser PR review (Sprint 8)}
+            \label{fig:parser_bug_analysis}
+        \end{figure}
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{4cm}|m{4cm}|m{5cm}|}
+        \hline
+        \textbf{Bug} & \textbf{Symptôme} & \textbf{Cause racine} \\
+        \hline
+        Regex intolérant aux espaces & \texttt{json\_match=None} → défauts \texttt{MEDIUM/REQUEST\_CHANGES}, \texttt{raw\_comments=[]} & Le motif \texttt{\textbackslash\{"risk\_score"...} exigeait que \texttt{"risk\_score"} suive immédiatement \texttt{\{}. Lorsque le modèle pré-formattait le JSON (\texttt{\{} + saut de ligne + indentation), le regex échouait silencieusement. \\
+        \hline
+        \texttt{json.loads} strict sur les caractères en fin & \texttt{JSONDecodeError} → fallback aux groupes regex mais \texttt{raw\_comments} restait vide & \texttt{json.loads(raw[json\_start:])} consommait toute la chaîne jusqu'à la fin du fichier, y compris les délimiteurs Markdown \verb|```| en queue. \\
+        \hline
+        Modèle omettant le JSON & PR \#15 : la revue se terminait à la section "Recommandations" sans aucun objet JSON & Le modèle, manquant de budget de génération, tronquait sa sortie après la section markdown, omettant complètement le bloc JSON requis par le prompt. \\
+        \hline
+        \end{tabular}
+        \caption{Les trois bugs cumulatifs identifiés sur PR \#14 et PR \#15}
+        \label{tab:parser_bugs}
+        \end{table}
+
+        \subsubsection{Réécriture du parser et restructuration du prompt}
+
+        La résolution a nécessité une réécriture complète du code de parsing et une
+        restructuration du prompt combiné. La figure \ref{fig:parser_rewrite} présente
+        les trois stratégies imbriquées du nouveau parser.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/parser_rewrite}}
+            \caption{Architecture du parser réécrit — trois stratégies imbriquées}
+            \label{fig:parser_rewrite}
+        \end{figure}
+
+        \begin{lstlisting}[language=Python, caption={Parser PR review réécrit — regex tolérant + walker brace-depth + fallback markdown},
+                           label={lst:parser_rewrite}]
+# Strategie 1 : regex tolerant aux espaces (correction Sprint 8)
+json_match = re.search(
+    r'\{\s*"risk_score"\s*:\s*"(?P<rs>CRITICAL|HIGH|MEDIUM|LOW|INFO)"\s*,'
+    r'\s*"verdict"\s*:\s*"(?P<v>APPROVE|REQUEST_CHANGES|BLOCK)"',
+    raw, re.DOTALL,
+)
+
+if json_match:
+    risk_score = json_match.group("rs")
+    verdict = json_match.group("v")
+
+    # Strategie 2 : walker brace-depth pour trouver l'accolade fermante exacte
+    json_start = json_match.start()
+    depth, in_string, escape, json_end = 0, False, False, -1
+    for i in range(json_start, len(raw)):
+        ch = raw[i]
+        if escape: escape = False; continue
+        if ch == "\\": escape = True; continue
+        if ch == '"' and not escape: in_string = not in_string; continue
+        if in_string: continue
+        if ch == "{": depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                json_end = i + 1
+                break
+    if json_end > json_start:
+        data = json.loads(raw[json_start:json_end])
+        code_review_summary = data.get("code_review_summary", "")
+        raw_comments = data.get("comments", [])
+else:
+    # Strategie 3 : fallback markdown si JSON entierement absent
+    md_risk = re.search(
+        r'\*?\*?Risk\s*(?:Score)?\s*:\s*\*?\*?\s*'
+        r'(CRITICAL|HIGH|MEDIUM|LOW|INFO)', raw, re.IGNORECASE)
+    md_verdict = re.search(
+        r'\*?\*?Verdict\s*:\s*\*?\*?\s*'
+        r'(APPROVE|REQUEST_CHANGES|BLOCK)', raw, re.IGNORECASE)
+    if md_risk: risk_score = md_risk.group(1).upper()
+    if md_verdict: verdict = md_verdict.group(1).upper()
+        \end{lstlisting}
+
+        En complément, le prompt combiné a été restructuré pour exiger la production
+        du bloc JSON \textbf{en première position} dans la réponse du modèle, suivi
+        du markdown de la revue. Cette inversion empêche le modèle de tronquer la
+        sortie avant d'avoir produit les métadonnées critiques. La figure
+        \ref{fig:prompt_restructured} présente le nouveau format STEP 1 / STEP 2.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/prompt_restructured}}
+            \caption{Prompt restructuré — JSON en première position, markdown en seconde position}
+            \label{fig:prompt_restructured}
+        \end{figure}
+
+        \subsubsection{Vérification}
+
+        Le tableau \ref{tab:parser_verification} récapitule les vérifications effectuées
+        après la réécriture, validant la robustesse du parser sur les trois cas
+        d'échec observés.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{6cm}|m{6cm}|}
+        \hline
+        \textbf{Test} & \textbf{Résultat} \\
+        \hline
+        Regex tolérant aux JSON pré-formatté & \checkmark \texttt{HIGH/BLOCK} extrait correctement \\
+        \hline
+        Walker tolère les fences \verb|```| en queue & \checkmark Stoppé à la bonne accolade \\
+        \hline
+        Fallback markdown sur PR \#15 (sans JSON) & \checkmark \texttt{HIGH/BLOCK} extrait du markdown \\
+        \hline
+        Lignes 12, 17, 26, 34 du diff PR \#14 & \checkmark Toutes valides après parsing \\
+        \hline
+        Bug identique dans \texttt{\_build\_degraded\_review()} & \checkmark Patché aux deux endroits \\
+        \hline
+        \end{tabular}
+        \caption{Vérifications post-réécriture du parser PR review}
+        \label{tab:parser_verification}
+        \end{table}
+
+        \textbf{Livrable de Sprint 8 :} commentaires inline GitHub restaurés sur tous
+        les patterns de sortie LLM observés. Le parser tolère désormais les formats
+        JSON pré-formatté, les fences markdown en queue, et l'absence totale de bloc
+        JSON. Le bug a été reproduit puis vérifié corrigé sur les PRs \#14 et \#15.
+
+    \subsection{Phase 9 — Évaluation d'un second backend d'inférence (Post-Sprint 8)}
+
+        Une fois le Sprint 8 clôturé et la plateforme stabilisée en production, nous
+        avons profité de la phase de documentation pour répondre à une question qui
+        traînait depuis le premier jour : Ollama est-il réellement le bon moteur
+        d'inférence pour ce VPS, ou un concurrent ferait-il mieux sur le même matériel
+        et le même modèle ? Le choix d'Ollama \cite{Ollama} avait été acté en Sprint 1
+        sur la base de sa réputation \og CPU-first \fg{}, jamais mesuré directement
+        contre une alternative. Conformément à la règle énoncée en section 1.2 de
+        notre méthodologie — \og la production fait toujours des surprises, et seule
+        la mesure directe les révèle \fg{} — nous avons décidé d'instrumenter une
+        comparaison croisée plutôt que de laisser ce choix initial reposer sur du
+        folklore.
+
+        \subsubsection{Motivation et cadre du micro-sprint}
+
+        Trois raisons motivaient l'évaluation d'un second backend. La première était
+        la validation expérimentale du choix Ollama lui-même : le débit d'inférence
+        en tokens par seconde n'avait jamais été comparé à un moteur alternatif
+        exécutant exactement le même modèle. La deuxième tenait à l'élargissement du
+        catalogue de modèles disponibles : LocalAI \cite{LocalAI} consomme nativement
+        les fichiers GGUF \cite{GGUF} publiés sur le Hub Hugging Face
+        \cite{HuggingFaceHub}, ce qui ouvrait l'accès à des modèles absents de la
+        bibliothèque Ollama comme Phi-4 ou Gemma 3. La troisième relevait de
+        l'architecture logicielle : valider que le routeur de chat de l'agent pouvait
+        accueillir un second backend sans réécriture de la boucle ReAct, c'était
+        garantir qu'un moteur futur (vLLM, llama.cpp en mode serveur) pourrait être
+        intégré au prix d'une simple bifurcation de configuration.
+
+        Le travail a été conduit comme un micro-sprint isolé, conformément à la
+        discipline Kanban WIP=1 qui a structuré l'ensemble du projet : un seul
+        livrable, déployé en sandbox parallèle, sans aucune perturbation du
+        \textit{stack} de production. Le pipeline de revue de PR continue de tourner
+        exclusivement sur Ollama ; LocalAI n'est lancé qu'à la demande, via un
+        fichier Compose distinct.
+
+        \subsubsection{Mise en place de la sandbox LocalAI}
+
+        La sandbox est définie dans un fichier \texttt{docker-compose.localai.yml}
+        autonome, séparé du Compose principal du projet, qui rejoint le réseau Docker
+        existant \texttt{devsecops-net} et expose son API compatible OpenAI sur le
+        port hôte 8081. Le conteneur est configuré pour utiliser les douze cœurs CPU
+        Haswell avec \texttt{THREADS=12}, un contexte de 8192 tokens, une limite
+        mémoire de 24 Go et un \texttt{shm\_size} de 2 Go pour les tampons de
+        synchronisation entre threads. Les modèles téléchargés sont persistés dans
+        un volume Docker nommé \texttt{localai\_models}, ce qui les protège des
+        redémarrages du conteneur.
+
+        L'installation des modèles s'effectue par deux voies. Pour les modèles
+        présents dans la galerie LocalAI (\texttt{gemma-3-4b-it},
+        \texttt{gemma-3-12b-it}, \texttt{qwen3-coder-30b-a3b-instruct}), un
+        \texttt{POST /models/apply} suffit à déclencher le téléchargement.
+        Pour les GGUF HuggingFace hors galerie — c'est notre cas pour le modèle
+        \texttt{qwen2.5-coder-7b} identique à celui d'Ollama —, il faut écrire un
+        fichier YAML par modèle qui décrit la source et les paramètres d'exécution.
+        Une particularité de LocalAI v3 nous a fait perdre du temps : le moteur ne
+        scrute que la racine du dossier \texttt{/build/models/} pour les
+        configurations, ignorant les sous-dossiers comme \texttt{config/}. Chaque
+        YAML doit donc être monté individuellement dans le bon emplacement.
+
+        \begin{lstlisting}[style=yaml, caption={Configuration LocalAI du modèle Qwen2.5-Coder 7B, identique à celui servi par Ollama}, label={lst:localai_qwen_yaml}]
+name: qwen2.5-coder-7b
+parameters:
+  model: huggingface://bartowski/Qwen2.5-Coder-7B-Instruct-GGUF/Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
+context_size: 8192
+threads: 12
+f16: true
+mmap: true
+        \end{lstlisting}
+
+        Le format ChatML utilisé par la famille Qwen 2.5 est détecté automatiquement
+        par LocalAI à partir des métadonnées du fichier GGUF, ce qui nous a évité de
+        déclarer un \textit{template} explicite — un détail confirmé après coup par
+        la cohérence sémantique des réponses produites par les deux backends sur le
+        même prompt.
+
+        \subsubsection{Architecture du routeur dual-backend}
+
+        Le routeur de chat (fichier \texttt{agent/app/routers/chat.py}) a été étendu
+        pour accepter un identifiant de modèle préfixé par le backend cible :
+        \texttt{ollama/qwen2.5-coder:7b} continue d'emprunter le chemin de production,
+        tandis que \texttt{localai/phi-4} ou \texttt{localai/qwen2.5-coder-7b}
+        bifurque vers la sandbox. La fonction \texttt{\_parse\_backend()} sépare le
+        préfixe du nom de modèle ; en l'absence de préfixe, le routeur retombe sur
+        Ollama pour préserver la rétrocompatibilité des conversations sauvegardées
+        avant l'ajout de LocalAI.
+
+        \begin{lstlisting}[language=Python, caption={Bifurcation du routeur selon le backend cible}, label={lst:backend_split}]
+backend, raw_model = _parse_backend(req.model)
+
+if backend == "ollama":
+    await _unload_other_models(keep=raw_model)
+    llm = ChatOllama(base_url=settings.ollama_base_url, model=raw_model,
+                     temperature=0.0, num_ctx=_num_ctx, num_predict=_num_predict,
+                     keep_alive="10m", request_timeout=request_timeout)
+else:  # localai - API compatible OpenAI
+    yield _sse({"type": "status", "content": f"Warming up {raw_model}..."})
+    await _prime_localai_model(raw_model)
+    yield _sse({"type": "status", "content": "Generating..."})
+    llm = ChatOpenAI(base_url=f"{settings.localai_base_url}/v1",
+                     api_key="not-needed", model=raw_model, temperature=0.0,
+                     max_tokens=_num_predict, timeout=request_timeout,
+                     stream_chunk_timeout=None)  # cf. correction cold-load
+        \end{lstlisting}
+
+        La route \texttt{/chat/models} fusionne les deux catalogues dans un seul
+        \textit{dropdown} de l'interface, en taggant chaque entrée avec son backend
+        d'origine. Si la sandbox LocalAI est arrêtée, la requête vers son endpoint
+        échoue silencieusement et seuls les modèles Ollama apparaissent : nous avons
+        veillé à ce que la défaillance du backend optionnel n'impacte jamais
+        l'utilisation du backend de production.
+
+        \subsubsection{Découverte et résolution d'un bug de \og cold-load \fg{}}
+
+        Le premier essai grandeur réelle a échoué de manière révélatrice. Après
+        avoir sélectionné le modèle \texttt{localai/phi-4} et envoyé une simple
+        question dans l'interface de chat, le flux SSE s'est interrompu après
+        exactement cent-vingt secondes avec le message d'erreur suivant :
+
+        \begin{quote}
+        \verb|No streaming chunk received for 120.0s (model=phi-4, chunks_received=1).|
+        \verb|The connection may be alive at the TCP layer but is not producing|
+        \verb|content. Tune or disable via the `stream_chunk_timeout` constructor|
+        \verb|kwarg or the LANGCHAIN_OPENAI_STREAM_CHUNK_TIMEOUT_S env var.|
+        \end{quote}
+
+        L'analyse a révélé que le client \texttt{ChatOpenAI} de la bibliothèque
+        \texttt{langchain\_openai} embarque un chien de garde par chunk de cent-vingt
+        secondes, indépendant du timeout global de la requête (réglé à quinze
+        minutes dans notre configuration). Or, sur notre VPS douze cœurs sans GPU,
+        le chargement d'un modèle 15 B quantisé en Q4\_K\_M comme Phi-4 (8,5 Go sur
+        disque) suivi du traitement du \textit{prompt} système de l'agent
+        (\textasciitilde{}1\,900 tokens) dépasse régulièrement les cent-vingt
+        secondes avant que le premier token utile ne soit produit. Le chien de
+        garde tuait le flux pendant que le modèle finissait de se charger en RAM.
+
+        La correction a combiné trois ajustements coopérants. Le premier a consisté
+        à désactiver le chien de garde par chunk en passant
+        \texttt{stream\_chunk\_timeout=None} au constructeur \texttt{ChatOpenAI} :
+        sur un backend local situé sur le même \textit{bridge} Docker que l'agent,
+        le \textit{keepalive} TCP du noyau suffit à détecter une connexion
+        réellement morte, le chien de garde applicatif n'apporte rien et coûte
+        beaucoup. Le deuxième a été l'ajout d'un \textit{prime} explicite du modèle
+        avant le démarrage du streaming : une petite requête synchrone
+        \texttt{POST /v1/chat/completions} avec \texttt{max\_tokens=4} et un
+        message \og hi \fg{} force LocalAI à charger le GGUF en mémoire, à
+        initialiser le backend d'inférence et à le maintenir résident, de sorte
+        que la requête réelle suivante arrive sur un moteur déjà chaud.
+
+        \begin{lstlisting}[language=Python, caption={Aide-mémoire de \og pre-warm \fg{} pour le backend LocalAI}, label={lst:localai_prime}]
+async def _prime_localai_model(model: str) -> None:
+    """Force LocalAI a charger `model` avant que LangChain ne commence le streaming."""
+    base = get_settings().localai_base_url
+    payload = {"model": model,
+               "messages": [{"role": "user", "content": "hi"}],
+               "max_tokens": 4}
+    start = _time.time()
+    try:
+        async with httpx.AsyncClient(timeout=600.0) as client:
+            await client.post(f"{base}/v1/chat/completions", json=payload)
+        log.info("localai_prime_done", model=model,
+                 ms=int((_time.time() - start) * 1000))
+    except Exception as exc:
+        log.warning("localai_prime_failed", model=model, error=str(exc))
+        \end{lstlisting}
+
+        Le troisième ajustement, plus mineur mais déterminant pour l'ergonomie, a
+        été l'émission de deux événements SSE de progression — \og Warming up
+        phi-4\ldots{} \fg{} puis \og Generating\ldots{} \fg{} — pendant les soixante
+        à cent-vingt secondes du chargement à froid. L'interface remplace son
+        bandeau de statut à chaque événement reçu, ce qui évite à l'utilisateur la
+        sensation d'écran figé sur \og Loading\ldots{} \fg{} qui avait été la
+        première remontée du test.
+
+        \subsubsection{Benchmark croisé sur modèle identique}
+
+        Une fois le routeur stabilisé, nous avons construit un protocole de mesure
+        rigoureux pour comparer les deux backends sur exactement le même modèle.
+        Le piège classique de ce genre de comparaison consiste à benchmarker un
+        modèle dense Qwen 2.5 servi par Ollama contre un modèle MoE Qwen 3 servi
+        par LocalAI : la différence observée mélangerait alors les écarts
+        d'architecture du modèle avec les écarts du moteur. Pour neutraliser cette
+        confusion, nous avons écrit un fichier YAML de configuration LocalAI qui
+        pointe sur exactement le même GGUF que celui distribué par Ollama, à savoir
+        \texttt{bartowski/Qwen2.5-Coder-7B-Instruct-Q4\_K\_M.gguf}, soit 4,7 Go.
+
+        Le script \texttt{scripts/benchmark-backends.sh} suit la même méthodologie
+        que le banc d'essai mono-backend introduit en Sprint 6 : une passe à froid
+        de quatre tokens, jetée et non chronométrée, sert à amener le modèle en
+        RAM ; la passe chaude suivante de quatre-vingts tokens — sur un prompt
+        identique demandant un résumé OWASP Top 10 d'une application PHP, à
+        température 0,1 — est mesurée au chronomètre et le débit en tokens par
+        seconde est calculé en parsant le champ \texttt{usage.completion\_tokens}
+        de la réponse JSON. Pour garantir l'équité de la comparaison, les deux
+        appels sont émis depuis l'intérieur du conteneur \texttt{devsecops-agent}
+        au moyen de la bibliothèque \texttt{httpx} : Ollama n'étant pas publié sur
+        le port hôte (et son image officielle n'embarquant pas \texttt{curl}),
+        cette approche commune élimine tout biais de surcoût d'environnement.
+
+        Les résultats obtenus le 12 mai 2026 sur le VPS de production sont
+        présentés dans le tableau \ref{tab:benchmark_backends}.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{2.5cm}|m{4.5cm}|c|c|c|}
+        \hline
+        \textbf{Backend} & \textbf{Modèle} & \textbf{Tokens} & \textbf{Temps (s)} & \textbf{Débit (tok/s)} \\
+        \hline
+        Ollama  & \texttt{qwen2.5-coder:7b}  & 69 & 12,56 & \textbf{5,49} \\
+        \hline
+        LocalAI & \texttt{qwen2.5-coder-7b}  & 80 & 17,79 & \textbf{4,50} \\
+        \hline
+        \end{tabular}
+        \caption{Benchmark croisé Ollama vs LocalAI sur modèle identique (Qwen2.5-Coder 7B, quantification Q4\_K\_M, prompt OWASP Top 10, douze cœurs Haswell, sans GPU)}
+        \label{tab:benchmark_backends}
+        \end{table}
+
+        \subsubsection{Interprétation et décision}
+
+        Sur le même matériel et avec exactement le même fichier de poids, Ollama
+        produit un débit supérieur de 22\,\% à celui de LocalAI (5,49 contre 4,50
+        tokens par seconde). Les deux backends produisent des énumérations OWASP
+        sémantiquement identiques — la légère différence de longueur s'explique
+        par le fait qu'Ollama s'arrête naturellement après les dix risques tandis
+        que LocalAI continue d'élaborer jusqu'à saturer la limite de
+        quatre-vingts tokens. L'écart de débit s'explique vraisemblablement par
+        l'intégration plus serrée d'Ollama avec sa bibliothèque sous-jacente
+        \texttt{llama.cpp} et par les optimisations spécifiques au jeu
+        d'instructions AVX2 qu'il active (\texttt{OLLAMA\_FLASH\_ATTENTION=1},
+        \texttt{OLLAMA\_KV\_CACHE\_TYPE=q8\_0}, \texttt{OLLAMA\_NUM\_THREAD=12}),
+        tandis que LocalAI s'appuie sur une couche d'orchestration plus générique
+        couvrant plusieurs runtimes.
+
+        La décision qui découle de cette mesure est sans surprise : Ollama reste
+        le backend de production, mais ce choix s'appuie désormais sur une preuve
+        directe plutôt que sur la réputation de l'outil. LocalAI conserve une
+        place utile dans l'écosystème du projet en tant que sandbox optionnelle,
+        accessible aux modèles HuggingFace hors galerie Ollama et prête à
+        accueillir une future évaluation lorsqu'un nouveau moteur d'inférence
+        deviendra pertinent. La leçon méthodologique est la même que celle qui
+        nous a guidés à travers les huit sprints : un choix architectural fait
+        sur la base d'une réputation, aussi solide soit-elle, mérite tôt ou tard
+        d'être confronté à la mesure réelle.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{6cm}|m{8cm}|}
+        \hline
+        \textbf{Fichier} & \textbf{Modification} \\
+        \hline
+        \texttt{agent/app/routers/chat.py} & Fonction \texttt{\_parse\_backend()}, \texttt{\_prime\_localai\_model()}, \texttt{stream\_chunk\_timeout=None}, deux événements SSE supplémentaires, table \texttt{LOCALAI\_MODEL\_META} \\
+        \hline
+        \texttt{agent/app/config.py} & Nouveau champ \texttt{localai\_base\_url} \\
+        \hline
+        \texttt{docker-compose.localai.yml} & Nouveau Compose autonome pour la sandbox LocalAI \\
+        \hline
+        \texttt{localai/config/qwen2.5-coder-7b.yaml} & Nouveau — pointe sur le même GGUF HuggingFace qu'Ollama \\
+        \hline
+        \texttt{scripts/benchmark-backends.sh} & Nouveau — comparaison head-to-head des deux backends \\
+        \hline
+        \end{tabular}
+        \caption{Fichiers modifiés ou créés lors de la Phase 9}
+        \label{tab:phase9_files}
+        \end{table}
+
+        \textbf{Livrable Post-Sprint 8 :} sandbox LocalAI opérationnelle en parallèle
+        d'Ollama, routeur de chat dual-backend validé, bug de \textit{cold-load}
+        diagnostiqué et corrigé en trois ajustements coopérants, et choix
+        architectural initial d'Ollama re-validé par une mesure directe (avance
+        de 22\,\% en débit sur modèle identique).
+
+    \subsection{Phase 10 — Expansion de l'observabilité et correction du \textit{template} Phi-4 (Sprint 8.1)}
+
+        Au lendemain du micro-sprint Post-Sprint 8, l'évaluation des backends LocalAI
+        a soulevé une nouvelle question de gouvernance : comment objectiver la qualité
+        d'exécution de chaque modèle de chat au-delà du benchmark hors-ligne ? Le
+        \textit{stack} d'observabilité hérité des sprints précédents couvrait l'agent
+        et Ollama, mais n'offrait aucune visibilité par conteneur, aucune métrique
+        spécifique à LocalAI, et aucun comparatif en production entre les deux backends.
+        L'objectif du sprint 8.1 a donc été triple : (i) instrumenter chaque conteneur
+        du VPS pour disposer d'une vue complète des ressources consommées ; (ii) ajouter
+        une télémétrie A/B au routeur de chat afin de mesurer en direct la latence du
+        premier token, la durée totale et le débit en sortie par couple
+        \texttt{backend}~$\times$~\texttt{model} ; (iii) profiter de cette nouvelle
+        instrumentation pour diagnostiquer et corriger le bug latent du modèle Phi-4
+        qui retournait silencieusement zéro token à chaque requête.
+
+        \subsubsection{Tentative de déploiement de cAdvisor et pivot architectural}
+
+        La voie évidente pour obtenir des métriques par conteneur consistait à déployer
+        \textit{cAdvisor}, le projet de référence de Google pour ce type de collecte.
+        Après quarante-cinq minutes de tests sur deux versions successives
+        (v0.49.1 puis v0.52.1) et trois combinaisons de \textit{flags}, le constat a
+        été sans appel : cAdvisor s'avère architecturalement incompatible avec la
+        configuration Docker de notre VPS. Le démon Docker 29.4 utilise le
+        \textit{containerd snapshotter} comme magasin d'images, qui ne maintient pas
+        la base \texttt{/var/lib/docker/image/overlayfs/layerdb/mounts/} dont cAdvisor
+        a besoin pour résoudre l'identifiant de couche par conteneur. Tous les
+        \textit{cgroups} \texttt{/system.slice/docker-<hash>.scope} étaient découverts
+        par cAdvisor mais immédiatement écartés avec le message
+        \texttt{failed to identify the read-write layer ID}. L'usage des \textit{flags}
+        \texttt{--containerd=/run/containerd/containerd.sock} et
+        \texttt{--raw\_cgroup\_prefix\_whitelist=/system.slice/docker-} n'a pas permis
+        de résoudre le problème : la factory Docker de cAdvisor revendique en premier
+        les \textit{cgroups} et empêche la factory \textit{raw} de prendre le relais.
+
+        Plutôt que de poursuivre l'effort de configuration de cAdvisor, nous avons
+        pivoté vers une solution beaucoup plus simple, déjà rendue possible par
+        l'infrastructure existante : l'agent monte déjà le socket
+        \texttt{/var/run/docker.sock} pour les besoins de ses outils d'introspection
+        opérationnels. Une centaine de lignes Python suffisent pour interroger
+        directement l'API Docker Engine toutes les trente secondes et exposer le
+        résultat sous forme de \textit{gauges} Prometheus, sans aucun conteneur
+        \textit{sidecar} additionnel. Cette approche présente plusieurs avantages :
+        elle est indépendante du pilote de stockage Docker, elle ne consomme pas de
+        privilèges supplémentaires, et elle réutilise les pollers asynchrones déjà
+        instanciés dans le cycle de vie de l'application FastAPI.
+
+        \begin{lstlisting}[language=Python, caption={Cœur du \textit{poller} docker-stats — calcul CPU\% relatif à un cœur}, label={lst:docker_stats_poller}]
+async def _poll_docker_stats():
+    transport = httpx.AsyncHTTPTransport(uds="/var/run/docker.sock")
+    while True:
+        async with httpx.AsyncClient(transport=transport,
+                                     base_url="http://docker",
+                                     timeout=10.0) as client:
+            for c in (await client.get("/containers/json")).json():
+                cid, name = c["Id"], c["Names"][0].lstrip("/")
+                img = c.get("Image", "?")
+                st = (await client.get(f"/containers/{cid}/stats",
+                                       params={"stream": "false"})).json()
+                # Memoire
+                mem = st["memory_stats"]
+                container_memory_bytes.labels(name=name, image=img).set(mem.get("usage", 0))
+                # CPU% (rapport delta-CPU / delta-systeme x cores)
+                cpu, pre = st["cpu_stats"], st["precpu_stats"]
+                d_cpu = cpu["cpu_usage"]["total_usage"] - pre["cpu_usage"]["total_usage"]
+                d_sys = cpu.get("system_cpu_usage", 0) - pre.get("system_cpu_usage", 0)
+                online = cpu.get("online_cpus") or 1
+                pct = (d_cpu / d_sys) * online * 100.0 if d_sys > 0 else 0.0
+                container_cpu_percent.labels(name=name, image=img).set(max(0.0, pct))
+        await asyncio.sleep(30)
+        \end{lstlisting}
+
+        Le premier passage du \textit{poller} a immédiatement révélé treize conteneurs
+        actifs, avec une consommation mémoire conforme à l'intuition : l'agent occupe
+        environ 127 Mo, le conteneur LocalAI grimpait jusqu'à 25,7 Go lorsque le modèle
+        Phi-4 était chargé, et Ollama tournait autour de 5,8 Go en veille. Cette
+        granularité, indisponible jusqu'alors, fournit le socle indispensable pour
+        détecter une dérive de mémoire ou une consommation CPU anormale sur n'importe
+        lequel des services de la plateforme.
+
+        \subsubsection{Instrumentation du routeur de chat pour la télémétrie A/B}
+
+        La fonction \texttt{\_stream\_react()} du routeur de chat a été enveloppée d'un
+        bloc \texttt{try/except/finally} qui mesure trois grandeurs pour chaque appel
+        à \texttt{/chat/stream} : la latence avant le premier \textit{token} émis
+        (\textit{Time-To-First-Token}), la durée totale du \textit{stream}, et le
+        nombre de \textit{chunks} effectivement renvoyés à l'interface. Chaque
+        observation est labellisée par le couple \texttt{(backend, model)} de sorte
+        que Grafana peut tracer côte à côte la performance d'Ollama et de LocalAI sur
+        la même question. L'instrumentation est strictement passive : aucune branche
+        logique de la boucle ReAct n'a été modifiée, et le chemin de revue de Pull
+        Request — qui n'emprunte pas \texttt{\_stream\_react()} — reste totalement
+        inchangé.
+
+        \begin{lstlisting}[language=Python, caption={Instrumentation A/B du \textit{stream} de chat — observation pure}, label={lst:chat_ab_telemetry}]
+async def _stream_react(req: ChatRequest):
+    backend, raw_model = _parse_backend(req.model)
+    _t_start = _time.perf_counter()
+    _first_token_at: float | None = None
+    _token_count = 0
+    _status = "ok"
+    try:
+        async for chunk in llm.astream(messages):
+            tok = chunk.content
+            if not tok:
+                continue
+            if _first_token_at is None:                # TTFT (premier token)
+                _first_token_at = _time.perf_counter()
+                chat_first_token_seconds.labels(
+                    backend=backend, model=raw_model
+                ).observe(_first_token_at - _t_start)
+            _token_count += 1                           # debit (par chunk)
+            ...
+    except Exception:
+        _status = "error"
+        raise
+    finally:
+        chat_request_seconds.labels(backend=backend, model=raw_model)\
+            .observe(_time.perf_counter() - _t_start)
+        chat_requests_total.labels(backend=backend, model=raw_model, status=_status).inc()
+        if _token_count:
+            chat_tokens_streamed_total.labels(backend=backend, model=raw_model)\
+                .inc(_token_count)
+        \end{lstlisting}
+
+        Une seconde modification de moindre ampleur a accompagné cette
+        instrumentation : le dictionnaire \texttt{LOCALAI\_MODEL\_META}, qui décrit la
+        taille en gigaoctets et le débit moyen mesuré pour chaque modèle LocalAI,
+        était jusqu'alors défini à l'intérieur de la \textit{route}
+        \texttt{/chat/models}. Il a été déplacé à la portée du module pour que le
+        \textit{poller} LocalAI puisse l'importer et alimenter la jauge
+        \texttt{localai\_model\_size\_gb} à partir de la même source de vérité,
+        évitant ainsi toute divergence entre l'affichage de l'interface et la valeur
+        exposée à Prometheus.
+
+        \subsubsection{Cinq nouvelles \textit{rows} sur le dashboard Grafana}
+
+        Le \textit{dashboard} de l'agent est passé de quarante-cinq à soixante-six
+        \textit{panels} répartis sur cinq nouvelles \textit{rows}, sans aucune
+        collision d'identifiant (vérification programmatique via l'API REST de
+        Grafana). Un indicateur \og LocalAI \fg{} UP/DOWN a également été ajouté à
+        la bande d'en-tête, juste à côté de l'indicateur Ollama existant. Le tableau
+        \ref{tab:grafana_rows_8_1} récapitule l'organisation visuelle.
+
+        \begin{table}[H]
+        \centering
+        \footnotesize
+        \begin{tabular}{|p{4.2cm}|p{10.5cm}|}
+        \hline
+        \textbf{Row} & \textbf{Contenu} \\
+        \hline
+        LocalAI Sandbox & UP/DOWN \;|\; nombre de modèles installés \;|\; latence du \textit{health probe} \;|\; table des modèles avec taille en Go \\
+        \hline
+        Chat Backend A/B & Requêtes/min par backend \;|\; \textit{tokens}/s par couple backend×modèle \;|\; TTFT p50/p95 \;|\; durée totale p50/p95 \;|\; table des statuts sur 24\,h \\
+        \hline
+        Containers & Mémoire par conteneur (Go, stacked) \;|\; CPU \% par conteneur \;|\; trafic RX/TX (octets/s) \;|\; \textit{snapshot} tabulaire \\
+        \hline
+        Service Health & Douze indicateurs UP/DOWN couvrant agent, ollama, localai, postgres, redis, jenkins, nginx, prometheus, alertmanager, grafana, victoriametrics, node-exporter \\
+        \hline
+        Firing Alerts & Compteur total \;|\; table des alertes actives (\texttt{ALERTS\{alertstate="firing"\}}) \\
+        \hline
+        \end{tabular}
+        \caption{Organisation des cinq nouvelles \textit{rows} ajoutées au \textit{dashboard} Grafana lors du sprint 8.1}
+        \label{tab:grafana_rows_8_1}
+        \end{table}
+
+        Les douze indicateurs de la \textit{row} \og Service Health \fg{} agrègent
+        trois sources de signal complémentaires : la métrique \texttt{up\{job=...\}}
+        de Prometheus pour les cibles qu'il scrute directement (agent, prometheus,
+        alertmanager, node-exporter), les jauges \texttt{ollama\_reachable} et
+        \texttt{localai\_reachable} émises par leurs \textit{pollers} respectifs, et
+        la jauge \texttt{container\_running\{name=...\}} du nouveau \textit{poller}
+        Docker pour les services qui ne sont pas instrumentés Prometheus (postgres,
+        redis, jenkins, nginx, grafana, victoriametrics). L'opérateur dispose ainsi
+        d'un \og tableau vert/rouge \fg{} immédiat à l'ouverture du \textit{dashboard}.
+
+        \subsubsection{Découverte et correction du bug du \textit{template} Phi-4}
+
+        L'instrumentation A/B a immédiatement révélé une anomalie sur le modèle
+        Phi-4 : la requête se terminait avec un statut \texttt{ok}, mais le compteur
+        \texttt{chat\_tokens\_streamed\_total\{model="phi-4"\}} restait obstinément à
+        zéro. Sans la nouvelle télémétrie, ce comportement aurait été indétectable
+        au niveau opérationnel — l'utilisateur voyait simplement une réponse vide,
+        sans qu'aucun log ne rapporte d'erreur. La cause racine, localisée dans le
+        fichier \texttt{localai/config/phi-4.yaml}, était subtile : la chaîne de
+        \textit{template} utilisée pour la clé \texttt{chat} était identique à celle
+        de \texttt{chat\_message}, ce qui revient à n'enrouler aucun préfixe de
+        génération autour de l'historique formaté. Le modèle recevait donc une
+        conversation déjà close (terminée par son propre \texttt{<|im\_end|>}) et
+        n'avait aucune raison de prendre la parole.
+
+        Le \textit{template} a été récrit en s'alignant strictement sur le fichier
+        \texttt{tokenizer\_config.json} officiel publié par Microsoft sur le Hub
+        Hugging Face. La clé \texttt{chat\_message} sert désormais uniquement à
+        formater un message individuel, tandis que \texttt{chat} injecte l'historique
+        complet et ajoute explicitement le \textit{prompt} de génération
+        \texttt{<|im\_start|>assistant<|im\_sep|>}. Les retours à la ligne parasites
+        autour de \texttt{<|im\_sep|>} ont également été supprimés, et le suffixe
+        \texttt{|-} de YAML strip-newlines a été employé pour garantir qu'aucun
+        caractère blanc ne sépare le \textit{prompt} de génération de la première
+        sortie du modèle.
+
+        \begin{lstlisting}[style=yaml, caption={Correction du \textit{template} ChatML-with-im\_sep de Phi-4}, label={lst:phi4_fix}]
+template:
+  chat_message: |-
+    <|im_start|>{{ .RoleName }}<|im_sep|>{{ .Content }}<|im_end|>
+  chat: |-
+    {{.Input}}<|im_start|>assistant<|im_sep|>
+  completion: |
+    {{.Input}}
+        \end{lstlisting}
+
+        La persistance du correctif est assurée par un nouveau \textit{bind-mount}
+        dans \texttt{docker-compose.localai.yml} qui projette le fichier de l'hôte
+        sur le chemin attendu par LocalAI à l'intérieur du conteneur, exactement
+        comme pour le YAML de Qwen2.5-Coder. Le fichier survit ainsi à un cycle
+        complet de \texttt{docker compose down/up} sans recourir à une intervention
+        manuelle via \texttt{docker exec}.
+
+        \textbf{Validation expérimentale.} Un appel direct à l'endpoint
+        \texttt{/v1/chat/completions} de LocalAI, contournant l'agent, retourne
+        désormais le contenu \texttt{Pong} avec \texttt{completion\_tokens = 3} —
+        valeur strictement positive là où elle valait 0 avant le correctif. Par le
+        chemin du routeur de chat de l'agent, le compteur
+        \texttt{chat\_tokens\_streamed\_total\{model="phi-4"\}} est passé de 0 à 51
+        \textit{tokens}, confirmant que le \textit{stream} fonctionne aussi bien en
+        appel direct qu'à travers la pile complète.
+
+        \subsubsection{Synthèse de la couverture observabilité}
+
+        Le tableau \ref{tab:metrics_8_1_summary} récapitule la couverture de
+        monitoring obtenue à l'issue du sprint 8.1, en distinguant clairement les
+        métriques héritées des sprints antérieurs des quinze nouvelles ajoutées
+        cette semaine.
+
+        \begin{table}[H]
+        \centering
+        \footnotesize
+        \begin{tabular}{|p{3.8cm}|p{2cm}|p{8.5cm}|}
+        \hline
+        \textbf{Famille de métriques} & \textbf{Nombre} & \textbf{Périmètre} \\
+        \hline
+        Héritées (Sprints 5--8) & 13 & Compteurs et histogrammes de l'agent, jauges Ollama (5), disque (2) \\
+        \hline
+        \texttt{container\_*} (Phase 10) & 6 & Mémoire, limite mémoire, CPU\%, RX/TX réseau, état UP/DOWN par conteneur \\
+        \hline
+        \texttt{localai\_*} (Phase 10) & 5 & Joignabilité, nombre de modèles, présence par modèle, taille en Go, latence \textit{health probe} \\
+        \hline
+        \texttt{chat\_*} (Phase 10) & 4 & Total des requêtes par statut, durée totale, TTFT, \textit{tokens} émis (tous par backend×modèle) \\
+        \hline
+        \textbf{Total} & \textbf{28} & 13 historiques + 15 nouvelles \\
+        \hline
+        \end{tabular}
+        \caption{Inventaire consolidé des métriques Prometheus à l'issue du sprint 8.1}
+        \label{tab:metrics_8_1_summary}
+        \end{table}
+
+        \textbf{Livrable Sprint 8.1 :} expansion de la couverture observabilité de
+        treize à vingt-huit métriques personnalisées, instrumentation A/B des deux
+        backends de chat (Ollama et LocalAI) sans modification du chemin de revue de
+        PR, \textit{poller} Docker autonome contournant l'incompatibilité de cAdvisor
+        avec le \textit{containerd snapshotter}, ajout de cinq nouvelles \textit{rows}
+        sur le \textit{dashboard} Grafana de l'agent, et correction du bug latent du
+        modèle Phi-4 rendue possible par l'instrumentation elle-même.
+
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Tests de validation}
 

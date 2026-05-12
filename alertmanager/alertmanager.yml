@@ -43,3 +43,9 @@ inhibit_rules:
     target_match:
       alertname: OllamaNoModelLoaded
     equal: ['job']
+  # If LocalAI sandbox is down, suppress the "no models" / "slow probe" follow-ups
+  - source_match:
+      alertname: LocalAISandboxDown
+    target_match_re:
+      alertname: LocalAINoModelsInstalled|LocalAIHealthCheckSlow
+    equal: ['backend']

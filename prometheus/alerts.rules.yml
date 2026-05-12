@@ -120,3 +120,39 @@ groups:
         annotations:
           summary: "No model loaded in Ollama for 60+ minutes"
           description: "Ollama is idle — first PR review will incur cold-start delay."
+
+  # ── LocalAI sandbox ─────────────────────────────────────────────────────
+  # Optional backend — alerts fire only when the operator has explicitly
+  # deployed docker-compose.localai.yml. If the sandbox is intentionally
+  # offline, silence "LocalAISandboxDown" in AlertManager.
+  - name: localai
+    rules:
+      - alert: LocalAISandboxDown
+        expr: localai_reachable == 0
+        for: 10m
+        labels:
+          severity: info               # sandbox is non-critical — not "warning"
+          backend: localai
+        annotations:
+          summary: "LocalAI sandbox unreachable for 10+ minutes"
+          description: "LocalAI A/B backend is down — chat falls back to Ollama transparently."
+
+      - alert: LocalAINoModelsInstalled
+        expr: localai_reachable == 1 and localai_models_total == 0
+        for: 30m
+        labels:
+          severity: info
+          backend: localai
+        annotations:
+          summary: "LocalAI is up but has zero models installed"
+          description: "Run scripts/install-localai-models.sh to populate the sandbox."
+
+      - alert: LocalAIHealthCheckSlow
+        expr: localai_health_check_latency_seconds > 1
+        for: 15m
+        labels:
+          severity: info
+          backend: localai
+        annotations:
+          summary: "LocalAI /readyz consistently slow (>1s)"
+          description: "Probe latency suggests the sandbox is under heavy inference load."

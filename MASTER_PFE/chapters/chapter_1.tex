@@ -297,11 +297,11 @@ adoptée ainsi que le déroulement du projet sur cinq mois.
         S6 & 11–12 & Observabilité & \textbf{M4} &
             4 cibles Prometheus, 12 alertes, 3 dashboards Grafana \\
         \hline
-        S7 & 13–14 & Optimisation & — &
-            Benchmark modèles, anti-hallucination, compression prompt 36\% \\
+        S7 & 13–14 & Optimisation chat & — &
+            Benchmark des modèles LLM, compression du prompt système (36\%), cache des outils (14 outils, TTL 10–120s), garde anti-doublons, 20\up{e} outil \texttt{query\_prometheus\_range} \\
         \hline
-        S8 & 15–16 & Durcissement & \textbf{M5} &
-            Audit VPS, corrections sécurité, validation complète \\
+        S8 & 15–16 & Durcissement \& Robustesse & \textbf{M5} &
+            Anti-hallucination chat (6 couches : \texttt{temperature=0.0}, \texttt{num\_ctx=6144}, garde sans-outil, bloc système, injection observation, \texttt{num\_predict=800}), audit VPS (5 corrections : VictoriaMetrics, AlertManager, nginx, auth, dashboards), réécriture du parser PR review (regex tolérant aux espaces + walker brace-depth + fallback markdown + prompt restructuré JSON-first), commentaires inline GitHub restaurés \\
         \hline
         — & 17–20 & Documentation & — &
             Rapport final, slides soutenance \\

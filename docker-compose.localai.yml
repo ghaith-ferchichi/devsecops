@@ -1,0 +1,63 @@
+# ============================================================================
+# LocalAI sandbox — runs in PARALLEL with the production Ollama stack.
+# Brings up only the `localai` service on host port 8081.
+# Joins the existing `devsecops-net` network so the agent can reach it
+# at http://localai:8080 from inside Docker.
+#
+# Usage:
+#   docker compose -f docker-compose.localai.yml up -d
+#   docker compose -f docker-compose.localai.yml logs -f localai
+#   docker compose -f docker-compose.localai.yml down
+#
+# Models live in the `localai_models` named volume so they survive restarts.
+# ============================================================================
+services:
+
+  localai:
+    image: localai/localai:latest-cpu
+    container_name: localai
+    ports:
+      - "8081:8080"                # host 8081 → container 8080 (OpenAI-compatible API)
+    environment:
+      # ── CPU inference tuning (Haswell 12 cores, AVX2, no GPU) ────────────
+      - THREADS=12                 # pin to all 12 cores
+      - CONTEXT_SIZE=8192          # matches deep_llm / combined_llm context
+      - MODELS_PATH=/build/models  # gallery + manual GGUFs land here
+      - DEBUG=false                # set true to troubleshoot model loading
+      # OpenAI-compatible API key (optional — agent does not enforce it)
+      - API_KEY=
+    volumes:
+      - localai_models:/build/models
+      - ./localai/config:/build/models/config:ro  # optional: custom per-model YAMLs (LocalAI v3 ignores subdirs)
+      # Individual YAML overlays — LocalAI only scans the models root, so each
+      # custom HuggingFace GGUF needs its own bind-mount line here. Models in
+      # the gallery (installed via /models/apply) end up in the named volume
+      # automatically and don't need a line.
+      - ./localai/config/qwen2.5-coder-7b.yaml:/build/models/qwen2.5-coder-7b.yaml:ro
+      - ./localai/config/phi-4.yaml:/build/models/phi-4.yaml:ro
+    shm_size: '2gb'
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    deploy:
+      resources:
+        limits:
+          memory: 24g              # one 14B model fits in ~13 GB + KV cache + overhead
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s            # cold start downloads runtime backends
+    restart: unless-stopped
+    networks:
+      - devsecops-net
+
+networks:
+  devsecops-net:
+    name: devsecops_devsecops-net  # reuse the network created by docker-compose.yml
+    external: true
+
+volumes:
+  localai_models:

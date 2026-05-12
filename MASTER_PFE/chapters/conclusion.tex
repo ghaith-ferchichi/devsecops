@@ -4,7 +4,9 @@
 
 Ce projet nous a permis de concevoir et de déployer le BTE Security AI Agent, un moteur
 DevSecOps autonome piloté par l'intelligence artificielle locale, depuis un VPS Ubuntu
-vide jusqu'à une plateforme de production à douze conteneurs entièrement opérationnelle.
+vide jusqu'à une plateforme de production à douze conteneurs entièrement opérationnelle,
+complétée par une treizième sandbox LocalAI activable à la demande pour l'évaluation
+comparative de modèles d'inférence alternatifs.
 L'objectif principal — automatiser la détection des vulnérabilités dans les \textit{Pull
 Requests} en moins de sept minutes, sans externaliser le code source, avec une couverture
 exhaustive de l'OWASP Top 10 — a été pleinement atteint et validé sur des \textit{Pull
@@ -24,11 +26,17 @@ Diverses technologies ont été mises en œuvre au sein de ce projet afin de gar
 sécurité, la fiabilité et l'observabilité de la plateforme. L'orchestration LangGraph avec
 persistance PostgreSQL garantit la survie du pipeline aux redémarrages. Le circuit breaker
 et les fallbacks assurent la résilience face aux indisponibilités ponctuelles des services.
-Les douze règles d'alerte Prometheus et les trois dashboards Grafana offrent une visibilité
-complète sur l'état de l'infrastructure. La méthodologie Agile Scrum, avec ses sept sprints
-itératifs, a permis d'absorber les découvertes de production imprévues — urgence disque,
-AlertManager cassé depuis le déploiement, VictoriaMetrics en panne neuf jours — et de les
-transformer en améliorations concrètes déployées dans le sprint suivant.
+Les quinze règles d'alerte Prometheus, les vingt-huit métriques personnalisées (dont
+quinze ajoutées lors du sprint 8.1 pour couvrir la consommation par conteneur, la santé
+de la sandbox LocalAI et la télémétrie A/B du routeur de chat) et les trois \textit{dashboards}
+Grafana offrent une visibilité complète sur l'état de l'infrastructure. La méthodologie Agile Scrum adaptée — combinée à
+une discipline Kanban interne avec une limite WIP de 1 — a permis, sur ses huit sprints
+itératifs, d'absorber les découvertes de production imprévues : urgence disque (242 Go),
+AlertManager silencieusement cassé depuis le déploiement, VictoriaMetrics en panne
+neuf jours, et les trois bugs cumulatifs du parser de revue PR (regex intolérant aux
+espaces, \texttt{json.loads} strict, modèle omettant le JSON). Chacune de ces découvertes
+est devenue la carte prioritaire du sprint suivant et a été transformée en amélioration
+concrète déployée en production avant la fin du sprint.
 
 Nous projetons de continuer à améliorer cette plateforme en nous concentrant sur plusieurs
 axes prioritaires. Sur le plan de la sécurité, la suppression des ports hôte non nécessaires
@@ -39,9 +47,20 @@ fondamentale pour un environnement bancaire. Sur le plan de la résilience, un s
 sauvegarde PostgreSQL quotidien protégera la base de connaissances sécurité et les
 checkpoints LangGraph. L'ajout de healthchecks Docker sur les six conteneurs actuellement
 sans surveillance permettra une détection automatique plus rapide des pannes. Sur le plan
-de l'intelligence, l'exploration de modèles de langage plus récents ou de l'optimisation
-par fine-tuning sur des CVE bancaires spécifiques pourrait améliorer encore la précision
-des revues de sécurité. Enfin, l'objectif à long terme est d'étendre la plateforme à
+de l'intelligence, une évaluation post-Sprint-8 d'un second backend d'inférence
+(LocalAI, exécutant exactement le même modèle Qwen2.5-Coder 7B que la production)
+a déjà permis de valider le choix initial d'Ollama par une preuve directe : un débit
+supérieur de 22\,\% (5,49 contre 4,50 tokens par seconde) sur le même matériel et la
+même quantification. Le sprint 8.1 a prolongé ce travail en instrumentant les deux
+backends de chat avec une télémétrie A/B couvrant la latence du premier \textit{token},
+la durée totale et le débit en sortie par couple
+\texttt{backend}~$\times$~\texttt{model}, et a permis au passage de diagnostiquer et de
+corriger un bug latent du \textit{template} \texttt{ChatML-with-im\_sep} du modèle Phi-4
+qui retournait silencieusement zéro \textit{token} — un bug qui n'aurait pu être détecté
+sans la nouvelle instrumentation. L'exploration de modèles plus récents — notamment Qwen3-Coder
+MoE 30B/3B-actifs, désormais accessible via la sandbox LocalAI — ou l'optimisation
+par \textit{fine-tuning} sur des CVE bancaires spécifiques constitueront les
+prochaines étapes pour améliorer encore la précision des revues de sécurité. Enfin, l'objectif à long terme est d'étendre la plateforme à
 l'ensemble des dépôts de la BTE, avec un tableau de bord de risques consolidé permettant
 au RSSI de visualiser en temps réel la posture de sécurité de l'organisation.
 

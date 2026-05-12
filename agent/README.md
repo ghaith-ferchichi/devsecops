@@ -1,6 +1,6 @@
 # BTE Security AI Agent — Agent Internals
 
-> An event-driven security and code quality automation engine built with **FastAPI + LangGraph + Ollama** (two-model pipeline: Qwen2.5-Coder 7B classify + 14B combined security/quality review) plus a real-time ops-assistant chat with 20 infrastructure monitoring tools, tool-result caching, and a benchmarked model selection.
+> An event-driven security and code quality automation engine built with **FastAPI + LangGraph + Ollama** (two-model pipeline: Qwen2.5-Coder 7B classify + 14B combined security/quality review with JSON-first prompt + brace-depth JSON walker for robust parsing) plus a real-time ops-assistant chat with 20 infrastructure monitoring tools, tool-result caching, and a benchmarked model selection.
 
 ---
 
@@ -38,6 +38,8 @@
 The **BTE Security AI Agent** is a production-grade DevSecOps automation engine. It listens for GitHub webhook events, orchestrates six security scanning tools in parallel, performs dual-model LLM analysis using local Qwen2.5-Coder models, and posts actionable security reviews + inline code quality suggestions directly on pull requests.
 
 It also runs autonomous background tasks: a 30-minute disk guard with auto-cleanup, a daily VPS health digest to Slack, and an AlertManager webhook endpoint for Prometheus-triggered auto-remediation.
+
+> **Post-Sprint 8 (2026-05-12) — Dual-backend chat:** the chat router now supports both **Ollama** (production) and **LocalAI** (sandbox) through a single `model=<backend>/<name>` selector. The PR review pipeline still runs against Ollama exclusively; LocalAI is opt-in via `docker-compose.localai.yml` and used for A/B inference benchmarks. See the [LocalAI Sandbox Backend](#localai-sandbox-backend-post-sprint-8) section at the end.
 
 ### What It Does
 
@@ -123,6 +125,12 @@ The 32B model adds marginal quality benefit for code pattern recognition — not
 ### Model Lifecycle (RAM Management)
 
 Only one model loads into RAM at a time. The Chat UI calls `_unload_other_models()` before switching models (`keep_alive: 0` API call). The PR pipeline runs the two model calls sequentially — each evicts naturally after `keep_alive=10m` expires or when the next model loads.
+
+### Optional Second Backend — LocalAI (Post-Sprint 8)
+
+The chat router can also target a **LocalAI** sandbox via an OpenAI-compatible API. Backend selection is encoded in the model identifier: `ollama/qwen2.5-coder:7b` keeps the production path; `localai/phi-4` (or any other LocalAI alias) routes to `ChatOpenAI(base_url="http://localai:8080/v1", ...)`. Only the chat UI uses this — the PR review nodes are Ollama-only.
+
+Full implementation details and the cold-load fix are documented at the end of this file under [LocalAI Sandbox Backend](#localai-sandbox-backend-post-sprint-8).
 
 ---
 
@@ -378,31 +386,75 @@ def route_risk(state: PRReviewState) -> str:
 
 Builds the unified prompt that asks the 14B model to produce both a full security review and structured code quality comments in a single call.
 
-**System/user message structure:**
+**Prompt structure (Sprint 8 — JSON FIRST):**
 - PR metadata + repo history
 - Plain diff (for security narrative, capped at 30,000 chars)
 - SAST-cleaned scanner summaries
 - Annotated diff (line-numbered, capped at 8,000 chars — for inline comment targeting)
-- Combined output format instructions
+- **STEP 1: JSON block** — must be the very first line of the response, single-line, no fences, contains `risk_score`, `verdict`, `code_review_summary`, `comments[]`
+- **STEP 2: Markdown review** — comes after the JSON, contains the OWASP analysis, scanner findings, recommendations
 
-**Output parsing in `analyze_review_node()`:**
+This JSON-first ordering replaces the previous "markdown then JSON tail" format. The model was occasionally truncating the response after Recommendations and skipping the JSON tail, which dropped all inline comments. With JSON first, the inline-comment metadata is always emitted before the model can run out of budget on the markdown.
+
+**Output parsing in `analyze_review_node()` — three-strategy robust extractor:**
 
 ```python
+# Strategy 1: whitespace-tolerant regex (Sprint 8 fix)
+# Allows pretty-printed JSON like { \n  "risk_score": ... }
 json_match = re.search(
-    r'\{"risk_score"\s*:\s*"(?P<rs>CRITICAL|HIGH|MEDIUM|LOW|INFO)"\s*,'
-    r'\s*"verdict"\s*:\s*"(?P<v>APPROVE|REQUEST_CHANGES|BLOCK)"'
-    r'.*?\}',
+    r'\{\s*"risk_score"\s*:\s*"(?P<rs>CRITICAL|HIGH|MEDIUM|LOW|INFO)"\s*,'
+    r'\s*"verdict"\s*:\s*"(?P<v>APPROVE|REQUEST_CHANGES|BLOCK)"',
     raw, re.DOTALL,
 )
-if json_match:
-    data = json.loads(raw[json_match.start():])
-    risk_score = data.get("risk_score", "MEDIUM")
-    verdict = data.get("verdict", "REQUEST_CHANGES")
-    code_review_summary = data.get("code_review_summary", "")
-    raw_comments = data.get("comments", [])
 
-review_text = raw[:json_match.start()].strip() if json_match else raw
+if json_match:
+    # Always set risk/verdict from regex groups (cheap, never fails)
+    risk_score = json_match.group("rs")
+    verdict = json_match.group("v")
+
+    # Strategy 2: brace-depth walker to find the matching closing brace
+    # Handles nested objects AND trailing markdown like ``` fences after the JSON
+    json_start = json_match.start()
+    depth, in_string, escape, json_end = 0, False, False, -1
+    for i in range(json_start, len(raw)):
+        ch = raw[i]
+        if escape: escape = False; continue
+        if ch == "\\": escape = True; continue
+        if ch == '"' and not escape: in_string = not in_string; continue
+        if in_string: continue
+        if ch == "{": depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                json_end = i + 1
+                break
+    if json_end > json_start:
+        data = json.loads(raw[json_start:json_end])
+        code_review_summary = data.get("code_review_summary", "")
+        raw_comments = data.get("comments", [])
+else:
+    # Strategy 3: markdown fallback when JSON missing entirely
+    # Some models occasionally skip the JSON despite the instruction
+    md_risk = re.search(r'\*?\*?Risk\s*(?:Score)?\s*:\s*\*?\*?\s*(CRITICAL|HIGH|MEDIUM|LOW|INFO)', raw, re.IGNORECASE)
+    md_verdict = re.search(r'\*?\*?Verdict\s*:\s*\*?\*?\s*(APPROVE|REQUEST_CHANGES|BLOCK)', raw, re.IGNORECASE)
+    if md_risk: risk_score = md_risk.group(1).upper()
+    if md_verdict: verdict = md_verdict.group(1).upper()
+    log.warning("analyze_review_no_json_tail", pr=pr_number,
+                fallback_risk=risk_score, fallback_verdict=verdict)
+
+# review_text is everything AFTER the JSON (since JSON is now first)
+# Falls back to raw response when JSON missing
+review_text = raw[json_end:].strip() if (json_match and json_end > 0) else raw
 ```
+
+### Why the rewrite (Sprint 8)
+
+The previous parser had two latent bugs that masked each other on PR #14 and #15:
+
+1. **Whitespace bug** — the original regex `\{"risk_score"` required `"risk_score"` to come immediately after `{`. When the LLM pretty-printed the JSON with a leading newline + indent, the regex failed silently, defaulting `risk_score=MEDIUM` and `verdict=REQUEST_CHANGES`, AND dropping all inline comments to `[]`.
+2. **Trailing markdown bug** — `json.loads(raw[json_start:])` consumed the entire string after `{`, including any trailing markdown fences. `JSONDecodeError` was raised, falling through to the regex group fallback (which only restored risk/verdict, not the comments array).
+
+The Sprint 8 rewrite fixes both with a brace-depth walker that finds the exact JSON object boundaries, plus a markdown fallback for the rare case where the model skips JSON entirely.
 
 ### Line Validation
 
@@ -1035,6 +1087,21 @@ All Ollama metrics are polled and re-exported by the agent every 30 seconds from
 | `ollama_model_loaded` | Gauge | `model` | Every 30s poll |
 | `ollama_model_size_bytes` | Gauge | `model` | Every 30s poll |
 | `ollama_model_vram_bytes` | Gauge | `model` | Every 30s poll |
+| `localai_reachable` | Gauge | — | `_poll_localai_metrics()`, every 30s (silent if sandbox down) |
+| `localai_models_total` | Gauge | — | Every 30s — chat models only, `mmproj-*.gguf` filtered |
+| `localai_model_installed` | Gauge | `model` | Every 30s; zeroed when a label disappears between polls |
+| `localai_model_size_gb` | Gauge | `model` | From `LOCALAI_MODEL_META` catalog (module-scope in `chat.py`) |
+| `localai_health_check_latency_seconds` | Gauge | — | `/readyz` round-trip time, every 30s |
+| `chat_requests_total` | Counter | `backend`, `model`, `status` | End of every `/chat/stream` (in the `finally:` block) |
+| `chat_request_seconds` | Histogram | `backend`, `model` | End-to-end stream duration |
+| `chat_first_token_seconds` | Histogram | `backend`, `model` | First non-empty chunk from `llm.astream` |
+| `chat_tokens_streamed_total` | Counter | `backend`, `model` | One increment per emitted token chunk |
+| `container_running` | Gauge | `name`, `image` | `_poll_docker_stats()`, every 30s — replaces cAdvisor |
+| `container_memory_bytes` | Gauge | `name`, `image` | Every 30s — `memory_stats.usage` from docker API |
+| `container_memory_limit_bytes` | Gauge | `name`, `image` | Every 30s — 0 means unbounded |
+| `container_cpu_percent` | Gauge | `name`, `image` | Every 30s — `(cpu_delta/system_delta) × online_cpus × 100` |
+| `container_network_rx_bytes` | Gauge | `name` | Every 30s — cumulative across all interfaces |
+| `container_network_tx_bytes` | Gauge | `name` | Every 30s — cumulative across all interfaces |
 | `agent_disk_used_percent` | Gauge | — | Every 30s (scheduler) |
 | `agent_disk_free_gb` | Gauge | — | Every 30s (scheduler) |
 
@@ -1316,6 +1383,7 @@ This agent codebase is a living system — requirements emerge from production g
 | 5 | Host Monitoring + Chat Precision | node-exporter, 12 alert rules, nginx DNS fix, chat 14b default, PromQL prompt injection |
 | 6 | Chat Speed + Model Benchmarking | 7b default (benchmarked), prompt compressed 36%, tool caching, dedup guard, `query_prometheus_range`, UI copy buttons + timing, model tag badges |
 | 7 | VPS Audit + Anti-Hallucination | VictoriaMetrics crash fixed, AlertManager 404 fixed, nginx WebSocket+root+auth, 3 Grafana dashboards, no-tool guard, ANTI-HALLUCINATION block, temp=0.0, num_ctx=6144, num_predict=800 |
+| 8 | PR Review Robust Parsing | JSON-first prompt restructure, whitespace-tolerant regex, brace-depth JSON walker, markdown fallback parser, inline comments restored on PR #14/#15 patterns |
 
 **Definition of Done (per story):**
 1. Deployed and running in Docker Compose
@@ -1360,6 +1428,338 @@ python -m pytest tests/test_knowledge_service.py -v
 | `test_trivy_parsing.py` | Trivy JSON (counts, sorting, field extraction), empty output, edge cases |
 | `test_semgrep_parsing.py` | Semgrep SAST, Checkov IaC (single + multi-framework), OSV-Scanner |
 | `test_knowledge_service.py` | PostgreSQL CRUD (mocked pool) |
+
+---
+
+## LocalAI Sandbox Backend (Post-Sprint 8)
+
+*Added 2026-05-12*
+
+A second LLM inference engine — **LocalAI** — was integrated as an **opt-in** sandbox running in parallel with the production Ollama stack. The chat router selects backends through a `model=<backend>/<name>` selector; the PR review pipeline is unchanged and still runs exclusively against Ollama.
+
+### Why
+
+1. **A/B compare backends on identical hardware** — same GGUF, same prompt, same Haswell CPU.
+2. **Access HuggingFace GGUFs Ollama doesn't ship** (`phi-4`, `gemma-3-*`, `qwen3-coder-30b-a3b-instruct`).
+3. **Validate the chat-router backend abstraction** so future engines (vLLM, llama.cpp server) can plug in without touching the ReAct loop.
+
+### Dual-backend chat router
+
+`app/routers/chat.py` parses the model identifier and constructs the appropriate LangChain client:
+
+```python
+# Backend selector — strips an "ollama/" or "localai/" prefix.
+# Models without a prefix default to Ollama for backward compat.
+def _parse_backend(model_id: str) -> tuple[str, str]:
+    if "/" in model_id:
+        head, tail = model_id.split("/", 1)
+        if head in {"ollama", "localai"}:
+            return head, tail
+    return "ollama", model_id
+
+backend, raw_model = _parse_backend(req.model)
+
+if backend == "ollama":
+    await _unload_other_models(keep=raw_model)
+    llm = ChatOllama(base_url=..., model=raw_model, ...)
+else:  # localai — OpenAI-compatible API
+    yield _sse({"type": "status", "content": f"Warming up {raw_model}…"})
+    await _prime_localai_model(raw_model)
+    yield _sse({"type": "status", "content": "Generating…"})
+    llm = ChatOpenAI(
+        base_url=f"{settings.localai_base_url}/v1",
+        api_key="not-needed",
+        model=raw_model,
+        temperature=0.0,
+        max_tokens=_num_predict,
+        timeout=request_timeout,
+        stream_chunk_timeout=None,   # disable 120s per-chunk watchdog
+    )
+```
+
+The `/chat/models` route merges both backends — `localai/*` entries appear in the dropdown alongside `ollama/*` with their own metadata (size, expected tok/s, label). Failure to reach LocalAI is silent: the dropdown still lists Ollama models, since the sandbox is optional.
+
+### The cold-load problem (and fix)
+
+Selecting a LocalAI model that wasn't yet in RAM produced this error after exactly 120 s:
+
+> `No streaming chunk received for 120.0s (model=phi-4, chunks_received=1). The connection may be alive at the TCP layer but is not producing content.`
+
+The error is emitted by `langchain_openai`. The `ChatOpenAI` constructor accepts a `stream_chunk_timeout` parameter (default **120 s**) that is independent of the overall `request_timeout`. On a 12-core CPU host, loading a 15 B Q4_K_M model (phi-4, 8.5 GB) from disk + processing the ~1,900-token system prompt regularly exceeds 120 s before the first real token is produced — the watchdog killed the stream during cold load.
+
+Two cooperating fixes:
+
+#### 1. Disable the per-chunk watchdog
+
+`stream_chunk_timeout=None` in the `ChatOpenAI` constructor. The LocalAI container is on the same Docker bridge, no NAT/proxy, so kernel-level TCP keepalive is sufficient to detect a genuinely dead peer — the application-level watchdog adds no value.
+
+#### 2. Pre-warm the model before streaming
+
+A new helper, `_prime_localai_model(model)`, issues a tiny non-streamed `POST /v1/chat/completions` request (`max_tokens=4`, message `"hi"`) before LangChain begins streaming. The model is mmap'd, the GGUF is paged in, and the first ReAct step's real prompt then arrives against an already-warm engine:
+
+```python
+async def _prime_localai_model(model: str) -> None:
+    """Issue a tiny chat-completions request to force LocalAI to load `model`."""
+    base = get_settings().localai_base_url
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": "hi"}],
+        "max_tokens": 4,
+    }
+    start = _time.time()
+    try:
+        async with httpx.AsyncClient(timeout=600.0) as client:
+            await client.post(f"{base}/v1/chat/completions", json=payload)
+        log.info("localai_prime_done", model=model,
+                 ms=int((_time.time() - start) * 1000))
+    except Exception as exc:
+        log.warning("localai_prime_failed", model=model, error=str(exc))
+```
+
+Primer failure does **not** abort the request — control still falls through to the streamed `ChatOpenAI` call, which (with the watchdog now off) will wait as long as it needs.
+
+#### 3. Surface progress to the UI
+
+Two new SSE status events are emitted on the LocalAI branch:
+
+```
+Loading localai/phi-4…    (existing — sent before backend selection)
+↓
+Warming up phi-4…         (NEW — sent right before _prime_localai_model)
+↓  (primer blocks here for 60-120s on true cold start)
+Generating…               (NEW — sent right before llm.astream())
+↓
+[token stream begins]
+```
+
+The UI's status handler (`static/index.html:1262`) replaces innerHTML on each status event, so the messages cleanly supersede one another — no double-display.
+
+### Cross-backend benchmark
+
+`scripts/benchmark-backends.sh` runs a head-to-head comparison against the same model on both backends. To keep the comparison apples-to-apples, both calls execute inside the `devsecops-agent` container (which has Python + httpx and is on the docker network with access to both backends — Ollama is **not** host-published, and its image has no curl).
+
+The script mirrors the methodology of the existing `scripts/benchmark-localai.sh`:
+
+1. Cold prime (`max_tokens=4`, discarded, untimed)
+2. Warm timed pass (`max_tokens=80`, OWASP Top 10 prompt, `temperature=0.1`)
+3. Parse `usage.completion_tokens` from the response, compute `tokens / wall_seconds`
+
+#### Results (2026-05-12 — identical `qwen2.5-coder:7b` Q4_K_M on both backends)
+
+| Backend | Model | Tokens | Wall (s) | **tok/s** |
+|---------|-------|-------:|---------:|----------:|
+| **Ollama**  | `qwen2.5-coder:7b`  | 69 | 12.56 | **5.49** |
+| **LocalAI** | `qwen2.5-coder-7b`  | 80 | 17.79 | **4.50** |
+
+**Ollama is ~22% faster** on identical model + identical hardware. The most likely explanation is Ollama's tighter integration with the llama.cpp backend and its Haswell-AVX2 tuning (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_NUM_THREAD=12`), versus LocalAI's more general-purpose orchestration layer.
+
+Both backends produced semantically identical OWASP enumerations — LocalAI's auto-detection of the Qwen 2.5 ChatML template (no explicit template block in the YAML) is confirmed working.
+
+### Adding more LocalAI models
+
+LocalAI v3.0 only scans the **root** of `/build/models/` for YAML configs, not the `config/` subdirectory the original bind-mount targeted. To add a HuggingFace GGUF that isn't in LocalAI's gallery:
+
+1. Write a per-model YAML at `localai/config/<name>.yaml`:
+
+   ```yaml
+   name: qwen2.5-coder-7b
+   parameters:
+     model: huggingface://bartowski/Qwen2.5-Coder-7B-Instruct-GGUF/Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
+   context_size: 8192
+   threads: 12
+   f16: true
+   mmap: true
+   ```
+
+2. Add a bind-mount line to `docker-compose.localai.yml` that delivers the YAML to the models root:
+
+   ```yaml
+   volumes:
+     - localai_models:/build/models
+     - ./localai/config/<name>.yaml:/build/models/<name>.yaml:ro
+   ```
+
+3. `docker compose -f docker-compose.localai.yml up -d localai` — LocalAI picks up the YAML on startup, downloads the GGUF on first request, persists it in the `localai_models` named volume.
+
+4. (Optional) Add a one-line entry to `LOCALAI_MODEL_META` in `app/routers/chat.py` so the model appears in the chat UI dropdown with proper metadata.
+
+### Files added / modified
+
+| File | Change |
+|------|--------|
+| `agent/app/routers/chat.py` | `_parse_backend()`, `_prime_localai_model()`, dual LLM-factory branch, `stream_chunk_timeout=None`, two new SSE status events on the LocalAI branch, `LOCALAI_MODEL_META` table for the dropdown |
+| `agent/app/config.py` | New setting: `localai_base_url: str = "http://localai:8080"` |
+| `docker-compose.localai.yml` | New compose file — standalone sandbox; individual bind-mount lines per custom YAML |
+| `localai/config/qwen2.5-coder-7b.yaml` | Per-model config pointing at the HF GGUF (identical to Ollama's `qwen2.5-coder:7b`) |
+| `scripts/install-localai-models.sh` | Gallery installer (`gemma-3-4b-it`, `gemma-3-12b-it`, `qwen3-coder-30b-a3b-instruct`) |
+| `scripts/benchmark-localai.sh` | Single-backend warm-tok/s benchmark for LocalAI models |
+| `scripts/benchmark-backends.sh` | **NEW** — Ollama vs LocalAI head-to-head on the same model |
+
+---
+
+## Sprint 8.1 — Monitoring Expansion + Phi-4 Template Fix (2026-05-12)
+
+### Why an in-agent docker-stats poller (not cAdvisor)
+
+The straightforward plan was to add `gcr.io/cadvisor/cadvisor:v0.52.1` as a sidecar. cAdvisor refused to discover containers on this host because **Docker 29.4 uses the containerd snapshotter** (`overlayfs` storage driver, `/var/lib/docker/buildkit/containerd-overlayfs/...`), which has no `image/overlayfs/layerdb/mounts/` tree. cAdvisor's docker factory hard-requires the legacy `mount-id` file, so we got `failed to identify the read-write layer ID for container <hash>` errors on every container — even with `--containerd=/run/containerd/containerd.sock` and `--raw_cgroup_prefix_whitelist=/system.slice/docker-` flags. The docker factory greedily claimed the docker-*.scope cgroups before the raw factory could fall back. Architectural mismatch, not a tuning issue.
+
+**Pivot:** the agent already mounts `/var/run/docker.sock` for its ops-assistant tool layer. A ~100-line async poller in `app/main.py` (`_poll_docker_stats()`) talks directly to the Docker Engine API:
+
+```python
+async def _poll_docker_stats():
+    transport = httpx.AsyncHTTPTransport(uds="/var/run/docker.sock")
+    while True:
+        async with httpx.AsyncClient(transport=transport,
+                                    base_url="http://docker",
+                                    timeout=10.0) as client:
+            containers = (await client.get("/containers/json")).json()
+            for c in containers:
+                cid  = c["Id"]
+                name = c["Names"][0].lstrip("/")
+                img  = c.get("Image", "?")
+                st   = (await client.get(f"/containers/{cid}/stats",
+                                        params={"stream": "false"})).json()
+                # ── memory ──
+                mem = st["memory_stats"]
+                container_memory_bytes.labels(name=name, image=img).set(mem.get("usage", 0))
+                container_memory_limit_bytes.labels(name=name, image=img).set(mem.get("limit", 0))
+                # ── CPU% relative to one core ──
+                cpu, pre = st["cpu_stats"], st["precpu_stats"]
+                cpu_delta = cpu["cpu_usage"]["total_usage"] - pre["cpu_usage"]["total_usage"]
+                sys_delta = cpu.get("system_cpu_usage", 0) - pre.get("system_cpu_usage", 0)
+                online    = cpu.get("online_cpus") or 1
+                pct = (cpu_delta / sys_delta) * online * 100.0 if sys_delta > 0 else 0.0
+                container_cpu_percent.labels(name=name, image=img).set(max(0.0, pct))
+                # ── network (sum across interfaces) ──
+                nets = st.get("networks") or {}
+                container_network_rx_bytes.labels(name=name).set(sum(n["rx_bytes"] for n in nets.values()))
+                container_network_tx_bytes.labels(name=name).set(sum(n["tx_bytes"] for n in nets.values()))
+        await asyncio.sleep(30)
+```
+
+13 containers detected on first run; `localai` showed 25.7 GB allocated while phi-4 was hot — exactly the kind of signal we couldn't see before. Zero sidecar, zero new container, works on any Docker storage backend.
+
+### Chat A/B telemetry (Ollama vs LocalAI)
+
+`_stream_react()` is now wrapped with TTFT + duration + token-count measurement:
+
+```python
+async def _stream_react(req: ChatRequest):
+    backend, raw_model = _parse_backend(req.model)
+    _t_start = _time.perf_counter()
+    _first_token_at: float | None = None
+    _token_count = 0
+    _status = "ok"
+    try:
+        ...
+        async for chunk in llm.astream(messages):
+            tok = chunk.content
+            if not tok:
+                continue
+            if _first_token_at is None:                          # ← TTFT
+                _first_token_at = _time.perf_counter()
+                chat_first_token_seconds.labels(
+                    backend=backend, model=raw_model
+                ).observe(_first_token_at - _t_start)
+            _token_count += 1                                    # ← throughput
+            ...
+    except Exception:
+        _status = "error"
+        raise
+    finally:
+        chat_request_seconds.labels(backend=backend, model=raw_model).observe(_time.perf_counter() - _t_start)
+        chat_requests_total.labels(backend=backend, model=raw_model, status=_status).inc()
+        if _token_count:
+            chat_tokens_streamed_total.labels(backend=backend, model=raw_model).inc(_token_count)
+```
+
+This makes the Grafana A/B row meaningful: each backend × model gets its own p50/p95 TTFT, p50/p95 total duration, and `tokens/s = rate(chat_tokens_streamed_total[5m])`. Direct head-to-head comparison without leaving the dashboard.
+
+### LocalAI catalog hoisted to module scope
+
+The `LOCALAI_MODEL_META` dict (per-model `size_gb`, `speed_tps`, `note` for the chat-UI dropdown) was previously defined **inside** the `chat_models()` async route function, so nothing outside the route could read it. Today it was moved to module scope in `app/routers/chat.py:33`, which lets:
+
+1. `/chat/models` continue using it for the dropdown (unchanged behaviour).
+2. The new `_poll_localai_metrics()` import it to populate `localai_model_size_gb{model="..."}` from the same source of truth — no duplication, no risk of drift.
+
+### Phi-4 chat-template fix
+
+phi-4 was silently returning **0 tokens** while `chat_requests_total{model="phi-4", status="ok"}` was incrementing. The new chat A/B counters surfaced this immediately — without them we wouldn't have known the model was broken.
+
+**Root cause:** `localai/config/phi-4.yaml` used the same template string for both `chat_message` and `chat`:
+
+```yaml
+template:
+  chat: |
+    <|im_start|>{{.RoleName}}<|im_sep|>
+    {{.Content}}<|im_end|>
+  chat_message: |
+    <|im_start|>{{.RoleName}}<|im_sep|>
+    {{.Content}}<|im_end|>
+```
+
+In LocalAI's template system `chat_message` formats one message in the history; `chat` wraps the whole conversation and is where the assistant **generation prompt** belongs. The trailing `<|im_start|>assistant<|im_sep|>` was missing entirely — phi-4 saw an already-closed conversation (terminated by its own `<|im_end|>`) and emitted its stop token right away. Newlines around `<|im_sep|>` were also non-canonical.
+
+**Fix** — matched against the official `microsoft/phi-4` `tokenizer_config.json`:
+
+```yaml
+template:
+  chat_message: |-
+    <|im_start|>{{ .RoleName }}<|im_sep|>{{ .Content }}<|im_end|>
+  chat: |-
+    {{.Input}}<|im_start|>assistant<|im_sep|>
+  completion: |
+    {{.Input}}
+```
+
+`|-` strips trailing newlines so no whitespace leaks between `<|im_sep|>` and the start of generation. `chat_message` is the per-message wrapper; `chat` injects all formatted messages (`.Input`) and appends the assistant generation prompt.
+
+**Persistence** — `docker-compose.localai.yml` now bind-mounts the host file into the container so it survives `down/up`:
+
+```yaml
+- ./localai/config/phi-4.yaml:/build/models/phi-4.yaml:ro
+```
+
+**Verification** —
+
+```bash
+$ curl -sX POST http://localhost:8081/v1/chat/completions \
+    -H 'Content-Type: application/json' \
+    -d '{"model":"phi-4","messages":[{"role":"user","content":"Reply with the single word pong."}],
+         "max_tokens":10,"temperature":0.0}' | jq '.choices[0].message.content, .usage'
+"Pong"
+{
+  "prompt_tokens": 14,
+  "completion_tokens": 3,
+  "total_tokens": 17
+}
+
+$ # Through the agent's chat router, after the fix:
+$ curl -sG http://localhost:9090/prometheus/api/v1/query \
+    --data-urlencode 'query=chat_tokens_streamed_total{model="phi-4"}'
+{"data":{"result":[{"value":["...", "51"]}]}}     # was 0 before the fix
+```
+
+### Three pollers now run concurrently in lifespan
+
+```
+ollama_poller   → GET /api/ps                                       every 30s   (existing)
+localai_poller  → GET /readyz + /v1/models                          every 30s   (enriched: per-model gauges)
+docker_poller   → GET /containers/json + /containers/{id}/stats     every 30s   (NEW today)
+```
+
+All three are async tasks created in `lifespan` startup and cancelled in shutdown. They never block each other — independent `httpx.AsyncClient`s on independent transports.
+
+### Files added / modified today
+
+| File | Change |
+|------|--------|
+| `app/metrics/custom.py` | +9 metric definitions: 6 container_*, 2 extra localai_* (`localai_model_installed`, `localai_model_size_gb`), plus the 4 chat_* series (`chat_requests_total`, `chat_request_seconds`, `chat_first_token_seconds`, `chat_tokens_streamed_total`) |
+| `app/main.py` | New `_poll_docker_stats()` task; existing `_poll_localai_metrics()` enriched with per-model presence + size gauges sourced from `LOCALAI_MODEL_META`; both registered in lifespan startup/shutdown |
+| `app/routers/chat.py` | `LOCALAI_MODEL_META` hoisted to module scope; `_stream_react()` instrumented for TTFT/duration/token-count via `try/except/finally`; new metric imports |
+| `../grafana/provisioning/dashboards/devsecops_agent.json` | +21 panels across 5 new rows; header LocalAI UP/DOWN stat next to Ollama |
+| `../localai/config/phi-4.yaml` | **NEW** — corrected ChatML-with-im_sep template |
+| `../docker-compose.localai.yml` | New bind-mount for `phi-4.yaml` (persistent fix) |
 
 ---
 

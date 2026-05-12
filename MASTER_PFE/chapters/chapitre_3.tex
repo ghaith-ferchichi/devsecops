@@ -494,24 +494,58 @@ décrite dans le chapitre suivant.
         \label{fig:monitoring_stack}
     \end{figure}
 
-    L'agent expose quatorze métriques Prometheus personnalisées à l'endpoint \texttt{/metrics},
-    en plus des métriques HTTP auto-instrumentées. Parmi celles-ci, la métrique
-    \texttt{ollama\_reachable} mérite une attention particulière. Elle est mise à jour toutes
-    les trente secondes par un poller asynchrone qui interroge l'API Ollama. Cette métrique
-    distingue deux états fondamentalement différents : Ollama inactif (aucun modèle chargé,
-    état normal entre deux revues PR) où \texttt{ollama\_reachable=1}, et Ollama injoignable
-    (panne réelle) où \texttt{ollama\_reachable=0}. L'ancienne expression d'alerte utilisant
-    \texttt{ollama\_models\_loaded\_total == 0} déclenchait systématiquement une fausse alerte
-    CRITICAL pendant les périodes de veille. La métrique \texttt{ollama\_reachable} résout
-    définitivement ce problème.
+    L'agent expose vingt-trois métriques Prometheus personnalisées à l'endpoint
+    \texttt{/metrics}, en plus des métriques HTTP auto-instrumentées. Ce nombre intègre
+    l'expansion de monitoring du sprint 8.1 (cf. Phase 10 du chapitre suivant) qui a porté
+    la couverture observabilité de \og agent + Ollama uniquement \fg{} à \og l'ensemble du
+    VPS \fg{}, avec trois nouvelles familles de métriques : six métriques par conteneur
+    (\texttt{container\_running}, \texttt{container\_memory\_bytes},
+    \texttt{container\_cpu\_percent}, \texttt{container\_network\_rx/tx\_bytes}, plus
+    \texttt{container\_memory\_limit\_bytes}) émises par un \textit{poller} interrogeant le
+    socket Docker toutes les trente secondes ; cinq métriques de santé pour la sandbox
+    LocalAI (\texttt{localai\_reachable}, \texttt{localai\_models\_total},
+    \texttt{localai\_model\_installed}, \texttt{localai\_model\_size\_gb},
+    \texttt{localai\_health\_check\_latency\_seconds}) ; et quatre métriques de télémétrie
+    A/B sur le routeur de chat (\texttt{chat\_requests\_total},
+    \texttt{chat\_request\_seconds}, \texttt{chat\_first\_token\_seconds},
+    \texttt{chat\_tokens\_streamed\_total}, toutes labellisées par \texttt{backend} et
+    \texttt{model}) permettant la comparaison directe Ollama vs LocalAI sur les mêmes
+    requêtes.
 
-    Les douze règles d'alerte sont organisées en quatre groupes. Le groupe disk comporte
+    Le choix d'écrire un \textit{poller} interne plutôt que de déployer cAdvisor comme
+    \textit{sidecar} mérite une justification architecturale. cAdvisor s'appuie sur la
+    base d'images Docker historique située dans \texttt{/var/lib/docker/image/overlayfs/
+    layerdb/mounts/} pour résoudre les identifiants de couches par conteneur. Or le démon
+    Docker 29.4 de notre VPS utilise le \textit{containerd snapshotter}, qui ne maintient
+    pas cette base : l'arborescence est désormais \texttt{/var/lib/docker/buildkit/
+    containerd-overlayfs/}. Toute tentative de découverte de conteneurs par cAdvisor
+    échoue avec le message \texttt{failed to identify the read-write layer ID}. Le
+    \textit{poller} intégré à l'agent contourne entièrement cette dépendance en
+    s'adressant directement à l'API Docker Engine sur le socket UNIX déjà monté par le
+    conteneur, ce qui le rend insensible au pilote de stockage utilisé par l'hôte.
+
+    Parmi les métriques héritées des sprints précédents, \texttt{ollama\_reachable} mérite
+    une attention particulière. Elle est mise à jour toutes les trente secondes par un
+    \textit{poller} asynchrone qui interroge l'API Ollama. Cette métrique distingue deux
+    états fondamentalement différents : Ollama inactif (aucun modèle chargé, état normal
+    entre deux revues PR) où \texttt{ollama\_reachable=1}, et Ollama injoignable (panne
+    réelle) où \texttt{ollama\_reachable=0}. L'ancienne expression d'alerte utilisant
+    \texttt{ollama\_models\_loaded\_total == 0} déclenchait systématiquement une fausse
+    alerte CRITICAL pendant les périodes de veille. La métrique \texttt{ollama\_reachable}
+    résout définitivement ce problème.
+
+    Les règles d'alerte sont organisées en cinq groupes. Le groupe \textit{disk} comporte
     quatre règles couvrant les alertes DiskWarning et DiskCritical via node-exporter ainsi
-    que les jauges AgentDiskWarning et AgentDiskCritical de l'agent. Le groupe host comprend
-    trois règles surveillant l'usage CPU, la mémoire RAM et les I/O disque. Le groupe agent
-    contient trois règles pour l'état de l'agent, son taux d'erreur et son backlog de revues.
-    Enfin, le groupe ollama comporte deux règles pour la joignabilité d'Ollama et la durée
-    sans modèle chargé.
+    que les jauges AgentDiskWarning et AgentDiskCritical de l'agent. Le groupe
+    \textit{host} comprend trois règles surveillant l'usage CPU, la mémoire RAM et les
+    I/O disque. Le groupe \textit{agent} contient trois règles pour l'état de l'agent,
+    son taux d'erreur et son backlog de revues. Le groupe \textit{ollama} comporte deux
+    règles pour la joignabilité d'Ollama et la durée sans modèle chargé. Enfin, le groupe
+    \textit{localai} ajoute trois règles \texttt{info} pour la disponibilité de la
+    sandbox, l'absence de modèles installés et la latence du \textit{health probe} ; une
+    règle d'inhibition dans AlertManager garantit que LocalAISandboxDown supprime les
+    deux autres lorsque la sandbox est arrêtée volontairement, évitant ainsi le bruit
+    d'alerte lors des sessions de test.
 
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}

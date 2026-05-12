@@ -1,0 +1,34 @@
+name: phi-4
+backend: llama-cpp
+parameters:
+  model: huggingface://bartowski/phi-4-GGUF/phi-4-Q4_K_M.gguf
+  temperature: 0.1
+  top_k: 40
+  top_p: 0.9
+context_size: 8192
+threads: 12
+f16: true
+mmap: true
+gpu_layers: 0
+
+# ── Phi-4 official ChatML-with-im_sep format ────────────────────────────
+# Source: microsoft/phi-4 tokenizer_config.json (the jinja chat_template).
+# Per-message:
+#   <|im_start|>{role}<|im_sep|>{content}<|im_end|>
+# Generation prompt (appended once when generating):
+#   <|im_start|>assistant<|im_sep|>
+#
+# The previous config used the same template for both `chat` and `chat_message`,
+# and never emitted the trailing assistant prompt — so the model received an
+# already-closed conversation and produced 0 tokens before hitting <|im_end|>.
+template:
+  chat_message: |-
+    <|im_start|>{{ .RoleName }}<|im_sep|>{{ .Content }}<|im_end|>
+  chat: |-
+    {{.Input}}<|im_start|>assistant<|im_sep|>
+  completion: |
+    {{.Input}}
+
+stopwords:
+  - <|im_end|>
+  - <|endoftext|>

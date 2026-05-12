@@ -66,6 +66,155 @@ _root_logger.addHandler(_file_handler)
 _root_logger.setLevel(logging.INFO)
 
 
+async def _poll_docker_stats():
+    """Poll docker socket every 30s and update per-container Prometheus gauges.
+
+    Replaces cAdvisor — incompatible with this host's Docker (containerd
+    snapshotter). Reads the Docker Engine API over /var/run/docker.sock:
+      GET /containers/json
+      GET /containers/{id}/stats?stream=false
+    """
+    from app.metrics.custom import (
+        container_running, container_memory_bytes, container_memory_limit_bytes,
+        container_cpu_percent, container_network_rx_bytes, container_network_tx_bytes,
+    )
+    log = structlog.get_logger().bind(service="docker_stats")
+
+    transport = httpx.AsyncHTTPTransport(uds="/var/run/docker.sock")
+    seen_names: set[str] = set()
+
+    while True:
+        try:
+            async with httpx.AsyncClient(transport=transport, base_url="http://docker",
+                                        timeout=10.0) as client:
+                resp = await client.get("/containers/json")
+                if resp.status_code != 200:
+                    log.warning("docker_list_failed", status=resp.status_code)
+                    await asyncio.sleep(30)
+                    continue
+                containers = resp.json()
+                current_names: set[str] = set()
+                for c in containers:
+                    cid = c["Id"]
+                    name = (c.get("Names") or ["?"])[0].lstrip("/")
+                    image = c.get("Image", "?")
+                    current_names.add(name)
+                    container_running.labels(name=name, image=image).set(1)
+
+                    try:
+                        s = await client.get(f"/containers/{cid}/stats", params={"stream": "false"})
+                        if s.status_code != 200:
+                            continue
+                        st = s.json()
+
+                        # ── Memory ──────────────────────────────────────
+                        mem = st.get("memory_stats", {}) or {}
+                        # cgroup v2: usage already excludes inactive_file/cache when present
+                        usage = mem.get("usage", 0) or 0
+                        limit = mem.get("limit", 0) or 0
+                        container_memory_bytes.labels(name=name, image=image).set(usage)
+                        container_memory_limit_bytes.labels(name=name, image=image).set(limit)
+
+                        # ── CPU % ───────────────────────────────────────
+                        cpu = st.get("cpu_stats", {}) or {}
+                        precpu = st.get("precpu_stats", {}) or {}
+                        cpu_total = (cpu.get("cpu_usage") or {}).get("total_usage", 0)
+                        pre_total = (precpu.get("cpu_usage") or {}).get("total_usage", 0)
+                        sys_now = cpu.get("system_cpu_usage", 0) or 0
+                        sys_pre = precpu.get("system_cpu_usage", 0) or 0
+                        online = cpu.get("online_cpus") or len((cpu.get("cpu_usage") or {}).get("percpu_usage", []) or [1])
+                        cpu_delta = cpu_total - pre_total
+                        sys_delta = sys_now - sys_pre
+                        cpu_pct = (cpu_delta / sys_delta) * online * 100.0 if sys_delta > 0 else 0.0
+                        container_cpu_percent.labels(name=name, image=image).set(max(0.0, cpu_pct))
+
+                        # ── Network ─────────────────────────────────────
+                        nets = st.get("networks") or {}
+                        rx = sum(int(n.get("rx_bytes", 0)) for n in nets.values())
+                        tx = sum(int(n.get("tx_bytes", 0)) for n in nets.values())
+                        container_network_rx_bytes.labels(name=name).set(rx)
+                        container_network_tx_bytes.labels(name=name).set(tx)
+                    except Exception as exc:
+                        log.debug("container_stats_failed", name=name, error=str(exc))
+
+                # Zero out gauges for containers that disappeared since last poll
+                for stale in seen_names - current_names:
+                    try:
+                        container_running.labels(name=stale, image="").set(0)
+                    except Exception:
+                        pass
+                seen_names = current_names
+        except Exception as exc:
+            log.warning("docker_stats_poll_failed", error=str(exc))
+        await asyncio.sleep(30)
+
+
+async def _poll_localai_metrics():
+    """Poll LocalAI /readyz + /v1/models every 30s.
+
+    LocalAI is an optional sandbox backend (docker-compose.localai.yml).
+    The poller silently sets the gauges to 0 if the service is absent —
+    operators see this in Grafana / Prometheus without any error spam in logs.
+
+    Also publishes per-model presence (localai_model_installed{model}) and
+    on-disk size (localai_model_size_gb{model}) from the static catalog in
+    app.routers.chat — keeps Grafana's "Installed Models" table populated.
+    """
+    import time as _time
+    from app.metrics.custom import (
+        localai_reachable, localai_models_total,
+        localai_health_check_latency_seconds,
+        localai_model_installed, localai_model_size_gb,
+    )
+    log = structlog.get_logger().bind(service="localai_metrics")
+    settings = get_settings()
+
+    # Imported lazily — chat module pulls in langchain on import (slow).
+    try:
+        from app.routers.chat import LOCALAI_MODEL_META as _META
+    except Exception:
+        _META = {}
+
+    while True:
+        try:
+            start = _time.perf_counter()
+            async with httpx.AsyncClient(timeout=3) as client:
+                ready = await client.get(f"{settings.localai_base_url}/readyz")
+                latency = _time.perf_counter() - start
+                localai_health_check_latency_seconds.set(latency)
+                if ready.status_code == 200:
+                    localai_reachable.set(1)
+                    models = await client.get(f"{settings.localai_base_url}/v1/models")
+                    if models.status_code == 200:
+                        data = models.json().get("data", [])
+                        # Filter vision projectors + raw GGUF files (not chat models)
+                        chat_ids = {
+                            m["id"] for m in data
+                            if m.get("id")
+                            and "mmproj" not in m["id"].lower()
+                            and not m["id"].endswith(".gguf")
+                        }
+                        localai_models_total.set(len(chat_ids))
+                        for mid in chat_ids:
+                            localai_model_installed.labels(model=mid).set(1)
+                            size = (_META.get(mid) or {}).get("size_gb", 0)
+                            localai_model_size_gb.labels(model=mid).set(size)
+                        # Zero out labels that disappeared since last poll
+                        for metric_key in list(localai_model_installed._metrics.keys()):
+                            label_name = metric_key[0] if metric_key else None
+                            if label_name and label_name not in chat_ids:
+                                localai_model_installed.labels(model=label_name).set(0)
+                                localai_model_size_gb.labels(model=label_name).set(0)
+                else:
+                    localai_reachable.set(0)
+                    localai_models_total.set(0)
+        except Exception:
+            localai_reachable.set(0)
+            localai_models_total.set(0)
+            localai_health_check_latency_seconds.set(0)
+        await asyncio.sleep(30)
+
+
 async def _poll_ollama_metrics():
     """Poll Ollama /api/ps every 30s and update Prometheus gauges."""
     from app.metrics.custom import (
@@ -146,6 +295,14 @@ async def lifespan(app: FastAPI):
     ollama_poller = asyncio.create_task(_poll_ollama_metrics())
     log.info("ollama_metrics_poller_started")
 
+    # Start LocalAI metrics poller (silent if sandbox is not running)
+    localai_poller = asyncio.create_task(_poll_localai_metrics())
+    log.info("localai_metrics_poller_started")
+
+    # Start docker-stats poller (per-container CPU/RAM/Net, replaces cAdvisor)
+    docker_poller = asyncio.create_task(_poll_docker_stats())
+    log.info("docker_stats_poller_started")
+
     # Start autonomous scheduler (disk guard every 30min + daily Slack digest)
     from app.services.scheduler import start_scheduler
     scheduler_tasks = start_scheduler()
@@ -153,6 +310,8 @@ async def lifespan(app: FastAPI):
     yield
 
     ollama_poller.cancel()
+    localai_poller.cancel()
+    docker_poller.cancel()
     for t in scheduler_tasks:
         t.cancel()
 

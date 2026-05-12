@@ -12,7 +12,8 @@
       "Bash(curl -s http://localhost:9090/prometheus/api/v1/rules)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(r['name'], r['state']\\) for g in d['data']['groups'] for r in g['rules']]\")",
       "Bash(curl -s http://localhost:9090/prometheus/api/v1/targets)",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(t['labels'].get\\('job','?'\\), t['health']\\) for t in d['data']['activeTargets']]\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(t['labels'].get\\('job','?'\\), t['health']\\) for t in d['data']['activeTargets']]\")",
+      "WebFetch(domain:localai.io)"
     ]
   }
 }

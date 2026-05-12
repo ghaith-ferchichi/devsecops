@@ -1,6 +1,6 @@
 # BTE Security AI Agent — Full System Report
 
-> **Status as of 2026-04-28 (Sprint 7)** — All 12 containers running. VictoriaMetrics restarted after 9-day crash. AlertManager 404 fixed — alerts now correctly reach the agent. nginx hardened: root redirect, Grafana WebSocket, chat UI password-protected (Basic Auth). 3 Grafana dashboards live (VPS Host Monitoring added). Chat agent anti-hallucination: temperature=0.0, num_ctx=6144, num_predict=800, no-tool guard, ANTI-HALLUCINATION system prompt block. Security gaps remain: Redis/Prometheus/AlertManager/VictoriaMetrics host-exposed without auth. Disk at 16% (245 GB free).
+> **Status as of 2026-05-12 (Post-Sprint 8.1)** — 13 containers running (12 core + LocalAI sandbox). PR review parsing rewritten: JSON-first prompt, whitespace-tolerant regex, brace-depth JSON walker, markdown fallback — inline comments post correctly on GitHub. Chat router is **dual-backend** (Ollama production + LocalAI sandbox) with a per-model cold-load primer, A/B Prometheus telemetry (TTFT, tokens/s, total duration per `backend×model`), and the 120s stream-chunk watchdog disabled for local inference. Cross-backend benchmark on identical `qwen2.5-coder:7b` (Q4_K_M, 4.7 GB): **Ollama 5.49 tok/s vs LocalAI 4.50 tok/s** — Ollama ~22% faster on the same model. **Sprint 8.1 monitoring expansion (today):** added per-container CPU/RAM/Net via in-agent docker-stats poller (cAdvisor incompatible with this host's containerd snapshotter), 5 LocalAI health metrics, 4 chat A/B counters/histograms, and 3 new Grafana rows (Containers, Service Health, Firing Alerts) plus a LocalAI Sandbox row and a Chat Backend A/B row. **Phi-4 fixed today** — corrected the LocalAI chat template (was emitting 0 tokens because the generation prompt `<|im_start|>assistant<|im_sep|>` was missing); now generates correctly (verified: 51 tokens streamed, direct API returns `"Pong"`). VictoriaMetrics healthy (10.9M rows). AlertManager routing fixed since Sprint 7. Chat agent anti-hallucination active (temperature=0.0, num_ctx=6144, num_predict=800). Security gaps remain: Redis/Prometheus/AlertManager/VictoriaMetrics host-exposed without auth. Disk at 42% (171 GB free) — LocalAI GGUFs now occupy ~30 GB.
 
 An event-driven security automation platform that intercepts GitHub Pull Requests, runs a parallel security scanning pipeline powered by local LLM inference, and posts an AI-generated security + code quality review directly on the PR — with optional human approval gates via Slack. Includes a real-time ops assistant chat interface for live infrastructure monitoring, an autonomous background scheduler, and full AlertManager integration.
 
@@ -29,6 +29,9 @@ An event-driven security automation platform that intercepts GitHub Pull Request
 19. [Latest Improvements — Sprint 5](#19-latest-improvements--sprint-5)
 20. [Latest Improvements — Sprint 6](#20-latest-improvements--sprint-6)
 21. [Latest Improvements — Sprint 7](#21-latest-improvements--sprint-7)
+22. [Latest Improvements — Sprint 8](#22-latest-improvements--sprint-8)
+23. [Post-Sprint 8 — LocalAI Sandbox Backend & A/B Benchmark](#23-post-sprint-8--localai-sandbox-backend--ab-benchmark)
+24. [Sprint 8.1 — Full-VPS Monitoring + Chat A/B Telemetry + Phi-4 Fix](#24-sprint-81--full-vps-monitoring--chat-ab-telemetry--phi-4-fix)
 
 ---
 
@@ -411,6 +414,33 @@ Runs with `pid: host` and `network_mode: host` — it is the only container that
 
 ---
 
+### 3.13 `localai` — Optional Sandbox LLM Backend (Post-Sprint 8)
+
+**Image:** `localai/localai:latest-cpu` | **Host port:** `8081` (container `8080`)
+**Compose file:** `docker-compose.localai.yml` (separate from the main stack — only launched when explicitly requested)
+**Network:** Joins the existing `devsecops_devsecops-net`, reachable inside Docker at `http://localai:8080`
+
+Runs in **parallel** with the production Ollama stack. Exposes an OpenAI-compatible API at `POST /v1/chat/completions`, which lets the chat router target either backend through a single `model=<backend>/<name>` selector (`ollama/qwen2.5-coder:7b` or `localai/phi-4`). Inference is CPU-only, pinned to all 12 Haswell cores with `THREADS=12`, `CONTEXT_SIZE=8192`, and 24 GB memory limit (`shm_size: 2gb`).
+
+Brought up on demand:
+
+```bash
+# Start (independent of the main compose stack)
+docker compose -f docker-compose.localai.yml up -d
+docker compose -f docker-compose.localai.yml logs -f localai   # watch download progress
+
+# Stop
+docker compose -f docker-compose.localai.yml down
+```
+
+**Model installation:**
+- Gallery-known IDs (`gemma-3-4b-it`, `gemma-3-12b-it`, `qwen3-coder-30b-a3b-instruct`) are installed via `POST /models/apply` — see `scripts/install-localai-models.sh`.
+- Custom HuggingFace GGUFs (e.g. `qwen2.5-coder-7b`, `phi-4`) require a per-model YAML at `localai/config/<name>.yaml` bind-mounted into `/build/models/<name>.yaml`. LocalAI v3 only scans the root of `/build/models/` for configs, not subdirectories — each new YAML needs its own bind-mount line in `docker-compose.localai.yml`.
+
+Models are persisted in the `localai_models` named volume so they survive container restarts.
+
+---
+
 ## 4. Docker Images & Models
 
 | Image | Size | Notes |
@@ -427,6 +457,7 @@ Runs with `pid: host` and `network_mode: host` — it is the only container that
 | `redis:7-alpine` | ~61 MB | — |
 | `ghcr.io/open-webui/open-webui:main` | ~1.2 GB | — |
 | `prom/node-exporter:latest` | ~25 MB | Host metrics — CPU/RAM/disk/network |
+| `localai/localai:latest-cpu` | ~3.5 GB | Optional sandbox backend (Post-Sprint 8) — only pulled if `docker-compose.localai.yml` is used |
 
 **Ollama model data (benchmarked on 12-core Haswell CPU-only):**
 | Model | Size | Speed (warm) | Tool Accuracy | Role | UI Tag |
@@ -437,6 +468,25 @@ Runs with `pid: host` and `network_mode: host` — it is the only container that
 | `granite3.1-dense:2b` | 1.6 GB | ~8.5 tok/s | 0% | Chat — incompatible format | ❌ Incompatible |
 
 > **Benchmark findings:** `llama3.2:3b` is the fastest but collapses under the full 7,577-char system prompt — its 4096-token context saturates leaving no room for reasoning. `granite3.1-dense:2b` uses IBM's proprietary tool-call schema, incompatible with our `{"name":…,"arguments":…}` format. `qwen2.5-coder:7b` is the confirmed best balance: same accuracy as 14b (80%), 43% faster, 100% correct args format.
+
+**LocalAI sandbox model data (Post-Sprint 8 — same Haswell CPU host):**
+
+| Model | Size | Source | Notes |
+|-------|------|--------|-------|
+| `phi-4` | 8.5 GB Q4_K_M | gallery + manual YAML | Microsoft 15B dense — concurrent of `qwen2.5-coder:14b` |
+| `qwen3-coder-30b-a3b-instruct` | 18 GB Q4_K_M | gallery | MoE 30B/3B-active — modern coder |
+| `gemma-3-12b-it` | 6.8 GB Q4_K_M | gallery | Google 12B generalist |
+| `gemma-3-4b-it` | 2.3 GB Q4_K_M | gallery | Google 4B — fast tier |
+| `qwen2.5-coder-7b` | 4.7 GB Q4_K_M | HF GGUF (custom YAML) | **Identical model to Ollama's `qwen2.5-coder:7b`** — added for A/B backend benchmark |
+
+> **Cross-backend benchmark (2026-05-12, identical workload — same `qwen2.5-coder:7b` Q4_K_M GGUF, same prompt, `max_tokens=80`, `temperature=0.1`):**
+>
+> | Backend | Tokens | Wall (s) | tok/s |
+> |---------|-------:|---------:|------:|
+> | **Ollama**  |  69 | 12.56 | **5.49** |
+> | **LocalAI** |  80 | 17.79 | **4.50** |
+>
+> Ollama is **~22% faster** on the exact same model. Both produced semantically identical OWASP Top 10 enumerations — confirming LocalAI's ChatML auto-detection works correctly. Reproducible via `scripts/benchmark-backends.sh` (see Section 23).
 
 ---
 
@@ -843,6 +893,21 @@ All metrics are exposed by the agent at `/metrics` and scraped by Prometheus. Ol
 | `ollama_model_loaded` | Gauge | `model` | Every 30s poll |
 | `ollama_model_size_bytes` | Gauge | `model` | Every 30s poll |
 | `ollama_model_vram_bytes` | Gauge | `model` | Every 30s poll |
+| `localai_reachable` | Gauge | — | Every 30s poll (silent if sandbox down) |
+| `localai_models_total` | Gauge | — | Every 30s poll (chat models only — mmproj filtered) |
+| `localai_model_installed` | Gauge | `model` | Every 30s poll (1 if installed, 0 if removed) |
+| `localai_model_size_gb` | Gauge | `model` | From `LOCALAI_MODEL_META` catalog (chat.py) |
+| `localai_health_check_latency_seconds` | Gauge | — | `/readyz` round-trip every 30s |
+| `chat_requests_total` | Counter | `backend`, `model`, `status` | End of every `/chat/stream` |
+| `chat_request_seconds` | Histogram | `backend`, `model` | End-to-end stream duration |
+| `chat_first_token_seconds` | Histogram | `backend`, `model` | First non-empty chunk from `llm.astream` |
+| `chat_tokens_streamed_total` | Counter | `backend`, `model` | One increment per emitted token chunk |
+| `container_running` | Gauge | `name`, `image` | Every 30s docker-stats poll (1/0) |
+| `container_memory_bytes` | Gauge | `name`, `image` | Every 30s docker-stats poll |
+| `container_memory_limit_bytes` | Gauge | `name`, `image` | Every 30s docker-stats poll |
+| `container_cpu_percent` | Gauge | `name`, `image` | Every 30s docker-stats poll (relative to 1 core) |
+| `container_network_rx_bytes` | Gauge | `name` | Every 30s docker-stats poll (cumulative since container start) |
+| `container_network_tx_bytes` | Gauge | `name` | Every 30s docker-stats poll |
 | `agent_disk_used_percent` | Gauge | — | Every 30s (scheduler) |
 | `agent_disk_free_gb` | Gauge | — | Every 30s (scheduler) |
 
@@ -1072,6 +1137,8 @@ Tone: professional, security-first, data-driven. Complex reports end with a **"B
 | **Chat agent hallucinated live metrics** (CPU %, disk space, container counts) | Three compounding causes: (1) `temperature=0.1` allowed probabilistic token sampling — model could "create" plausible metric values. (2) `num_ctx=4096` overflowed with 2+ large tool observations — model forgot earlier data and filled in from training memory. (3) No code-level enforcement prevented model from answering live-data questions without calling any tool. | (1) `temperature` → `0.0` — fully deterministic. (2) `num_ctx` → `6144` — 4,100 tokens free for observations. (3) `num_predict` → `800` — complete answers don't get cut off. (4) No-tool guard: step-0 intercept forces tool call for live-data questions. (5) Strengthened observation injection: every value must appear verbatim in an `[OBSERVATION]`. (6) ANTI-HALLUCINATION block in system prompt with 5 hard rules. |
 | **No VPS Host Monitoring dashboard** | node-exporter collecting 1000+ host metrics (CPU/RAM/disk/network) but no Grafana dashboard existed for them. Both existing dashboards used agent pipeline metrics only. | Created `vps_host.json` provisioned dashboard with 13 panels: 6 stat panels (CPU %, RAM %, Disk %, Disk Free, Load 1m, Uptime) + CPU & IO time series + Memory breakdown + Load averages + Network I/O + Disk I/O. Auto-refreshes every 15s. |
 | **DevSecOps Agent dashboard had no host metrics** | Dashboard only showed PR pipeline stats. VPS health was invisible from Grafana. | Rebuilt `devsecops_agent.json` with 33 panels across 5 rows: VPS Health, PR Review Pipeline, Chat Ops Activity, Ollama LLM, Network & Disk I/O. |
+| **Inline GitHub comments missing on PRs #14/#15 — 0 comments posted** | Two compounding regex bugs: (1) `\{"risk_score"...` required `"risk_score"` immediately after `{` — broke when LLM pretty-printed JSON with leading newline + indent. (2) `json.loads(raw[json_start:])` consumed entire string to end including trailing ``` ``` ``` fences → `JSONDecodeError`. Both bugs caused `raw_comments=[]` and defaults `MEDIUM/REQUEST_CHANGES`. PR #15 hit a third bug — LLM occasionally truncates after Recommendations section, omitting the JSON tail entirely. | Three fixes in Sprint 8: (1) Whitespace-tolerant regex `\{\s*"risk_score"...`. (2) Replaced `json.loads(slice)` with brace-depth walker that finds exact closing `}` ignoring trailing markdown. (3) Markdown fallback regex `\*?\*?Risk\s*(?:Score)?\s*:\s*\*?\*?\s*(CRITICAL\|HIGH\|...)`  parses risk/verdict from markdown body when JSON missing entirely. (4) Prompt restructured — JSON now emitted FIRST (before markdown), with `═══` MANDATORY borders. (5) Empty-markdown synthesis fallback. Same regex bug also fixed in `_build_degraded_review()`. |
+| **PR review header showed `MEDIUM/REQUEST_CHANGES` while body said `HIGH/BLOCK`** | Same regex bug as above — when the regex failed, the *defaults* (`risk_score="MEDIUM"`, `verdict="REQUEST_CHANGES"`) were used in the wrapper header, while the LLM's own narrative text in the body still said `HIGH/BLOCK`. | Fixed by Sprint 8 parser rewrite — risk/verdict now extracted reliably and consistently between header and body. |
 
 ---
 
@@ -1456,6 +1523,294 @@ Pulled `llama3.2:3b` and `granite3.1-dense:2b`, ran a 5-query benchmark against 
 | PR Security Reviews | Unchanged | 5 | PostgreSQL |
 
 All 3 datasources confirmed healthy: Prometheus ✅ · VictoriaMetrics ✅ · PostgreSQL ✅
+
+---
+
+## 22. Latest Improvements — Sprint 8
+
+*Completed 2026-05-01*
+
+### PR Review Parsing — Inline Comments Restored
+
+PR #14 and PR #15 surfaced two latent bugs in the `analyze_review_node` JSON parser. The reviews completed and the markdown body looked fine, but the agent log consistently showed `comments=0`, the GitHub PR header showed `Risk: MEDIUM | Verdict: REQUEST_CHANGES` while the body said `HIGH | BLOCK`, and **no inline comments appeared on the Files Changed tab**.
+
+#### Root cause analysis
+
+| Bug | Symptom | Root cause |
+|-----|---------|-----------|
+| Whitespace-intolerant regex | `json_match=None` → defaults `MEDIUM/REQUEST_CHANGES`, `raw_comments=[]` | Regex `\{"risk_score"...` required `"risk_score"` to come *immediately* after `{`. When the LLM pretty-printed the JSON (`{` + newline + indent + `"risk_score"`), the regex failed silently. |
+| Trailing markdown breaks `json.loads` | Even when the regex matched, `json.loads(raw[json_start:])` consumed everything to end-of-string including ``` ``` ``` fences → `JSONDecodeError` → fallback used regex groups but `raw_comments` stayed empty | `json.loads` is strict about trailing characters after the closing `}`. |
+| LLM occasionally skipping JSON tail | PR #15 review ended with "Recommendations" — no JSON object at all | Despite the prompt instruction, the model truncated its response after the markdown sections, omitting the JSON. |
+
+#### Fixes applied
+
+| Fix | Implementation |
+|-----|---------------|
+| **Whitespace-tolerant regex** | Added `\s*` after `\{`: `\{\s*"risk_score"...` — handles pretty-printed JSON with leading newline + indent |
+| **Brace-depth JSON walker** | Replaced `json.loads(raw[json_start:])` with a forward walker that tracks `{` / `}` depth and string state, finds the *exact* matching closing brace, ignoring trailing markdown fences |
+| **Markdown fallback parser** | When no JSON is found at all, parses `**Risk Score:** HIGH` and `**Verdict:** BLOCK` from the markdown body using regex; preserves verdict consistency even when comments are unavailable |
+| **Prompt restructured — JSON FIRST** | The combined prompt now demands the JSON object as the **first line** of the response, with markdown review *after*. This prevents the model from running out of generation budget on the markdown and skipping JSON. |
+| **Strengthened JSON requirement** | Prompt block reinforced with `═══` borders and "MANDATORY" labels; `**STEP 1**` / `**STEP 2**` structure makes the JSON requirement impossible to miss |
+| **Synthesis fallback for empty markdown** | If JSON parsed cleanly but markdown body is empty (model truncated after JSON), synthesise a minimal review from the JSON metadata (`risk_score`, `verdict`, `code_review_summary`) so the PR comment is not empty |
+
+#### Verification
+
+| Check | Result |
+|-------|--------|
+| Diff parser accepts pretty-printed JSON | ✅ Live test: `HIGH/BLOCK` extracted from `{ \n  "risk_score": "HIGH"...}` |
+| Brace walker handles trailing ``` fences | ✅ Stops at the correct `}`, ignores trailing content |
+| Markdown fallback works | ✅ Live test on PR #15-style markdown-only response — risk/verdict correctly extracted |
+| Line validation against PR #14 diff | ✅ All 4 LLM-claimed lines (12, 17, 26, 34) pass validation against `php-vulnerable-app/tt.php` parsed diff |
+| Same regex bug in `_build_degraded_review()` | ✅ Also fixed (Sprint 8 patched both call sites) |
+
+#### Files modified
+
+- `app/workflows/pr_review/nodes.py` — both `analyze_review_node()` (line 682) and `_build_degraded_review()` (line 548) regex patterns + brace walker
+- `app/prompts/combined_review.py` — restructured to "STEP 1: JSON / STEP 2: Markdown" with stronger MANDATORY framing
+
+---
+
+## 23. Post-Sprint 8 — LocalAI Sandbox Backend & A/B Benchmark
+
+*Completed 2026-05-12*
+
+After Sprint 8 closed, a second LLM backend (**LocalAI** — OpenAI-compatible inference server) was added as an optional sandbox running in parallel with the production Ollama stack. This unlocks side-by-side comparison of inference engines on the same hardware and gives the agent a fallback path if Ollama is unavailable.
+
+### Why a second backend?
+
+Ollama has been the only inference engine since Sprint 1. Adding LocalAI lets us:
+
+1. **A/B compare** raw inference throughput on identical models (same GGUF on both backends).
+2. **Access models Ollama doesn't ship** — LocalAI consumes HuggingFace GGUFs directly (e.g. `bartowski/phi-4-GGUF`), no manifest required.
+3. **Validate the chat router's backend abstraction** — the `model=<backend>/<name>` selector means future backends (vLLM, llama.cpp server) can plug in without rewriting the chat loop.
+
+No production code path depends on LocalAI; the PR review pipeline still runs against Ollama exclusively. LocalAI is opt-in via `docker-compose.localai.yml`.
+
+### What was added
+
+| Artifact | Purpose |
+|---------|---------|
+| `docker-compose.localai.yml` | Standalone compose for the `localai` container — joins `devsecops_devsecops-net`, persists models in the `localai_models` named volume, exposes host port `8081` |
+| `localai/config/qwen2.5-coder-7b.yaml` | Per-model YAML pointing at the HuggingFace GGUF (`huggingface://bartowski/Qwen2.5-Coder-7B-Instruct-GGUF/...-Q4_K_M.gguf`) — the same model Ollama ships, so we can benchmark backends without model-difference confounders |
+| `scripts/install-localai-models.sh` | Idempotent installer for gallery models — uses LocalAI's `POST /models/apply` endpoint |
+| `scripts/benchmark-localai.sh` | Existing — measures warm tok/s for individual LocalAI models |
+| `scripts/benchmark-backends.sh` | **NEW** — head-to-head Ollama vs LocalAI on the same model. Runs from inside the agent container (Python + httpx on the docker network) since Ollama is not host-published and its image has no curl |
+| `agent/app/routers/chat.py` | Chat router extended: `_parse_backend()` splits `ollama/<name>` vs `localai/<name>`, `/v1/models` dropdown merges both, dual `LLM` factory branch instantiates `ChatOllama` or `ChatOpenAI` |
+
+### Chat router cold-load fix
+
+A user-reported failure surfaced during testing:
+
+> `data: {"type": "error", "content": "No streaming chunk received for 120.0s (model=phi-4, chunks_received=1). The connection may be alive at the TCP layer but is not producing content."}`
+
+Root cause: `langchain_openai.ChatOpenAI` ships a default 120s **per-chunk** watchdog (`stream_chunk_timeout`) that is independent of the overall `request_timeout`. On a 12-core CPU host, loading a 15B Q4_K_M model (phi-4, 8.5 GB) from disk + processing the ~1,900-token system prompt regularly exceeds 120s before the first real token is produced. The watchdog killed the stream while LocalAI was still warming up.
+
+Fix at `agent/app/routers/chat.py` — two changes:
+
+| Change | Effect |
+|--------|--------|
+| Added `stream_chunk_timeout=None` to the `ChatOpenAI` constructor | Disables the per-chunk watchdog. The local backend has no NAT/proxy in between, so kernel-level TCP keepalive is sufficient to detect a dead peer. |
+| New `_prime_localai_model(model)` helper | Issues a tiny `POST /v1/chat/completions` with `max_tokens=4` and a single "hi" message — same pattern used in `scripts/benchmark-localai.sh`. Runs **before** LangChain starts streaming, so the model is already resident when the real request begins. |
+| New SSE status events: `Warming up <model>…` → `Generating…` | Surfaced through the existing UI status handler (`index.html:1262` replaces innerHTML on each status event), so users see progress during the cold load instead of a frozen "Loading…" screen |
+
+Logs added: `localai_prime_done` (with `model` + `ms` fields) on success, `localai_prime_failed` on error — primer failure does not abort the request, it falls through to the streamed call.
+
+### Cross-backend benchmark methodology
+
+`scripts/benchmark-backends.sh` mirrors `scripts/benchmark-localai.sh`'s methodology (cold prime → warm timed pass → parse `usage.completion_tokens`) but runs both backends back-to-back:
+
+1. **Same model** — `qwen2.5-coder:7b` Q4_K_M (Ollama tag) and `qwen2.5-coder-7b` (LocalAI alias to the same HuggingFace GGUF).
+2. **Same prompt** — OWASP Top 10 paragraph, `max_tokens=80`, `temperature=0.1`.
+3. **Same execution context** — both calls are made from inside the `devsecops-agent` container using `httpx`, so any container-startup or Python interpreter overhead is identical for both backends.
+4. **Cold prime** is untimed; **warm pass** is the measured one.
+
+### Benchmark results (2026-05-12)
+
+| Backend | Model | Tokens | Wall (s) | **tok/s** |
+|---------|-------|-------:|---------:|----------:|
+| **Ollama**  | `qwen2.5-coder:7b`  | 69 | 12.56 | **5.49** |
+| **LocalAI** | `qwen2.5-coder-7b`  | 80 | 17.79 | **4.50** |
+
+**Conclusion: Ollama is ~22% faster than LocalAI on the same model and the same hardware.**
+
+Ollama's edge likely comes from its native llama.cpp backend being more tightly tuned for the Haswell AVX2 path (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_NUM_THREAD=12`), whereas LocalAI uses a more general-purpose orchestration layer. Both backends produced coherent OWASP enumerations — Ollama stopped naturally at 69 tokens after listing all 10 risks; LocalAI elaborated further and got truncated by the 80-token cap.
+
+### Verification
+
+```bash
+# 1. Spin up the sandbox (only required once per session)
+docker compose -f docker-compose.localai.yml up -d
+
+# 2. Wait until /readyz returns 200 (~30-60 s cold start)
+until curl -fsS http://localhost:8081/readyz; do sleep 3; done
+
+# 3. Verify the matched model is registered
+curl -s http://localhost:8081/v1/models | jq '.data[].id' | grep qwen2.5-coder-7b
+
+# 4. Run the head-to-head benchmark (`-v` also prints the response bodies)
+scripts/benchmark-backends.sh -v
+```
+
+### Files modified / added
+
+- `docker-compose.localai.yml` — new individual bind-mount line for the qwen2.5-coder YAML (LocalAI v3 only scans `/build/models/` root, not the `config/` subdir that the original mount targeted)
+- `localai/config/qwen2.5-coder-7b.yaml` — new
+- `scripts/benchmark-backends.sh` — new
+- `agent/app/routers/chat.py` — `_prime_localai_model()` helper, `stream_chunk_timeout=None`, two new SSE status events on the `localai` branch
+
+---
+
+## 24. Sprint 8.1 — Full-VPS Monitoring + Chat A/B Telemetry + Phi-4 Fix
+
+Today's work bumped observability from "agent + Ollama only" to **full per-container visibility** on every service running on the VPS, plus structured A/B telemetry on the chat router and a fix for the phi-4 template that was silently returning 0 tokens.
+
+### Why an in-agent docker-stats poller instead of cAdvisor
+
+The original plan was to drop cAdvisor (`gcr.io/cadvisor/cadvisor:v0.52.1`) as a sidecar container. After 45 minutes of debugging across two cAdvisor versions and three different flag combinations, the conclusion was that **cAdvisor is architecturally incompatible with this host's Docker configuration**. Docker 29.4 on this VPS uses the **containerd snapshotter** image store (`/var/lib/docker/buildkit/containerd-overlayfs/`, no `image/overlayfs/layerdb/mounts/` tree). cAdvisor's docker container factory hard-requires the legacy `mount-id` file to derive per-container metadata, and `failed to identify the read-write layer ID` errors blocked all container discovery. Even with `--containerd=/run/containerd/containerd.sock` and `--raw_cgroup_prefix_whitelist=/system.slice/docker-` the docker factory still claimed the cgroups before the raw factory could pick them up, so per-container metrics never made it to Prometheus.
+
+**Pivot:** the agent already mounts `/var/run/docker.sock` (used by the ops-assistant tool layer). A 100-line async poller in `agent/app/main.py` (`_poll_docker_stats()`) hits the Docker Engine API directly every 30 s — `GET /containers/json` then `GET /containers/{id}/stats?stream=false` per container — and converts the response into 6 labelled gauges. Zero sidecar, zero extra container, full backward compatibility with whatever storage driver Docker is using.
+
+### What was added — Prometheus side
+
+**6 per-container metrics** (labelled by `name` + `image`, set by the new docker-stats poller):
+
+| Metric | Type | What it tells you |
+|--------|------|-------------------|
+| `container_running` | Gauge | 1 if listed in `/containers/json`, 0 once it stops |
+| `container_memory_bytes` | Gauge | RSS+cache as reported by `memory_stats.usage` |
+| `container_memory_limit_bytes` | Gauge | The container's RAM ceiling (0 = unbounded) |
+| `container_cpu_percent` | Gauge | `(cpu_delta / system_delta) × online_cpus × 100` — 100 = one full core |
+| `container_network_rx_bytes` | Gauge | Sum across all interfaces, cumulative since start |
+| `container_network_tx_bytes` | Gauge | Same, transmit side |
+
+**5 LocalAI health metrics** (set by `_poll_localai_metrics()`):
+
+| Metric | Type | What it tells you |
+|--------|------|-------------------|
+| `localai_reachable` | Gauge | `/readyz` returned 200 on the last 30 s poll |
+| `localai_models_total` | Gauge | Number of chat models (filters out `mmproj-*.gguf` vision projectors) |
+| `localai_model_installed{model}` | Gauge | Per-model 1/0 presence flag (zeroed when a model is uninstalled) |
+| `localai_model_size_gb{model}` | Gauge | GB on disk, sourced from the `LOCALAI_MODEL_META` catalog in `chat.py` |
+| `localai_health_check_latency_seconds` | Gauge | Round-trip time on the last `/readyz` probe |
+
+> Why not scrape LocalAI's own `/metrics`? **It's broken in LocalAI v3.0.0** — returns HTTP 500 with `collected metric "api_call" was collected before with the same name and label values` (duplicate label registration upstream). We poll `/readyz` + `/v1/models` from the agent instead and emit our own gauges; no scrape job needed.
+
+**4 chat A/B telemetry series** (labelled by `backend` + `model`, populated inside `_stream_react()`):
+
+| Metric | Type | Recorded at |
+|--------|------|-------------|
+| `chat_requests_total{backend, model, status}` | Counter | `finally:` block of every `/chat/stream` call |
+| `chat_request_seconds{backend, model}` | Histogram | End-to-end stream duration |
+| `chat_first_token_seconds{backend, model}` | Histogram | First non-empty chunk from `llm.astream` |
+| `chat_tokens_streamed_total{backend, model}` | Counter | One increment per emitted token chunk |
+
+### What was added — Grafana side
+
+The agent dashboard (`grafana/provisioning/dashboards/devsecops_agent.json`) grew from **45 panels to 66 panels** across **5 new rows**, plus a `LocalAI` UP/DOWN indicator in the header strip next to the `Ollama` one. No duplicate IDs (verified at `id=109` and `id≥600` ranges).
+
+| Row | Position | Panels |
+|-----|----------|--------|
+| **LocalAI Sandbox** | y=63 | Sandbox UP/DOWN · Models Installed · Health Probe Latency (s, threshold>1s) · Installed Models (GB) table filtered by `localai_model_size_gb > 0` |
+| **Chat Backend A/B** | y=68 | Chat Requests/min by backend · Output Tokens/s by `backend/model` · TTFT p50+p95 by `backend/model` · Total Duration p50+p95 by `backend/model` · Requests by Status (24 h table) |
+| **Containers** | y=88 | Memory by container (GB, stacked) · CPU % by container · Network RX/TX (Bytes/s) · Container Snapshot table |
+| **Service Health** | y=109 | 12 stat panels (UP/DOWN) for agent, ollama, localai, postgres, redis, jenkins, nginx, prometheus, alertmanager, grafana, victoriametrics, node-exporter — three independent signal sources (`up{job=...}` for Prometheus-scraped, `ollama_reachable`/`localai_reachable`, and `container_running{name=...}` for the rest) |
+| **Firing Alerts** | y=116 | Total Firing stat + Active Alerts table (`ALERTS{alertstate="firing"}`) |
+
+### What was added — agent code
+
+Three new pollers run concurrently in `app/main.py`'s lifespan:
+
+```
+ollama_poller   → /api/ps                every 30 s   (existing)
+localai_poller  → /readyz + /v1/models   every 30 s   (existing — enriched today with per-model gauges)
+docker_poller   → /containers/json + /containers/{id}/stats  every 30 s   (NEW today)
+```
+
+`LOCALAI_MODEL_META` (the chat-UI dropdown metadata dict — `size_gb`, `speed_tps`, `note`) was **hoisted from inside the `chat_models()` route function to module scope** in `agent/app/routers/chat.py:33`, so the docker-stats poller can `from app.routers.chat import LOCALAI_MODEL_META` and use it to populate `localai_model_size_gb`. Single source of truth.
+
+`_stream_react()` now wraps the SSE loop with TTFT + total-duration timers + per-chunk token counter, all emitted via the new chat A/B metrics. The instrumentation is observation-only — no behaviour change, no impact on the PR review pipeline (which doesn't go through `_stream_react`).
+
+### Phi-4 chat-template fix
+
+phi-4 was silently emitting **0 tokens** with `status="ok"` on every chat request. Verified via `chat_tokens_streamed_total{model="phi-4"} == 0` while the request counter was incrementing — the request *succeeded* (no exception) but produced no user-visible output.
+
+**Root cause** — `localai/config/phi-4.yaml` used the same template string for both `chat` and `chat_message`:
+
+```yaml
+template:
+  chat: |
+    <|im_start|>{{.RoleName}}<|im_sep|>
+    {{.Content}}<|im_end|>
+  chat_message: |
+    <|im_start|>{{.RoleName}}<|im_sep|>
+    {{.Content}}<|im_end|>
+```
+
+In LocalAI's template system, `chat_message` formats one message in the history and `chat` wraps the whole conversation. The trailing `<|im_start|>assistant<|im_sep|>` generation prompt was **missing**, so phi-4 received an already-closed conversation (terminated by `<|im_end|>`), didn't know it was its turn to write, and emitted its own `<|im_end|>` stop token immediately. There were also spurious newlines around `<|im_sep|>` that don't match the official tokenizer.
+
+**Fix** — corrected `localai/config/phi-4.yaml` against the official `microsoft/phi-4` tokenizer_config.json chat_template:
+
+```yaml
+template:
+  chat_message: |-
+    <|im_start|>{{ .RoleName }}<|im_sep|>{{ .Content }}<|im_end|>
+  chat: |-
+    {{.Input}}<|im_start|>assistant<|im_sep|>
+  completion: |
+    {{.Input}}
+```
+
+`chat_message` formats one message correctly (no newlines around `<|im_sep|>`); `chat` injects the full conversation (`.Input`) and appends the assistant generation prompt. `|-` strips trailing newlines so no extra whitespace leaks before the model starts generating.
+
+**Persistence** — added a bind-mount line in `docker-compose.localai.yml`:
+
+```yaml
+- ./localai/config/phi-4.yaml:/build/models/phi-4.yaml:ro
+```
+
+This survives `docker compose down/up` without any manual `docker exec` to repair the file inside the named volume — same pattern we use for `qwen2.5-coder-7b.yaml`.
+
+**Verification** — direct call to LocalAI's `/v1/chat/completions` returned `"content":"Pong"` with `completion_tokens=3`; the chat-router path through the agent emitted **51 tokens** with `status="ok"` — counter went from 0 → 51, fix confirmed end-to-end.
+
+### Files added / modified today
+
+| File | Change |
+|------|--------|
+| `agent/app/metrics/custom.py` | +9 metric definitions (6 container_*, then 3 chat_* extras on top of the 4 emitted by `_stream_react`); `localai_model_installed{model}` and `localai_model_size_gb{model}` added |
+| `agent/app/main.py` | New async task `_poll_docker_stats()` (~100 lines, talks to docker.sock); existing `_poll_localai_metrics()` enriched with per-model presence + size gauges; both wired into lifespan startup/shutdown |
+| `agent/app/routers/chat.py` | `LOCALAI_MODEL_META` hoisted to module scope so the poller can import it; `_stream_react()` instrumented with TTFT/duration/token-count emission inside a `try/except/finally`; `chat_*` imports added |
+| `grafana/provisioning/dashboards/devsecops_agent.json` | +21 panels across 5 new rows (Containers, Service Health, Firing Alerts, LocalAI Sandbox, Chat Backend A/B), plus a header LocalAI UP/DOWN stat next to the existing Ollama one |
+| `localai/config/phi-4.yaml` | **NEW** — corrected ChatML-with-im_sep template (per Microsoft tokenizer_config.json) |
+| `docker-compose.localai.yml` | New bind-mount for phi-4.yaml so the fix is persistent |
+
+### What we deliberately did **not** add
+
+- **cAdvisor** — incompatible with this host's containerd-snapshotter Docker layout (see pivot rationale above). Replaced by the in-agent docker-stats poller.
+- **postgres_exporter / redis_exporter** — listed in Tier 2 of the monitoring proposal; not done today. Trivial to add later if needed.
+- **Direct scrape of LocalAI's `/metrics`** — broken in LocalAI v3.0.0 (duplicate-label-registration crash). The agent's `/readyz` poller covers what's actually needed.
+
+### Verification commands
+
+```bash
+# 1. Confirm all 9 new metric families are exposed by the agent
+curl -fsS http://localhost:8000/metrics | grep -E '^# (HELP|TYPE) (chat_|localai_|container_)'
+
+# 2. Spot-check Prometheus has scraped the new series
+curl -sG http://localhost:9090/prometheus/api/v1/query \
+  --data-urlencode 'query=count(count by(name)(container_memory_bytes{name!=""}))'
+
+# 3. Reload Grafana to pick up dashboard JSON changes
+docker compose restart grafana
+
+# 4. Confirm the new dashboard rows are loaded (66 panels, no duplicate IDs)
+PW=$(grep ^GRAFANA_PASSWORD .env | cut -d= -f2-)
+curl -sf -u "admin:${PW}" 'http://localhost:3000/api/dashboards/uid/devsecops-agent' \
+  | python3 -c "import json,sys;d=json.load(sys.stdin);p=d['dashboard']['panels'];print(f'panels={len(p)} new(id>=600)={sum(1 for x in p if x.get(\"id\",0)>=600)}')"
+
+# 5. Confirm phi-4 fix is in place
+docker exec localai cat /build/models/phi-4.yaml | grep -A2 'chat:'
+# Should print: chat: |- / {{.Input}}<|im_start|>assistant<|im_sep|>
+```
 
 ---
 

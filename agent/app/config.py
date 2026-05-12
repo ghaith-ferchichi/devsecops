@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     ollama_model_review: str = "qwen2.5-coder:14b" # code_review_node (quality)
     ollama_timeout: int = 300
 
+    # LocalAI — optional A/B backend (OpenAI-compatible API)
+    # Sandbox lives in docker-compose.localai.yml; empty if not deployed.
+    localai_base_url: str = "http://localai:8080"
+
     # Slack
     slack_bot_token: str = ""
     slack_channel_id: str = ""

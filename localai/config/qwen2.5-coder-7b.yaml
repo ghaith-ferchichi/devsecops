@@ -1,0 +1,7 @@
+name: qwen2.5-coder-7b
+parameters:
+  model: huggingface://bartowski/Qwen2.5-Coder-7B-Instruct-GGUF/Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
+context_size: 8192
+threads: 12
+f16: true
+mmap: true

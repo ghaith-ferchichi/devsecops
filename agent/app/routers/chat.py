@@ -20,14 +20,64 @@ from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, StreamingResponse
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
+from app.config import get_settings
+from app.metrics.custom import (
+    chat_first_token_seconds,
+    chat_request_seconds,
+    chat_requests_total,
+    chat_tokens_streamed_total,
+)
 from app.workflows.ops_assistant.graph import SYSTEM_PROMPT, TOOL_MAP
 
 log = structlog.get_logger().bind(service="chat")
 router = APIRouter(tags=["chat"])
 
 _UI_PATH = Path(__file__).parent.parent / "static" / "index.html"
+
+# ── LocalAI model catalog ────────────────────────────────────────────────
+# Sizes are the on-disk GGUF size (Q4_K_M).
+# speed_tps is the *warm* token rate measured on this Haswell 12-core VPS —
+# re-run scripts/benchmark-localai.sh to refresh.
+#
+# Module-level so both the /chat/models route and the Prometheus poller in
+# app.main (localai_model_size_gb gauge) can read from the same source.
+LOCALAI_MODEL_META: dict[str, dict] = {
+    "phi-4": {
+        "tag": "deep",
+        "label": "Phi-4 (Microsoft 15B)",
+        "size_gb": 8.5,
+        "speed_tps": 3.0,                 # measured: 29 tok in ~3.6s warm
+        "accuracy": None,
+        "note": "15B Q4_K_M · HumanEval+ 82.8 % · concurrent of qwen2.5-coder:14b",
+    },
+    "qwen3-coder-30b-a3b-instruct": {
+        "tag": "deep",
+        "label": "Qwen3-Coder 30B MoE",
+        "size_gb": 18.0,
+        "speed_tps": 6.0,                 # 3B active params → faster than dense 14B
+        "accuracy": None,
+        "note": "MoE 30B/3B-active · faster than equivalent dense models",
+    },
+    "gemma-3-12b-it": {
+        "tag": "experimental",
+        "label": "Gemma 3 (Google 12B)",
+        "size_gb": 6.8,
+        "speed_tps": 3.5,                 # estimated — refresh via benchmark
+        "accuracy": None,
+        "note": "Google generalist 12B · good multilingual, less code-tuned",
+    },
+    "gemma-3-4b-it": {
+        "tag": "recommended",
+        "label": "Gemma 3 (Google 4B)",
+        "size_gb": 2.3,
+        "speed_tps": 8.0,                 # estimated — refresh via benchmark
+        "accuracy": None,
+        "note": "Fast 4B classifier — concurrent of qwen2.5-coder:7b",
+    },
+}
 
 # Matches a fenced code block wrapping JSON
 _FENCE_RE = re.compile(r'^```(?:json)?\s*([\s\S]*?)\s*```\s*$')
@@ -235,35 +285,97 @@ async def _unload_other_models(keep: str) -> None:
         log.warning("ollama_unload_failed", error=str(exc))
 
 
+async def _prime_localai_model(model: str) -> None:
+    """Issue a tiny chat-completions request to force LocalAI to load `model`.
+
+    LocalAI has no synchronous load endpoint; the first /v1/chat/completions
+    call against an unloaded model blocks while the GGUF is mmap'd and the
+    backend initialised. Sending a 4-token throwaway here means the subsequent
+    streamed request returns its first token quickly, instead of stalling past
+    the langchain stream-chunk watchdog while the model warms up.
+    """
+    base = get_settings().localai_base_url
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": "hi"}],
+        "max_tokens": 4,
+    }
+    start = _time.time()
+    try:
+        async with httpx.AsyncClient(timeout=600.0) as client:
+            await client.post(f"{base}/v1/chat/completions", json=payload)
+        log.info("localai_prime_done", model=model, ms=int((_time.time() - start) * 1000))
+    except Exception as exc:
+        log.warning("localai_prime_failed", model=model, error=str(exc))
+
+
+def _parse_backend(model_id: str) -> tuple[str, str]:
+    """Split "ollama/qwen2.5-coder:7b" → ("ollama", "qwen2.5-coder:7b").
+
+    Models without an explicit prefix default to Ollama for backward compat
+    with conversations saved before the LocalAI backend was added.
+    """
+    if "/" in model_id:
+        head, tail = model_id.split("/", 1)
+        if head in {"ollama", "localai"}:
+            return head, tail
+    return "ollama", model_id
+
+
 async def _stream_react(req: ChatRequest) -> AsyncIterator[str]:
     # Larger models need more time: ~2 tok/s for 32B, ~6 tok/s for 14B on CPU
     request_timeout = 900.0   # 15 min — covers cold-load + generation for any model
 
+    backend, raw_model = _parse_backend(req.model)
+
+    # ── A/B telemetry (Ollama vs LocalAI) ────────────────────────────────
+    _t_start = _time.perf_counter()
+    _first_token_at: float | None = None
+    _token_count = 0
+    _status = "ok"
+
     # Signal immediately so the UI shows activity during model cold-start
     yield _sse({"type": "status", "content": f"Loading {req.model}…"})
-
-    # Free RAM used by other loaded models before loading the requested one
-    await _unload_other_models(keep=req.model)
 
     # Context: prompt ~1,900 tok + history + tool observations (each 100-500 tok).
     # 6144 gives ~4,200 tok free — enough for 6 tool observations + final answer.
     # 32b verbosely generates so keeps a larger window.
-    _num_ctx = 16384 if "32b" in req.model else 6144
+    _num_ctx = 16384 if "32b" in raw_model else 6144
 
     # 800 tokens: tool call JSON ~80 tok, monitoring answers rarely exceed 700 tok.
     # Higher than before so complex multi-container/metric answers don't get cut off
     # mid-sentence (cut-off answers cause the model to fill the rest from memory).
     _num_predict = 800
 
-    llm = ChatOllama(
-        base_url="http://ollama:11434",
-        model=req.model,
-        temperature=0.0,   # deterministic — eliminates "creative" metric invention
-        num_ctx=_num_ctx,
-        num_predict=_num_predict,
-        keep_alive="10m",
-        request_timeout=request_timeout,
-    )
+    if backend == "ollama":
+        # Free RAM used by other loaded models before loading the requested one
+        await _unload_other_models(keep=raw_model)
+        llm = ChatOllama(
+            base_url=get_settings().ollama_base_url,
+            model=raw_model,
+            temperature=0.0,   # deterministic — eliminates "creative" metric invention
+            num_ctx=_num_ctx,
+            num_predict=_num_predict,
+            keep_alive="10m",
+            request_timeout=request_timeout,
+        )
+    else:  # localai — OpenAI-compatible API
+        # Cold-load a 15B Q4 GGUF on CPU regularly exceeds the langchain default
+        # 120s per-chunk watchdog. Prime the model with a tiny non-streamed
+        # request first, then disable the watchdog so the real stream survives
+        # any residual stall before the first token.
+        yield _sse({"type": "status", "content": f"Warming up {raw_model}…"})
+        await _prime_localai_model(raw_model)
+        yield _sse({"type": "status", "content": "Generating…"})
+        llm = ChatOpenAI(
+            base_url=f"{get_settings().localai_base_url}/v1",
+            api_key="not-needed",          # LocalAI auth disabled in sandbox
+            model=raw_model,
+            temperature=0.0,
+            max_tokens=_num_predict,
+            timeout=request_timeout,
+            stream_chunk_timeout=None,     # local backend; cold-load can exceed 120s
+        )
 
     # Build message history with system prompt
     messages: list = [SystemMessage(content=SYSTEM_PROMPT)]
@@ -311,6 +423,12 @@ async def _stream_react(req: ChatRequest) -> AsyncIterator[str]:
                 tok = chunk.content
                 if not tok:
                     continue
+                if _first_token_at is None:
+                    _first_token_at = _time.perf_counter()
+                    chat_first_token_seconds.labels(
+                        backend=backend, model=raw_model
+                    ).observe(_first_token_at - _t_start)
+                _token_count += 1
                 accumulated += tok
 
                 # Decide on first meaningful chars: tool call or text?
@@ -415,8 +533,19 @@ async def _stream_react(req: ChatRequest) -> AsyncIterator[str]:
             break
 
     except Exception as exc:
+        _status = "error"
         log.exception("chat_react_error", error=str(exc))
         yield _sse({"type": "error", "content": str(exc)})
+    finally:
+        _elapsed = _time.perf_counter() - _t_start
+        chat_request_seconds.labels(backend=backend, model=raw_model).observe(_elapsed)
+        chat_requests_total.labels(
+            backend=backend, model=raw_model, status=_status
+        ).inc()
+        if _token_count:
+            chat_tokens_streamed_total.labels(
+                backend=backend, model=raw_model
+            ).inc(_token_count)
 
     yield _sse({"type": "done"})
 
@@ -427,7 +556,7 @@ async def _stream_react(req: ChatRequest) -> AsyncIterator[str]:
 
 @router.get("/chat/models")
 async def get_models():
-    """Return all models available in Ollama, annotated with benchmark metadata."""
+    """Return Ollama + LocalAI models, prefixed with backend (ollama/, localai/)."""
 
     # Benchmarked on this VPS (12-core Haswell, CPU-only) against real system prompt.
     # accuracy = correct tool selected on 5-question test suite with full system prompt.
@@ -462,25 +591,55 @@ async def get_models():
         },
     }
 
+    DEFAULT_META = {
+        "tag": "untested", "label": "Untested",
+        "speed_tps": None, "accuracy": None, "note": "Not benchmarked",
+    }
+
+    LOCALAI_DEFAULT_META = {
+        "tag": "sandbox", "label": "Sandbox (LocalAI)",
+        "size_gb": None, "speed_tps": None, "accuracy": None,
+        "note": "LocalAI sandbox model — not yet benchmarked",
+    }
+
+    settings = get_settings()
+    out: list[dict] = []
+
+    # ── Ollama (production backend) ─────────────────────────────────────
     try:
         async with httpx.AsyncClient(timeout=5) as client:
-            resp = await client.get("http://ollama:11434/api/tags")
-            models = resp.json().get("models", [])
-            return {
-                "models": [
-                    {
-                        "name":     m["name"],
-                        "size_gb":  round(m.get("size", 0) / 1e9, 1),
-                        **MODEL_META.get(m["name"], {
-                            "tag": "untested", "label": "Untested",
-                            "speed_tps": None, "accuracy": None, "note": "Not benchmarked",
-                        }),
-                    }
-                    for m in models
-                ]
-            }
+            resp = await client.get(f"{settings.ollama_base_url}/api/tags")
+            for m in resp.json().get("models", []):
+                name = m["name"]
+                out.append({
+                    "name":     f"ollama/{name}",
+                    "backend":  "ollama",
+                    "size_gb":  round(m.get("size", 0) / 1e9, 1),
+                    **MODEL_META.get(name, DEFAULT_META),
+                })
     except Exception as exc:
-        return {"models": [], "error": str(exc)}
+        log.warning("ollama_models_list_failed", error=str(exc))
+
+    # ── LocalAI (optional sandbox backend) ──────────────────────────────
+    # Short timeout + silent failure — chat must work even if LocalAI is down.
+    # mmproj-*.gguf are vision projectors paired with multi-modal models;
+    # they are not standalone chat models and must not appear in the dropdown.
+    try:
+        async with httpx.AsyncClient(timeout=3) as client:
+            resp = await client.get(f"{settings.localai_base_url}/v1/models")
+            for m in resp.json().get("data", []):
+                mid = m.get("id", "")
+                if not mid or "mmproj" in mid.lower() or mid.endswith(".gguf"):
+                    continue                  # skip vision projectors / raw GGUF entries
+                out.append({
+                    "name":     f"localai/{mid}",
+                    "backend":  "localai",
+                    **LOCALAI_MODEL_META.get(mid, LOCALAI_DEFAULT_META),
+                })
+    except Exception:
+        pass  # LocalAI is optional; absence is not an error
+
+    return {"models": out}
 
 
 @router.post("/chat/stream")

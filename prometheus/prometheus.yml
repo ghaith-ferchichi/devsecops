@@ -42,3 +42,13 @@ scrape_configs:
     metrics_path: /alertmanager/metrics
     static_configs:
       - targets: ['alertmanager:9093']
+
+  # NOTE: per-container metrics (CPU / RAM / network) are exposed via the
+  # agent's docker-stats poller (container_* gauges in /metrics on port 8000)
+  # instead of cAdvisor — Docker on this host uses the containerd snapshotter
+  # which is incompatible with cAdvisor's docker image-DB integration.
+
+  # NOTE: LocalAI v3.0.0 /metrics is broken (duplicate label registration → 500).
+  # We scrape LocalAI health *through the agent* — see localai_reachable,
+  # localai_models_total, and localai_health_check_latency_seconds, populated
+  # by the 30s poller in agent/app/main.py.
