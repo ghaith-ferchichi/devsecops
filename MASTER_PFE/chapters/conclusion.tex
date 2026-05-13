@@ -29,9 +29,10 @@ et les fallbacks assurent la résilience face aux indisponibilités ponctuelles 
 Les quinze règles d'alerte Prometheus, les vingt-huit métriques personnalisées (dont
 quinze ajoutées lors du sprint 8.1 pour couvrir la consommation par conteneur, la santé
 de la sandbox LocalAI et la télémétrie A/B du routeur de chat) et les trois \textit{dashboards}
-Grafana offrent une visibilité complète sur l'état de l'infrastructure. La méthodologie Agile Scrum adaptée — combinée à
-une discipline Kanban interne avec une limite WIP de 1 — a permis, sur ses huit sprints
-itératifs, d'absorber les découvertes de production imprévues : urgence disque (242 Go),
+Grafana offrent une visibilité complète sur l'état de l'infrastructure. La méthodologie Scrumban retenue, qui combine la cadence de
+sprints à durée fixe héritée de Scrum et une discipline Kanban avec une limite WIP
+de 1, a permis, sur ses huit sprints itératifs, d'absorber les découvertes de
+production imprévues : urgence disque (242 Go),
 AlertManager silencieusement cassé depuis le déploiement, VictoriaMetrics en panne
 neuf jours, et les trois bugs cumulatifs du parser de revue PR (regex intolérant aux
 espaces, \texttt{json.loads} strict, modèle omettant le JSON). Chacune de ces découvertes

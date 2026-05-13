@@ -1251,6 +1251,67 @@ template:
         \label{tab:validation}
         \end{table}
 
+    \subsection{Limites identifiées et plan de durcissement}
+
+        La checklist précédente couvre le périmètre fonctionnel et observabilité, mais
+        la plateforme reste configurée pour l'itération quotidienne plutôt que pour une
+        exploitation durcie. Plusieurs services internes ont conservé un \textit{binding}
+        sur l'hôte hérité de la phase de mise au point. Ce choix a facilité le diagnostic
+        au cours des sprints — \texttt{curl http://vps:9090/api/v1/query} était plus
+        rapide à taper que d'ouvrir un tunnel SSH — mais expose une surface qu'il faut
+        réduire avant tout passage en production réelle. Le tableau \ref{tab:hardening_gaps}
+        récapitule les écarts relevés et la correction prévue.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{2.7cm}|m{2cm}|m{4cm}|m{4cm}|}
+        \hline
+        \textbf{Service} & \textbf{Port} & \textbf{Risque associé} & \textbf{Correction prévue} \\
+        \hline
+        Redis & 6379 & Lecture du cache, des clés de déduplication et du rate limiter & Retrait du binding hôte, mot de passe \texttt{--requirepass} \\
+        \hline
+        Prometheus & 9090 & Lecture des métriques, des cibles et des règles d'alerte & Retrait du binding hôte, accès passé exclusivement par nginx \\
+        \hline
+        AlertManager & 9093 & Inhibition d'alertes via l'API publique & Retrait du binding hôte \\
+        \hline
+        VictoriaMetrics & 8428 & Lecture des métriques conservées sur 90 jours & Retrait du binding hôte (port déjà détecté par les scanners externes) \\
+        \hline
+        \texttt{devsecops-agent} & 8000 & Contournement de l'authentification Basic Auth de nginx & Retrait du binding hôte, accès exclusif via nginx \\
+        \hline
+        Open WebUI & 3001 & Création de compte ouverte (\texttt{ENABLE\_SIGNUP=true}) & Désactivation du \textit{signup} une fois le compte administrateur créé \\
+        \hline
+        Jenkins & 8080, 50000 & Accès direct à la console de build et à l'agent JNLP & Restriction aux IP de l'équipe ou retrait du binding hôte \\
+        \hline
+        \end{tabular}
+        \caption{Écarts de durcissement identifiés sur la configuration de production}
+        \label{tab:hardening_gaps}
+        \end{table}
+
+        La cause profonde est commune à toutes les lignes du tableau : ces \textit{bindings}
+        ont été ajoutés un par un lors des phases de mise au point pour permettre
+        l'inspection directe d'un service sans passer par le \textit{reverse proxy}, et
+        n'ont pas été retirés une fois la phase terminée. Le correctif est symétrique :
+        supprimer systématiquement les ports hôte, ne laisser que nginx exposé sur
+        80 et 443, et accepter que tout diagnostic passe désormais soit par
+        \texttt{docker exec} soit par une route nginx authentifiée. Le coût d'usage est
+        marginal pour un développeur familier de la plateforme, et le gain de surface
+        d'attaque est immédiat.
+
+        Le durcissement complet exige par ailleurs trois chantiers distincts des ports.
+        Un certificat Let's Encrypt installé sur nginx chiffrera tout ce qui sort du VPS
+        et fermera la dernière exposition en clair du flux externe. Une sauvegarde
+        quotidienne de PostgreSQL — base de connaissances sécurité et
+        \textit{checkpoints} LangGraph confondus — protégera contre une perte du volume
+        Docker, scénario dont la panne VictoriaMetrics du mois d'avril a déjà montré
+        qu'il pouvait survenir sans préavis. Restent enfin les six conteneurs sans
+        \textit{healthcheck} Docker (\texttt{nginx}, \texttt{alertmanager},
+        \texttt{victoriametrics}, \texttt{node-exporter}, \texttt{open-webui} et
+        \texttt{jenkins}) ; leur instrumentation permettra au démon Docker de détecter
+        et de redémarrer ces services sans attendre que les règles Prometheus ne
+        finissent par lever l'alerte. La trajectoire amorcée par l'audit du
+        28 avril se prolonge ainsi : passer d'une plateforme qui fonctionne à une
+        plateforme qui résiste.
+
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 

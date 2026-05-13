@@ -202,47 +202,142 @@ adoptée ainsi que le déroulement du projet sur cinq mois.
         réussis sous ces approches \cite{Agile}, ce qui rend l'option Agile plus
         pertinente dans le contexte de notre stage.
 
-    \subsection{Méthode Agile Scrum adaptée}
+    \subsection{Méthode Scrumban adaptée}
 
-        La méthode Agile se distingue par son approche itérative, progressive et centrée
-        sur la livraison continue de valeur. Elle intègre activement les retours du terrain
-        dans le processus afin de répondre efficacement aux besoins réels, y compris ceux
-        qui n'étaient pas prévisibles en début de projet. Nous avons opté pour une
-        méthodologie \textbf{Agile Scrum adaptée au contexte d'un développeur unique}
-        \cite{Scrum}, comme illustrée dans la figure \ref{fig:agile_scrum}. Les cérémonies
-        conçues pour les équipes — daily standup, planning poker, Scrum Master — ont été
-        simplifiées, mais la structure fondamentale a été conservée intégralement : sprints
-        de deux semaines, backlog priorisé, jalons de livraison et définition de terminé.
+        Le \textbf{Scrumban} \cite{Ladas2009} est une méthodologie hybride formalisée à la
+        fin des années 2000 dans les équipes lean. Elle assemble la cadence prévisible de
+        Scrum à la discipline de flux propre à Kanban. Au lieu de pousser un lot de tâches
+        au début du sprint et d'espérer qu'il tienne jusqu'au bout, l'équipe « tire » la
+        prochaine carte dès qu'une place se libère, dans la limite imposée par le
+        \textit{Work In Progress} (WIP). Le cadre obtenu garde la lisibilité du planning
+        bisemestriel, utile pour l'encadrement et les jalons, tout en absorbant les
+        imprévus de production sans avoir à replanifier le sprint en cours.
+
+        Ce choix s'est imposé naturellement pour un stage d'ingénieur en solo, dans un
+        environnement où les incidents arrivent rarement au moment où on les attend. Le
+        rythme reste celui de Scrum \cite{Scrum} : sprints de deux semaines, \textit{sprint
+        planning} en début de quinzaine, démo et rétrospective à la fin. Les cérémonies
+        prévues pour les équipes — daily standup formel, planning poker, Scrum Master
+        dédié — ont été simplifiées, mais la structure fondamentale a été conservée :
+        backlog priorisé, sprints à durée fixe, jalons de livraison et définition de
+        terminé. La figure \ref{fig:agile_scrum} illustre ce cycle.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.82\columnwidth]{img/agile_scrum_cycle}}
-            \caption{Cycle Agile Scrum adapté — sprints de deux semaines avec jalons. \\
+            \caption{Cycle Scrumban adapté — sprints de deux semaines avec jalons et flux Kanban interne. \\
                      \footnotesize\textit{Source : Wikimedia Commons, CC0.}}
             \label{fig:agile_scrum}
         \end{figure}
 
-        Au sein de chaque sprint, une discipline \textbf{Kanban} \cite{Kanban} est appliquée
-        avec une limite WIP (Work In Progress) de 1. Cette règle garantit qu'une seule tâche
-        est en cours à tout moment — elle est entièrement déployée et validée en production
-        avant d'en démarrer une autre. Le tableau Kanban de la figure \ref{fig:kanban_board}
-        visualise ce flux avec quatre colonnes : Backlog, En cours (WIP=1), Bloqué et
-        Terminé.
+        La gestion au jour le jour suit en revanche la logique Kanban \cite{Kanban}. Une
+        seule tâche est en cours à tout moment (WIP=1), entièrement déployée et validée en
+        production avant que la suivante ne démarre. La figure \ref{fig:kanban_board}
+        illustre la forme générale d'un tableau de ce type, organisé en colonnes
+        successives avec des plafonds par colonne.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{img/kanban_board}}
-            \caption{Tableau Kanban interne — WIP=1, flux continu au sein de chaque sprint. \\
+            \caption{Tableau Kanban — visualisation du flux avec limites WIP par colonne. \\
                      \footnotesize\textit{Source : Jennifer Falco, Wikimedia Commons, CC BY 4.0.}}
             \label{fig:kanban_board}
         \end{figure}
 
-        Cette combinaison présente un avantage majeur : les incidents de production sont
-        traités comme des cartes prioritaires remontant immédiatement en tête du backlog,
-        sans déstabiliser la structure globale du projet. C'est ainsi que l'urgence disque
-        du 20 avril, la découverte d'AlertManager silencieusement cassé et la panne de
-        VictoriaMetrics ont été absorbées et résolues dans le sprint en cours, puis
-        documentées comme améliorations dans les sprints suivants.
+        La règle WIP=1 a un effet pratique direct : elle empêche le multitâche
+        silencieux, cette dérive bien connue où plusieurs cartes traînent à 80\% sans
+        qu'aucune ne franchisse la ligne d'arrivée. Elle réserve aussi une voie nette
+        pour les incidents de production. Quand l'urgence disque a saturé le VPS le
+        20 avril, quand AlertManager s'est révélé silencieusement cassé depuis le
+        déploiement, quand VictoriaMetrics est tombée pour neuf jours, chacune de ces
+        découvertes est devenue la carte prioritaire du moment. Le sprint en cours
+        absorbait l'imprévu ; le sprint suivant intégrait l'amélioration durable qui
+        en découlait. La structure globale du projet n'a pas eu à être revue.
+
+    \subsection{Structure du tableau et choix des colonnes}
+
+        Le tableau Scrumban du projet a été configuré dans Jira en partant d'un projet
+        Scrum classique, auquel ont été ajoutés la fonctionnalité \textit{Kanban backlog}
+        et des plafonds WIP explicites par colonne. Six colonnes composent le flux. Le
+        tableau \ref{tab:scrumban_columns} récapitule leur rôle et la limite associée.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{2.2cm}|m{3.4cm}|c|m{5.6cm}|}
+        \hline
+        \textbf{Colonne} & \textbf{Statut Jira} & \textbf{WIP} & \textbf{Rôle} \\
+        \hline
+        Backlog & \texttt{To Do} & — &
+            Réservoir global de cartes non encore priorisées \\
+        \hline
+        Ready & \texttt{Selected for Development} & 5 &
+            Sprint backlog — cartes retenues pour les deux semaines en cours \\
+        \hline
+        In Progress & \texttt{In Progress} & \textbf{1} &
+            Carte en cours de développement actif \\
+        \hline
+        In Review & \texttt{In Review} & 2 &
+            Revue de code ou validation fonctionnelle avant fusion \\
+        \hline
+        Testing & \texttt{Testing} & 2 &
+            Vérification en production sur événement réel \\
+        \hline
+        Done & \texttt{Done} & — &
+            Carte satisfaisant la définition de terminé \\
+        \hline
+        \end{tabular}
+        \caption{Colonnes du tableau Scrumban et limites WIP appliquées}
+        \label{tab:scrumban_columns}
+        \end{table}
+
+        Le \textbf{Backlog} sert de réservoir : idées de fonctionnalités, dette technique
+        repérée au fil des sprints, propositions d'amélioration. Aucune limite n'y est
+        posée, c'est volontaire. Trop contraindre le backlog conduit en pratique à perdre
+        des idées qui ne sont pas mûres au moment où elles surgissent et qu'on n'a pas
+        envie de jeter pour autant.
+
+        La colonne \textbf{Ready} correspond au sprint backlog. Le \textit{sprint
+        planning} y dépose les cartes retenues pour les deux semaines à venir. Le plafond
+        de cinq cartes y est indicatif plus qu'absolu, mais il sert de garde-fou contre
+        le sur-engagement, ce piège classique de début de sprint quand l'optimisme prend
+        le pas sur la mesure réelle de la capacité.
+
+        \textbf{In Progress} est la colonne centrale, et sa limite WIP de 1 constitue la
+        règle structurante de tout le système. Une carte y entre quand le développement
+        commence et n'en sort que lorsque le code est livré et qu'une revue peut être
+        déclenchée. Tant qu'elle n'a pas avancé, aucune autre carte ne peut prendre sa
+        place. La tentation de démarrer la suivante « pendant qu'on attend » est revenue
+        souvent au cours du projet ; la règle l'a tenue à distance, et en retour le
+        tableau est resté lisible à tout instant.
+
+        \textbf{In Review} reçoit les cartes en relecture, qu'il s'agisse de revue de
+        code avant fusion ou de validation fonctionnelle d'une livraison. Le plafond de
+        2 reflète le fait qu'une relecture peut s'étaler sur quelques heures, et qu'il
+        est utile de pouvoir empiler deux cartes plutôt que d'interrompre le
+        développement en cours chaque fois qu'une revue commence.
+
+        \textbf{Testing} est dédiée à la validation en production. Une carte n'y reste
+        que le temps de déclencher un événement réel (webhook PR, alerte Prometheus,
+        requête chat) et de vérifier que le comportement de bout en bout correspond à
+        l'attendu. Le plafond de 2 suit la même logique que pour la revue.
+
+        \textbf{Done} clôt le flux. Une carte ne s'y arrête que si elle satisfait les
+        cinq conditions de la définition de terminé décrite plus loin ; sinon elle
+        redescend en \textit{In Progress} ou en \textit{Testing} selon le point qui a
+        manqué.
+
+        Deux mécanismes transversaux complètent ce dispositif. D'abord les cartes
+        \textbf{bloquées}, identifiées par le drapeau rouge natif de Jira plutôt que par
+        une colonne dédiée : une carte en attente d'un élément externe (réponse d'un
+        encadrant, accès à un environnement) reste dans sa colonne et change simplement
+        de couleur. Le choix du drapeau évite l'effet « cimetière » des colonnes
+        \textit{Blocked} où s'accumulent les cartes qu'on finit par oublier. Ensuite les
+        \textbf{classes de service} : chaque carte porte une étiquette \textit{Standard},
+        \textit{Expedite}, \textit{Fixed Date} ou \textit{Intangible}. Les cartes
+        \textit{Expedite}, typiquement des incidents de production, sont autorisées à
+        franchir la limite WIP par exception explicite et documentée. C'est cette
+        mécanique qui a permis d'absorber les trois incidents cités plus haut sans
+        casser la planification du sprint.
 
     \subsection{Définition de terminé}
 
@@ -329,9 +424,10 @@ Dans ce premier chapitre, nous avons présenté le contexte général du projet 
 la Banque de Tunisie et des Emirats, puis nous avons étudié en profondeur le processus
 de revue de sécurité existant et ses limites. Cela nous a permis de formuler la
 problématique et de présenter le BTE Security AI Agent comme solution à ces lacunes.
-La méthodologie Agile Scrum adaptée, combinant la structure en sprints pour la visibilité
-des jalons et la discipline Kanban pour la gestion quotidienne du flux, offre le cadre
-le plus approprié pour un projet solo de cinq mois en environnement de production.
+La méthodologie Scrumban retenue, qui combine la cadence des sprints héritée de Scrum
+et le pilotage par le flux propre à Kanban, offre un cadre adapté à un projet solo de
+cinq mois en environnement de production : visibilité sur les jalons côté encadrement,
+souplesse côté gestion quotidienne quand les incidents arrivent sans prévenir.
 
 Le chapitre suivant porte sur la présentation des différentes technologies sur lesquelles
 repose notre solution, avec une étude comparative entre les alternatives disponibles pour
