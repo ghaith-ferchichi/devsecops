@@ -6,17 +6,17 @@
 \addcontentsline{toc}{section}{Introduction}
 
 Ce chapitre rassemble les notions sur lesquelles notre solution s'appuie. Nous y
-revenons sur le DevOps et la chaîne CI/CD, sur l'extension DevSecOps et son rapport
-à l'OWASP, sur les grands modèles de langage et l'inférence locale, sur
-l'orchestration des workflows IA, ainsi que sur les outils d'analyse de sécurité
-statique. Une étude comparative des technologies disponibles pour chaque composant
-permet ensuite de justifier les choix retenus. Le chapitre se clôt sur la définition
-des besoins fonctionnels et non fonctionnels du projet.
+revenons sur le DevOps, la chaîne CI/CD et leur extension DevSecOps, sur les grands
+modèles de langage et l'inférence locale, sur l'orchestration des workflows IA, ainsi
+que sur les outils d'analyse de sécurité statique et la stack applicative. Une étude
+comparative des technologies disponibles pour chaque composant permet ensuite de
+justifier les choix retenus. Le chapitre se clôt sur la définition des besoins
+fonctionnels et non fonctionnels du projet.
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{DevOps et CI/CD}
+\section{DevOps, CI/CD et DevSecOps}
 
-    \subsection{DevOps}
+    \subsection{Le DevOps}
 
         Le DevOps regroupe un ensemble de pratiques, d'outils et de choix culturels qui
         cherchent à raccourcir le cycle de livraison logicielle tout en gardant le produit
@@ -79,18 +79,16 @@ des besoins fonctionnels et non fonctionnels du projet.
         REQUEST\_CHANGES / BLOCK) sert de gate de qualité et de sécurité qui conditionne
         la fusion automatique ou bloquée de la \textit{Pull Request}.
 
-% ─────────────────────────────────────────────────────────────────────────────
-\section{DevSecOps}
+    \subsection{Du DevOps au DevSecOps}
 
-    \subsection{Définition et principes}
-
-        DevSecOps est la contraction de Development, Security et Operations \cite{DevSecOps}.
-        C'est une extension du DevOps qui place la sécurité comme une responsabilité
-        partagée tout au long du cycle de développement logiciel, au lieu de la cantonner
-        à une phase de validation finale \cite{NIST_DevSecOps}. L'objectif est de
-        détecter les vulnérabilités au plus tôt, là où elles coûtent le moins cher à
-        corriger ; un bug de sécurité repéré sur une \textit{Pull Request} avant fusion
-        n'a presque aucun coût comparé à la même faille découverte en production.
+        Le DevOps tel qu'il vient d'être décrit traite la sécurité comme une étape
+        séparée, généralement repoussée à la fin du cycle. Le DevSecOps — contraction de
+        Development, Security et Operations \cite{DevSecOps} — corrige cette omission en
+        intégrant la sécurité à chaque étape du cycle plutôt qu'en aval \cite{NIST_DevSecOps}.
+        L'objectif est de détecter les vulnérabilités au plus tôt, là où elles coûtent le
+        moins cher à corriger ; un bug de sécurité repéré sur une \textit{Pull Request}
+        avant fusion n'a presque aucun coût comparé à la même faille découverte en
+        production.
 
         \begin{figure}[H]
             \centering
@@ -129,15 +127,23 @@ des besoins fonctionnels et non fonctionnels du projet.
             \label{fig:owasp}
         \end{figure}
 
-    \subsection{L'approche CI/CD et les webhooks GitHub}
+    \subsection{Webhooks GitHub et signature HMAC-SHA256}
 
-        L'approche CI/CD (Intégration Continue / Déploiement Continu) automatise les étapes
-        de construction, de test et de déploiement du code. Dans notre contexte, le pipeline
-        de sécurité est déclenché par un événement webhook GitHub à chaque ouverture ou mise
-        à jour d'une \textit{Pull Request} \cite{GitHubWebhooks}. GitHub signe chaque requête
-        webhook avec un secret partagé via l'algorithme HMAC-SHA256 \cite{HMAC}, ce qui
-        permet à l'agent de valider l'authenticité de chaque événement avant tout traitement,
-        garantissant ainsi que seul GitHub peut déclencher le pipeline.
+        Le mécanisme concret qui relie ce cycle DevSecOps à notre agent est celui des
+        \textit{webhooks} GitHub \cite{GitHubWebhooks}. À chaque ouverture ou mise à jour
+        d'une \textit{Pull Request}, GitHub émet une requête HTTP POST vers l'endpoint
+        public de l'agent, accompagnée d'une charge utile JSON décrivant l'événement
+        (dépôt, branche, auteur, identifiant de la PR). Cet appel sortant est ce qui
+        permet au pipeline de sécurité de se déclencher sans aucune action manuelle.
+
+        Pour garantir que seul GitHub puisse déclencher le pipeline, chaque requête est
+        signée par GitHub avec un secret partagé via l'algorithme HMAC-SHA256 \cite{HMAC}.
+        L'agent recalcule la signature à partir de la charge utile reçue et la compare en
+        temps constant à celle envoyée dans l'en-tête \texttt{X-Hub-Signature-256} : toute
+        requête dont la signature ne correspond pas est rejetée en 401 avant la moindre
+        opération. Ce double mécanisme — déclenchement automatique côté événement,
+        validation cryptographique côté réception — incarne à la fois l'idée d'automatisation
+        du DevOps et celle de \textit{Security as Code} du DevSecOps.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Les grands modèles de langage (LLM)}
@@ -165,117 +171,51 @@ des besoins fonctionnels et non fonctionnels du projet.
             \label{fig:llm_ctx}
         \end{figure}
 
-    \subsection{Inférence locale vs API cloud}
+    \subsection{Inférence locale et API cloud}
 
-        Pour un établissement bancaire, le choix entre inférence locale et API cloud est
-        fortement contraint par les exigences réglementaires. Le tableau \ref{tab:ollama_vs_cloud}
-        présente une comparaison entre les deux approches.
+        Deux paradigmes coexistent pour exécuter un LLM. L'\textbf{inférence locale}
+        consiste à héberger le modèle sur l'infrastructure de l'organisation : le code
+        soumis au modèle ne quitte jamais le périmètre interne, mais les performances
+        dépendent du matériel disponible. L'\textbf{API cloud} consiste à invoquer un
+        modèle exposé par un fournisseur tiers (OpenAI, Anthropic, etc.) : la puissance
+        de calcul est déléguée, mais chaque requête transmet le code à des serveurs
+        externes. Pour un établissement bancaire soumis aux exigences de confidentialité
+        de la Banque Centrale de Tunisie, ce choix conditionne directement la faisabilité
+        de la solution.
 
-        \begin{table}[H]
-        \centering
-        \begin{tabular}{|m{3.5cm}|m{5cm}|m{5cm}|}
-        \hline
-        \textbf{Critère} & \textbf{Ollama (inférence locale)} & \textbf{API cloud (OpenAI, etc.)} \\
-        \hline
-        Confidentialité & Totale — code reste sur le VPS & Code transmis à des serveurs tiers \\
-        \hline
-        Conformité bancaire & Compatible avec les exigences de la BCT & Problématique selon la réglementation \\
-        \hline
-        Coût d'exploitation & Fixe — VPS existant & Variable selon le volume de tokens \\
-        \hline
-        Disponibilité & 100\% hors ligne & Dépend de la connectivité et du fournisseur \\
-        \hline
-        Contrôle de version & Modèle figé, reproductible & Version modifiée sans préavis \\
-        \hline
-        Latence & 3–12 tok/s sur CPU Haswell & Variable selon congestion réseau \\
-        \hline
-        \end{tabular}
-        \caption{Comparaison entre l'inférence locale (Ollama) et les API cloud LLM}
-        \label{tab:ollama_vs_cloud}
-        \end{table}
+    \subsection{Tool calling}
 
-        Après l'évaluation comparative présentée dans le tableau \ref{tab:ollama_vs_cloud},
-        nous avons retenu Ollama \cite{Ollama} pour l'inférence locale. La confidentialité
-        du code source
-        bancaire et la conformité réglementaire vis-à-vis de la Banque Centrale de Tunisie
-        imposent que les diffs de code ne quittent jamais l'infrastructure interne.
-
-    \subsection{Benchmark des modèles LLM sur le VPS BTE}
-
-        Afin de choisir le modèle le mieux adapté à notre infrastructure (12 cœurs Intel
-        Haswell AVX2, sans GPU), nous avons conduit un benchmark sur une suite de cinq requêtes
-        représentatives avec le prompt système complet de 8 186 caractères. Les résultats
-        sont présentés dans le tableau \ref{tab:llm_benchmark}.
-
-        \begin{table}[H]
-        \centering
-        \begin{tabular}{|m{4cm}|m{1.8cm}|m{2cm}|m{2.5cm}|m{2.5cm}|}
-        \hline
-        \textbf{Modèle} & \textbf{Taille} & \textbf{Vitesse} & \textbf{Précision outils} & \textbf{Décision} \\
-        \hline
-        \texttt{qwen2.5-coder:7b} & 4,7 Go & \textasciitilde5 tok/s & 80\% & Chat (défaut) \\
-        \hline
-        \texttt{qwen2.5-coder:14b} & 9,0 Go & \textasciitilde3,2 tok/s & 80\% & Revue PR \\
-        \hline
-        \texttt{llama3.2:3b} & 2,0 Go & \textasciitilde8 tok/s & 0\% (prompt complet) & Expérimental \\
-        \hline
-        \texttt{granite3.1-dense:2b} & 1,6 Go & \textasciitilde8,5 tok/s & 0\% & Incompatible \\
-        \hline
-        \end{tabular}
-        \caption{Benchmark des modèles LLM — 5 requêtes, prompt système complet, CPU BTE}
-        \label{tab:llm_benchmark}
-        \end{table}
-
-        L'analyse des résultats du benchmark révèle des conclusions importantes. En premier
-        lieu, \texttt{llama3.2:3b} atteint 0\% de précision avec le prompt système complet,
-        car ce dernier consomme environ 2 950 tokens, saturant presque totalement la fenêtre
-        de contexte de 4 096 tokens et ne laissant aucun espace pour le raisonnement.
-        En second lieu, \texttt{granite3.1-dense:2b} utilise le schéma propriétaire IBM
-        \texttt{\{"tool\_name": ...\}}, incompatible avec notre format d'appel d'outils.
-        Enfin, \texttt{qwen2.5-coder:7b} et \texttt{14b} atteignent une précision identique
-        de 80\%, mais le modèle 7b est 43\% plus rapide par token. Nous retenons donc
-        une architecture à deux modèles : le 7b pour la classification rapide de la
-        \textit{Pull Request} (environ 30 secondes) et le 14b pour l'analyse de sécurité
-        approfondie (6 à 11 minutes).
+        Le \textit{tool calling} (ou \textit{function calling}) désigne la capacité d'un
+        LLM à émettre, en sortie, une demande structurée d'invocation d'une fonction
+        externe au lieu d'une simple réponse textuelle. Le modèle reçoit en entrée la
+        description d'un ensemble d'outils (nom, paramètres attendus, format de retour)
+        et décide, en fonction de la requête de l'utilisateur, quel outil appeler et
+        avec quels arguments. Cette capacité est exploitée par l'assistant de monitoring
+        de notre solution pour interroger l'état de l'infrastructure (métriques
+        Prometheus, état des conteneurs Docker, journaux applicatifs) sans que
+        l'utilisateur ait à manipuler directement ces interfaces.
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Orchestration de workflows IA — LangGraph}
+\section{Orchestration de workflows IA}
 
-    LangGraph est une bibliothèque Python construite sur LangChain \cite{LangChain} permettant
-    de modéliser des workflows LLM comme des graphes d'état dirigés \cite{LangGraph}. Chaque nœud du graphe est une
-    fonction asynchrone et les arêtes conditionnelles permettent un routage dynamique selon
-    l'état courant. Dans notre contexte, LangGraph est indispensable car notre pipeline
-    présente des caractéristiques incompatibles avec un simple script séquentiel : l'état
-    partagé entre les nœuds, le routage conditionnel selon la classification, la persistance
-    de l'état en cas de redémarrage, et la possibilité d'interruption pour approbation
-    humaine. Le tableau \ref{tab:langgraph_comp} présente une comparaison entre LangGraph
-    et les alternatives d'orchestration envisagées.
+    Un pipeline de revue de sécurité combine plusieurs étapes hétérogènes : clonage du
+    dépôt, exécution parallèle de scanners, classification par un premier LLM, analyse
+    approfondie par un second, publication des résultats. Coordonner ces étapes avec un
+    simple script séquentiel devient rapidement intenable lorsque le pipeline doit
+    partager un état entre les nœuds, router dynamiquement selon une classification,
+    survivre à un redémarrage du conteneur ou s'interrompre pour une approbation humaine.
 
-    \begin{table}[H]
-    \centering
-    \begin{tabular}{|m{3.5cm}|m{5cm}|m{5cm}|}
-    \hline
-    \textbf{Critère} & \textbf{LangGraph} & \textbf{Prefect / Celery} \\
-    \hline
-    Persistance d'état & Native PostgreSQL (\texttt{AsyncPostgresSaver}) & Implémentation custom requise \\
-    \hline
-    Reprise après crash & Automatique depuis le checkpoint & Partielle selon configuration \\
-    \hline
-    Interruption humaine & \texttt{interrupt\_before} natif & Complexe à implémenter \\
-    \hline
-    Routage conditionnel & Arêtes conditionnelles natives & Nécessite des contournements \\
-    \hline
-    Intégration LLM & LangChain native & Non native \\
-    \hline
-    \end{tabular}
-    \caption{Comparaison entre LangGraph et les alternatives d'orchestration}
-    \label{tab:langgraph_comp}
-    \end{table}
-
-    Après l'évaluation présentée dans le tableau \ref{tab:langgraph_comp}, nous avons choisi
-    LangGraph. Sa persistance d'état native sur PostgreSQL garantit qu'un pipeline de dix
-    minutes survit aux redémarrages du conteneur, reprenant exactement là où il s'était
-    arrêté — une exigence fondamentale pour notre cas d'usage.
+    L'orchestration de workflows IA répond à ces besoins en modélisant le pipeline sous
+    forme de \textbf{graphe d'état dirigé} : chaque nœud représente une étape (souvent
+    un appel LLM ou un outil), chaque arête une transition pouvant être conditionnée
+    par l'état courant. Trois propriétés distinguent ce paradigme d'un script classique :
+    la \textbf{persistance d'état}, qui permet de sauvegarder un \textit{checkpoint}
+    après chaque nœud et de reprendre l'exécution exactement là où elle s'était arrêtée ;
+    le \textbf{routage conditionnel}, qui permet à un nœud de décider du prochain en
+    fonction de son résultat ; et l'\textbf{interruption humaine}, qui suspend le graphe
+    en attente d'une validation externe avant de reprendre. Ces trois propriétés sont
+    indispensables à notre cas d'usage, où un pipeline de dix minutes doit survivre aux
+    redémarrages et où certaines décisions critiques peuvent requérir une revue manuelle.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Outils d'analyse de sécurité statique (SAST)}
@@ -295,37 +235,21 @@ des besoins fonctionnels et non fonctionnels du projet.
             \label{fig:sast_overview}
         \end{figure}
 
-    \subsection{Étude comparative et choix}
+    \subsection{Les cinq catégories de risques couvertes}
 
-        Le tableau \ref{tab:sast_comp} présente la comparaison effectuée pour le choix de
-        chaque outil selon sa catégorie de risque.
-
-        \begin{table}[H]
-        \centering
-        \begin{tabular}{|m{2.3cm}|m{2cm}|m{4.5cm}|m{3cm}|}
-        \hline
-        \textbf{Catégorie} & \textbf{Retenu} & \textbf{Justification} & \textbf{Rejeté} \\
-        \hline
-        CVE images \& filesystem & Trivy & Léger, JSON structuré, base CVE quotidienne & Grype (moins mature) \\
-        \hline
-        Secrets \& credentials & Gitleaks & 130+ règles, champ \texttt{Match} omettable & TruffleHog (plus lent) \\
-        \hline
-        SAST OWASP & Semgrep & Règles OWASP épinglées, déterministe & SonarQube (serveur dédié) \\
-        \hline
-        Infrastructure-as-Code & Checkov & pip-installable, Dockerfile + Terraform & KICS (moins de règles) \\
-        \hline
-        Dépendances & OSV-Scanner & Base Google OSV, aucune clé API & Snyk (fonctionnalités payantes) \\
-        \hline
-        \end{tabular}
-        \caption{Étude comparative des outils SAST par catégorie de risque}
-        \label{tab:sast_comp}
-        \end{table}
-
-        Après évaluation des alternatives, la combinaison Trivy \cite{Trivy} + Gitleaks
-        \cite{Gitleaks} + Semgrep \cite{Semgrep} + Checkov \cite{Checkov} + OSV-Scanner
-        \cite{OSVScanner} offre la couverture la plus exhaustive, avec des formats de
-        sortie JSON homogènes facilitant le nettoyage et la réduction des tokens avant
-        transmission au LLM.
+        Notre pipeline couvre cinq catégories de risques de sécurité, chacune nécessitant
+        un outil spécialisé. Les \textbf{CVE images et filesystem} concernent les
+        vulnérabilités connues affectant les paquets système, les bibliothèques tierces
+        et les images de conteneurs utilisés par l'application. Les \textbf{secrets et
+        credentials} regroupent les clés API, mots de passe, jetons d'accès et certificats
+        accidentellement commités dans le dépôt. Les \textbf{vulnérabilités applicatives
+        OWASP} couvrent les patterns dangereux dans le code source : injections SQL,
+        désérialisation non sécurisée, chemins traversaux, etc. L'\textbf{Infrastructure-as-Code}
+        désigne les erreurs de configuration dans les Dockerfile, fichiers Terraform et
+        manifestes Kubernetes. Enfin, les \textbf{dépendances vulnérables} concernent les
+        bibliothèques tierces déclarées dans les fichiers de dépendances
+        (\texttt{requirements.txt}, \texttt{package.json}, \texttt{go.mod}, etc.) dont une
+        version connue présente une faille publiée.
 
     \subsection{Réduction des tokens SAST}
 
@@ -357,38 +281,213 @@ des besoins fonctionnels et non fonctionnels du projet.
         \end{table}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Stack technique}
+\section{Stack applicative et observabilité}
 
-    \subsection{FastAPI}
+    \subsection{Framework API asynchrone}
 
-        FastAPI \cite{FastAPI} est un framework Python ASGI haute performance basé sur les
-        annotations de
-        type Python 3.10+. Sa gestion native de l'asynchronisme via \texttt{asyncio} est
-        essentielle pour exécuter des sous-processus de scanning et des appels LLM en
-        parallèle sans bloquer le thread principal. Il assure également une validation
-        automatique des payloads via Pydantic, garantissant l'intégrité des données
-        reçues depuis les webhooks GitHub.
+        Le cœur de l'agent expose une interface HTTP qui reçoit les webhooks GitHub,
+        publie les résultats et sert l'assistant de chat en temps réel. Cette interface
+        doit gérer des opérations longues (scans SAST, appels LLM de plusieurs minutes)
+        sans bloquer les autres requêtes entrantes, ce qui impose un framework basé sur
+        un modèle d'exécution \textbf{asynchrone} via \texttt{asyncio}. Une validation
+        automatique des charges utiles entrantes est également nécessaire pour garantir
+        l'intégrité des données reçues depuis les webhooks.
 
-    \subsection{PostgreSQL}
+    \subsection{Base de données relationnelle}
 
-        PostgreSQL \cite{PostgreSQL} est la base de données relationnelle retenue pour deux
-        rôles distincts
-        dans notre architecture. D'une part, elle sert de base de connaissances sécurité,
-        stockant l'ensemble des revues de \textit{Pull Requests}, des résultats de
-        scanners et des profils de risque par dépôt. D'autre part, elle assure la
-        persistance des checkpoints LangGraph via l'\texttt{AsyncPostgresSaver}, permettant
-        au pipeline de survivre aux redémarrages du conteneur.
+        Notre architecture confie à une base de données relationnelle deux rôles distincts.
+        D'une part, elle sert de \textbf{base de connaissances sécurité} pour stocker
+        l'ensemble des revues de \textit{Pull Requests}, des résultats de scanners et des
+        profils de risque par dépôt, alimentant ainsi les requêtes de tendances. D'autre
+        part, elle assure la \textbf{persistance des checkpoints} de l'orchestrateur de
+        workflows, permettant à un pipeline de dix minutes de survivre à un redémarrage
+        du conteneur.
 
-    \subsection{Redis}
+    \subsection{Cache et déduplication}
 
-        Redis \cite{Redis} est utilisé pour trois fonctions opérationnelles critiques. La déduplication
-        des webhooks permet d'éviter le double traitement d'un même événement grâce à
-        l'opération \texttt{SET NX}. Le rate limiting garantit un maximum de trois pipelines
-        simultanés par dépôt, protégeant Ollama contre la surcharge. Enfin, le cache des
-        résultats de scanners, avec un TTL d'une heure, permet de retourner les résultats
-        en quelques millisecondes lors d'un nouveau push sur la même branche.
+        Un cache en mémoire est nécessaire pour trois fonctions opérationnelles critiques.
+        La \textbf{déduplication des webhooks} évite le double traitement d'un même
+        événement lorsque GitHub réémet une notification après timeout. Le
+        \textbf{rate limiting} garantit un maximum de pipelines simultanés par dépôt,
+        protégeant le moteur d'inférence contre la surcharge. Enfin, le \textbf{cache des
+        résultats de scanners} permet de retourner les résultats en quelques millisecondes
+        lors d'un nouveau push sur la même branche, sans relancer une analyse complète.
 
-    \subsection{Stack d'observabilité}
+    \subsection{Observabilité}
+
+        Un système exécutant des pipelines de plusieurs minutes, dépendant d'un moteur
+        d'inférence local et orchestrant cinq scanners externes, doit être instrumenté
+        pour rester opérable. La stack d'observabilité couvre trois besoins distincts :
+        la \textbf{collecte de métriques} (durée du pipeline, latence des appels LLM,
+        taux d'erreur des scanners, occupation disque), le \textbf{stockage long terme}
+        pour permettre l'analyse de tendances sur 90 jours, et la \textbf{visualisation}
+        via des dashboards opérationnels. Un mécanisme d'\textbf{alerting} complète
+        l'ensemble pour notifier les anomalies (saturation disque, indisponibilité du
+        moteur LLM, échecs répétés de scanners) avant qu'elles n'impactent les utilisateurs.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Choix technologiques}
+
+    \subsection{Choix du moteur d'inférence LLM}
+
+        Pour un établissement bancaire, le choix entre inférence locale et API cloud est
+        fortement contraint par les exigences réglementaires. Le tableau \ref{tab:ollama_vs_cloud}
+        présente une comparaison entre les deux approches.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{3.5cm}|m{5cm}|m{5cm}|}
+        \hline
+        \textbf{Critère} & \textbf{Ollama (inférence locale)} & \textbf{API cloud (OpenAI, etc.)} \\
+        \hline
+        Confidentialité & Totale — code reste sur le VPS & Code transmis à des serveurs tiers \\
+        \hline
+        Conformité bancaire & Compatible avec les exigences de la BCT & Problématique selon la réglementation \\
+        \hline
+        Coût d'exploitation & Fixe — VPS existant & Variable selon le volume de tokens \\
+        \hline
+        Disponibilité & 100\% hors ligne & Dépend de la connectivité et du fournisseur \\
+        \hline
+        Contrôle de version & Modèle figé, reproductible & Version modifiée sans préavis \\
+        \hline
+        Latence & 3–12 tok/s sur CPU Haswell & Variable selon congestion réseau \\
+        \hline
+        \end{tabular}
+        \caption{Comparaison entre l'inférence locale (Ollama) et les API cloud LLM}
+        \label{tab:ollama_vs_cloud}
+        \end{table}
+
+        Après l'évaluation comparative présentée dans le tableau \ref{tab:ollama_vs_cloud},
+        nous avons retenu Ollama \cite{Ollama} pour l'inférence locale. La confidentialité
+        du code source bancaire et la conformité réglementaire vis-à-vis de la Banque
+        Centrale de Tunisie imposent que les diffs de code ne quittent jamais
+        l'infrastructure interne.
+
+    \subsection{Choix du modèle LLM}
+
+        Afin de choisir le modèle le mieux adapté à notre infrastructure (12 cœurs Intel
+        Haswell AVX2, sans GPU), nous avons conduit un benchmark sur une suite de cinq
+        requêtes représentatives avec le prompt système complet de 8 186 caractères. Les
+        résultats sont présentés dans le tableau \ref{tab:llm_benchmark}.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{4cm}|m{1.8cm}|m{2cm}|m{2.5cm}|m{2.5cm}|}
+        \hline
+        \textbf{Modèle} & \textbf{Taille} & \textbf{Vitesse} & \textbf{Précision outils} & \textbf{Décision} \\
+        \hline
+        \texttt{qwen2.5-coder:7b} & 4,7 Go & \textasciitilde5 tok/s & 80\% & Chat (défaut) \\
+        \hline
+        \texttt{qwen2.5-coder:14b} & 9,0 Go & \textasciitilde3,2 tok/s & 80\% & Revue PR \\
+        \hline
+        \texttt{llama3.2:3b} & 2,0 Go & \textasciitilde8 tok/s & 0\% (prompt complet) & Expérimental \\
+        \hline
+        \texttt{granite3.1-dense:2b} & 1,6 Go & \textasciitilde8,5 tok/s & 0\% & Incompatible \\
+        \hline
+        \end{tabular}
+        \caption{Benchmark des modèles LLM — 5 requêtes, prompt système complet, CPU BTE}
+        \label{tab:llm_benchmark}
+        \end{table}
+
+        L'analyse des résultats du benchmark révèle des conclusions importantes. En premier
+        lieu, \texttt{llama3.2:3b} atteint 0\% de précision avec le prompt système complet,
+        car ce dernier consomme environ 2 950 tokens, saturant presque totalement la fenêtre
+        de contexte de 4 096 tokens et ne laissant aucun espace pour le raisonnement.
+        En second lieu, \texttt{granite3.1-dense:2b} utilise le schéma propriétaire IBM
+        \texttt{\{"tool\_name": ...\}}, incompatible avec notre format d'appel d'outils.
+        Enfin, \texttt{qwen2.5-coder:7b} et \texttt{14b} atteignent une précision identique
+        de 80\%, mais le modèle 7b est 43\% plus rapide par token. Nous retenons donc une
+        architecture à deux modèles : le 7b pour la classification rapide de la
+        \textit{Pull Request} (environ 30 secondes) et le 14b pour l'analyse de sécurité
+        approfondie (6 à 11 minutes).
+
+    \subsection{Choix de l'orchestrateur}
+
+        Le tableau \ref{tab:langgraph_comp} présente une comparaison entre LangGraph
+        et les alternatives d'orchestration envisagées.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{3.5cm}|m{5cm}|m{5cm}|}
+        \hline
+        \textbf{Critère} & \textbf{LangGraph} & \textbf{Prefect / Celery} \\
+        \hline
+        Persistance d'état & Native PostgreSQL (\texttt{AsyncPostgresSaver}) & Implémentation custom requise \\
+        \hline
+        Reprise après crash & Automatique depuis le checkpoint & Partielle selon configuration \\
+        \hline
+        Interruption humaine & \texttt{interrupt\_before} natif & Complexe à implémenter \\
+        \hline
+        Routage conditionnel & Arêtes conditionnelles natives & Nécessite des contournements \\
+        \hline
+        Intégration LLM & LangChain native & Non native \\
+        \hline
+        \end{tabular}
+        \caption{Comparaison entre LangGraph et les alternatives d'orchestration}
+        \label{tab:langgraph_comp}
+        \end{table}
+
+        Après l'évaluation présentée dans le tableau \ref{tab:langgraph_comp}, nous avons
+        choisi LangGraph \cite{LangGraph}, bibliothèque Python construite sur LangChain
+        \cite{LangChain}. Sa persistance d'état native sur PostgreSQL garantit qu'un
+        pipeline de dix minutes survit aux redémarrages du conteneur, reprenant exactement
+        là où il s'était arrêté — une exigence fondamentale pour notre cas d'usage.
+
+    \subsection{Choix des outils SAST}
+
+        Le tableau \ref{tab:sast_comp} présente la comparaison effectuée pour le choix de
+        chaque outil selon sa catégorie de risque.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{2.3cm}|m{2cm}|m{4.5cm}|m{3cm}|}
+        \hline
+        \textbf{Catégorie} & \textbf{Retenu} & \textbf{Justification} & \textbf{Rejeté} \\
+        \hline
+        CVE images \& filesystem & Trivy & Léger, JSON structuré, base CVE quotidienne & Grype (moins mature) \\
+        \hline
+        Secrets \& credentials & Gitleaks & 130+ règles, champ \texttt{Match} omettable & TruffleHog (plus lent) \\
+        \hline
+        SAST OWASP & Semgrep & Règles OWASP épinglées, déterministe & SonarQube (serveur dédié) \\
+        \hline
+        Infrastructure-as-Code & Checkov & pip-installable, Dockerfile + Terraform & KICS (moins de règles) \\
+        \hline
+        Dépendances & OSV-Scanner & Base Google OSV, aucune clé API & Snyk (fonctionnalités payantes) \\
+        \hline
+        \end{tabular}
+        \caption{Étude comparative des outils SAST par catégorie de risque}
+        \label{tab:sast_comp}
+        \end{table}
+
+        Après évaluation des alternatives, la combinaison Trivy \cite{Trivy} + Gitleaks
+        \cite{Gitleaks} + Semgrep \cite{Semgrep} + Checkov \cite{Checkov} + OSV-Scanner
+        \cite{OSVScanner} offre la couverture la plus exhaustive, avec des formats de
+        sortie JSON homogènes facilitant le nettoyage et la réduction des tokens avant
+        transmission au LLM.
+
+    \subsection{Choix de la stack applicative}
+
+        Pour le framework API, nous retenons \textbf{FastAPI} \cite{FastAPI}, framework
+        Python ASGI haute performance basé sur les annotations de type Python 3.10+.
+        Sa gestion native de l'asynchronisme via \texttt{asyncio} est essentielle pour
+        exécuter des sous-processus de scanning et des appels LLM en parallèle sans
+        bloquer le thread principal. Il assure également une validation automatique des
+        payloads via Pydantic, garantissant l'intégrité des données reçues depuis les
+        webhooks GitHub.
+
+        Pour la base de données relationnelle, nous retenons \textbf{PostgreSQL}
+        \cite{PostgreSQL} qui assume les deux rôles décrits précédemment — base de
+        connaissances sécurité et persistance des checkpoints LangGraph via
+        l'\texttt{AsyncPostgresSaver}. Son écosystème mature et son support natif des
+        types JSON facilitent le stockage des résultats hétérogènes des scanners.
+
+        Pour le cache et la déduplication, nous retenons \textbf{Redis} \cite{Redis}.
+        Son opération atomique \texttt{SET NX} permet une déduplication fiable des
+        webhooks, et sa gestion native des TTL convient parfaitement au cache des
+        résultats de scanners (TTL d'une heure) et au rate limiting (maximum trois
+        pipelines simultanés par dépôt).
+
+    \subsection{Choix de la stack d'observabilité}
 
         Le tableau \ref{tab:obs_stack} présente les composants de la stack d'observabilité
         et les alternatives considérées.
@@ -413,6 +512,18 @@ des besoins fonctionnels et non fonctionnels du projet.
         \caption{Stack d'observabilité et alternatives rejetées}
         \label{tab:obs_stack}
         \end{table}
+
+        La combinaison \textbf{Prometheus + VictoriaMetrics + Grafana + node-exporter +
+        AlertManager} a été retenue. Trois critères ont pesé. D'abord, l'ensemble est
+        open source et sans dépendance cloud externe, ce qui s'aligne sur la même
+        contrainte de confidentialité que celle qui a guidé le choix du moteur LLM.
+        Ensuite, ces cinq composants forment un écosystème conçu pour s'intégrer entre
+        eux — Prometheus émet vers AlertManager nativement, Grafana lit Prometheus et
+        VictoriaMetrics par un connecteur identique — ce qui élimine les couches
+        d'adaptation. Enfin, node-exporter \cite{NodeExporter} était la seule option
+        capable d'exposer les vraies métriques de l'hôte depuis le snapshotter
+        \texttt{containerd}, cAdvisor \cite{cAdvisor} étant limité au namespace Docker
+        et donc aveugle au noyau sous-jacent.
 
     \subsection{Synthèse des choix technologiques}
 
@@ -515,14 +626,14 @@ des besoins fonctionnels et non fonctionnels du projet.
 \addcontentsline{toc}{section}{Conclusion}
 
 Ce chapitre a posé les bases conceptuelles du projet. Nous y avons rappelé les
-principes du DevOps et de la CI/CD, puis ceux du DevSecOps qui les prolongent en
-intégrant la sécurité à chaque étape. Nous avons ensuite décrit le fonctionnement des
-grands modèles de langage et les compromis spécifiques à l'inférence locale, présenté
-LangGraph comme moteur d'orchestration, et passé en revue les cinq outils d'analyse
-SAST sur lesquels reposera la couverture du pipeline. L'étude comparative menée à
-chaque étape a permis de justifier les choix retenus : Ollama \cite{Ollama} pour
-respecter les exigences de confidentialité bancaire, LangGraph \cite{LangGraph} pour
-la persistance native de l'état, et la combinaison Trivy / Gitleaks / Semgrep /
-Checkov / OSV-Scanner pour couvrir l'ensemble du spectre des vulnérabilités visées.
-Les besoins fonctionnels et non fonctionnels recensés en fin de chapitre encadreront
-la conception détaillée présentée dans le chapitre suivant.
+principes du DevOps, de la CI/CD et de leur extension DevSecOps qui intègre la
+sécurité à chaque étape. Nous avons ensuite décrit le fonctionnement des grands
+modèles de langage, les enjeux conceptuels de l'inférence locale, ainsi que les
+principes d'orchestration de workflows IA et les cinq catégories couvertes par les
+outils d'analyse SAST. L'étude comparative menée pour chaque composant a permis de
+justifier les choix retenus : Ollama \cite{Ollama} pour respecter les exigences de
+confidentialité bancaire, LangGraph \cite{LangGraph} pour la persistance native de
+l'état, et la combinaison Trivy / Gitleaks / Semgrep / Checkov / OSV-Scanner pour
+couvrir l'ensemble du spectre des vulnérabilités visées. Les besoins fonctionnels
+et non fonctionnels recensés en fin de chapitre encadreront la conception détaillée
+présentée dans le chapitre suivant.

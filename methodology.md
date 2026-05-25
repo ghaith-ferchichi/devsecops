@@ -11,11 +11,14 @@
 | **Developer** | Solo intern — Ghaieth Ferchichi |
 | **Host organisation** | Banque de Tunisie et des Emirats (BTE) — Direction des Systèmes d'Information |
 | **Environment** | Empty VPS (141.94.92.226) — Ubuntu Linux, 12 CPU cores, 45 GB RAM, 290 GB disk |
-| **Duration** | 5 months (20 weeks) — 4 months development + 1 month documentation |
-| **Sprints** | 8 sprints × 2 weeks (development) + 4 weeks documentation |
+| **Duration** | 5 months (21 weeks) — 1 Feb 2026 → 30 June 2026 |
+| **Phase split** | 4 months active development (S1–S8) + 1 month polishing & improving (S9–S10) + 1 week soutenance prep |
+| **Sprints** | 10 sprints × 2 weeks: 8 dev sprints (2 Feb → 24 May) + 2 polish sprints (25 May → 21 June) |
+| **Total tickets** | 52 Jira tickets — average 22 story points / sprint |
+| **Milestones** | 6 supervisor checkpoints (M1–M6) at end of S2, S4, S5, S6, S8, S10 |
 | **Starting point** | Blank VPS with SSH credentials only |
-| **Final state** | 12-container production platform, fully autonomous, self-monitoring, anti-hallucination AI chat, robust PR review parsing |
-| **Project completion** | 2026-05-01 (Sprint 8 closed) |
+| **Final state** | 12-container production platform, fully autonomous, self-monitoring, anti-hallucination AI chat, robust PR review parsing, validated dual-backend architecture |
+| **Project completion** | 2026-06-30 (Sprint 10 closed + soutenance) |
 
 ---
 
@@ -47,13 +50,15 @@ None of these could have been in a Waterfall specification. Reality is always mo
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  STRATEGIC layer — Agile Scrum (8 sprints × 2 weeks)        │
-│  • Sprint goals, backlog, milestones M1–M5                  │
+│  STRATEGIC layer — Agile Scrum (10 sprints × 2 weeks)       │
+│  • 8 development sprints (S1–S8) + 2 polish sprints (S9–S10)│
+│  • Sprint goals, backlog, milestones M1–M6                  │
 │  • Definition of Done                                       │
 │  • Supervisor-visible checkpoints                           │
 ├─────────────────────────────────────────────────────────────┤
 │  TACTICAL layer — Kanban discipline (within each sprint)    │
-│  • Tableau Backlog | In Progress (WIP=1) | Blocked | Done   │
+│  • 6-column board with explicit WIP limits                  │
+│  • Backlog → Ready (5) → In Progress (1) → In Review (2) → Testing (2) → Done │
 │  • Production incidents jump to top of backlog              │
 │  • Pull system: finish one before starting another          │
 ├─────────────────────────────────────────────────────────────┤
@@ -64,24 +69,64 @@ None of these could have been in a Waterfall specification. Reality is always mo
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 1.4 The Kanban Board (within each sprint)
+### 1.4 The Scrumban Board — 6 columns with WIP limits
 
 ```
-┌──────────────┬──────────────────────────┬────────────┬──────────────────┐
-│   BACKLOG    │   IN PROGRESS  (WIP = 1) │  BLOCKED   │      DONE        │
-├──────────────┼──────────────────────────┼────────────┼──────────────────┤
-│ Priority     │                          │            │                  │
-│ ordered list │  ONE card only.          │  Card +    │  Completed +     │
-│ of all work  │  Pulled when previous    │  reason    │  deployed +      │
-│              │  card reaches DONE.      │  stated.   │  verified cards  │
-└──────────────┴──────────────────────────┴────────────┴──────────────────┘
+┌─────────┬───────┬─────────────┬───────────┬─────────┬──────┐
+│ BACKLOG │ READY │ IN PROGRESS │ IN REVIEW │ TESTING │ DONE │
+│   —     │   5   │      1      │     2     │    2    │  —   │
+└─────────┴───────┴─────────────┴───────────┴─────────┴──────┘
 ```
+
+| Column | Jira status | WIP | Role |
+|--------|-------------|-----|------|
+| **Backlog** | `To Do` | — | Reservoir of unprioritised ideas, tech debt, improvements |
+| **Ready** | `Ready` | 5 | Sprint backlog — cards committed for the current 2-week sprint |
+| **In Progress** | `In Progress` | **1** | Active development — the structural rule of the entire system |
+| **In Review** | `In Review` | 2 | Code review or functional validation before merge |
+| **Testing** | `Testing` | 2 | Verification in production on a real triggering event |
+| **Done** | `Done` | — | Satisfies the 5-condition Definition of Done |
 
 **WIP limit of 1** is the governing rule. The most common violation temptation was starting observability work while scanner integration was still incomplete. Enforcing WIP=1 meant each feature was fully deployed and verified before moving on — which is why production bugs were caught early rather than accumulated.
 
 **Priority rule:** Production incidents immediately jump to the top of the backlog, above any planned work. This is how the disk guard (Week 7), the VPS audit (Week 11), and the PR review parsing fixes (Week 15–16) were handled — unplanned discoveries became the top-priority card without disrupting the sprint cadence.
 
-### 1.5 The Governing Principle
+### 1.5 Classes of Service
+
+Each card carries one of four orthogonal service classes that govern how it is scheduled:
+
+| Class | Visual marker | Behaviour | Examples |
+|-------|---------------|-----------|----------|
+| **Standard** | Grey label | Normal flow, respect WIP limits | Most cards (~79%) — nominal development work |
+| **Expedite** | Red label | Allowed to cross WIP limits with explicit documentation | Sprint 8 audit fixes — VPS hardening, parser rewrite |
+| **Fixed-Date** | Blue label | Anchored to milestone demo date — cannot slip | 6 milestone demo cards (M1–M6) |
+| **Intangible** | Green label | Long-cycle value, no fixed deadline | SAST token reduction, backend decision report, final metrics dashboard |
+
+### 1.6 Issue Types — Orthogonal categorisation of work nature
+
+Issue types distinguish the **nature** of the work (development vs ops vs research), independently of the service class which governs scheduling. The icon color on each card lets you read at a glance whether a sprint is dev-heavy, infra-heavy or correction-heavy.
+
+| Issue Type | Default Jira icon | Usage | Count |
+|------------|-------------------|-------|-------|
+| **Story** 📗 | Green | Application development (FastAPI, LangGraph, parsers, chat ReAct) | 30 cards (58%) |
+| **Task** 📘 | Blue | Infrastructure & ops (VPS, Docker, Prometheus, Grafana, AlertManager) | 11 cards (21%) |
+| **Bug** 🐞 | Red | Defect fixes (audit corrections, parser rewrite, cold-load) | 4 cards (8%) |
+| **Spike** 🔬 | Orange | Research & benchmark (model comparison, prompt compression) | 5 cards (10%) |
+| **Epic** 🎯 | Purple | Sprint container — one Epic per sprint (10 total) | 10 epics |
+
+WIP limits remain **global** regardless of issue type — the WIP=1 rule applies indistinctly to a Story or a Task. This preserves system coherence regardless of which type of work is in flight.
+
+### 1.7 Definition of Done
+
+A card cannot exit the **Done** column unless it satisfies all 5 conditions simultaneously:
+
+1. **Deployed and running** on the production VPS
+2. **Clean logs** — no errors, no warnings after the new code goes live
+3. **Prometheus metrics updated** to reflect its behaviour (when applicable)
+4. **Triggered by a real event** (webhook, alert, chat request) and produced the expected result
+5. **Documentation updated** — README sections, methodology log, or relevant ADR
+
+### 1.8 The Governing Principle
 
 > **Ship something real every day.**
 
@@ -92,21 +137,191 @@ Not "write code" — deploy and verify. `docker compose up -d`, trigger a real e
 ## 2. Project Milestones
 
 ```
-M1 ──── M2 ──── M3 ──── M4 ──── M5
-Week 4  Week 8  Week 10 Week 12 Week 16
+M1 ───── M2 ───── M3 ───── M4 ───── M5 ───── M6
+27 Fev   27 Mar   10 Avr   24 Avr   22 Mai   19 Juin
+S2 end   S4 end   S5 end   S6 end   S8 end   S10 end
 ```
 
-| Milestone | Name | Sprint | Definition of Done |
-|-----------|------|--------|-------------------|
-| **M1** | Pipeline Alive | Sprint 2 (W3–4) | One real PR reviewed end-to-end — security comment posted to GitHub |
-| **M2** | Full Intelligence | Sprint 4 (W7–8) | All 5 scanners running in parallel + LLM security review with risk score and verdict + inline comments |
-| **M3** | Self-Operating | Sprint 5 (W9–10) | System runs unattended — alerts firing, Slack notified, disk guarded, AlertManager routing, autonomous scheduler |
-| **M4** | Full Observability | Sprint 6 (W11–12) | All Prometheus scrape targets green, all alert rules correctly calibrated, 3 Grafana dashboards live |
-| **M5** | Production Hardened | Sprint 8 (W15–16) | Host monitoring (node-exporter), anti-hallucination AI chat, VPS audit complete, PR review parsing rewritten — inline comments fully restored |
+| Milestone | Name | Sprint end | Demo date | Definition of Done |
+|-----------|------|-----------|-----------|-------------------|
+| **M1** | Pipeline Alive | S2 (1 Mar) | Fri 27 Feb 2026 | One real PR reviewed end-to-end — security comment posted to GitHub |
+| **M2** | Full Intelligence | S4 (29 Mar) | Fri 27 Mar 2026 | All 5 scanners running in parallel + LLM 14B security review with risk score and verdict + inline comments |
+| **M3** | Self-Operating | S5 (12 Apr) | Fri 10 Apr 2026 | System runs unattended — alerts firing, Slack notified, disk guarded, AlertManager routing, chat assistant with 20 tools |
+| **M4** | Full Observability | S6 (26 Apr) | Fri 24 Apr 2026 | All 4 Prometheus scrape targets green, 12 alert rules calibrated, 3 Grafana dashboards live |
+| **M5** | Production Hardened | S8 (24 May) | Fri 22 May 2026 | Host monitoring complete, anti-hallucination AI chat (6 layers), VPS audit + 5 hardening fixes, PR review parsing rewritten — inline comments fully restored |
+| **M6** | Validated & Defended | S10 (21 Jun) | Fri 19 Jun 2026 | 4-week continuous-run stability validated, dual-backend architecture proven by direct benchmark (Ollama vs LocalAI), final documentation complete, soutenance rehearsed |
 
 ---
 
-## 3. Weekly Breakdown — Detailed Work Report
+## 3. Sprint Backlog — 52 Tickets Across 10 Sprints
+
+The complete sprint backlog totals **52 cards** for **220 story points** over 10 sprints, averaging 22 SP per sprint — a healthy velocity for solo development at ~80 hours of focused work per sprint. Every card is sized at 8 SP or below so the WIP=1 rule remains realistic (each card finishable in 1–3 days of active development).
+
+### 3.1 Sprint Schedule Overview
+
+| # | Sprint | Period | Tickets | SP | Issue type mix | Milestone |
+|---|--------|--------|---------|----|--------------|-----------|
+| S1 | Foundations | 2–15 Feb 2026 | 5 | 21 | 2 Task / 3 Story | — |
+| S2 | First Review | 16 Feb – 1 Mar | 5 | 23 | 1 Task / 4 Story | **M1** Fri 27 Feb |
+| S3 | SAST Pipeline | 2–15 Mar | 5 | 22 | 1 Task / 3 Story / 1 Spike | — |
+| S4 | LLM Security | 16–29 Mar | 5 | 24 | 1 Task / 4 Story | **M2** Fri 27 Mar |
+| S5 | Chat & Automation | 30 Mar – 12 Apr | 5 | 23 | 1 Task / 4 Story | **M3** Fri 10 Apr |
+| S6 | Observability | 13–26 Apr | 5 | 21 | 3 Task / 2 Story | **M4** Fri 24 Apr |
+| S7 | Optimisation | 27 Apr – 10 May | 6 | 20 | 4 Story / 2 Spike | — |
+| S8 | Hardening | 11–24 May | 5 | 24 | 3 Bug / 2 Story | **M5** Fri 22 May |
+| S9 | Backend Evaluation | 25 May – 7 Jun | 6 | 21 | 1 Task / 3 Story / 1 Bug / 1 Spike | — |
+| S10 | Robustness & Defense | 8–21 Jun | 5 | 21 | 5 Story | **M6** Fri 19 Jun |
+| — | Final jury prep | 22–30 Jun | — | — | — | Soutenance |
+| **Total** | | **5 months** | **52** | **220** | | **6 jalons** |
+
+### 3.2 Sprint 1 — Foundations (2–15 Feb 2026)
+
+**Goal:** VPS production opérationnel + webhook GitHub sécurisé.
+
+| # | Title | Type | Class | SP | Acceptance |
+|---|-------|------|-------|----|--|
+| 1 | Provisioning VPS + SSH hardening | Task | Standard | 5 | SSH key-only, ports closed, fail2ban active |
+| 2 | Docker + Docker Compose + `devsecops-net` network | Task | Standard | 3 | `docker compose up` starts the agent stack |
+| 3 | FastAPI skeleton + `/health` healthcheck | Story | Standard | 3 | GET /health returns 200 |
+| 4 | GitHub webhook endpoint `POST /webhooks/github` | Story | Standard | 5 | Valid payload returns 200 Accepted |
+| 5 | HMAC-SHA256 validation + unit tests | Story | Standard | 5 | Invalid signature rejected with 401 |
+
+### 3.3 Sprint 2 — First Review (16 Feb – 1 Mar) — 🚩 M1
+
+**Goal:** First PR comment automatically generated by LLM and published to GitHub.
+
+| # | Title | Type | Class | SP | Acceptance |
+|---|-------|------|-------|----|--|
+| 6 | Ollama integration + `qwen2.5-coder:7b` model | Task | Standard | 3 | Model loaded, first-token latency measured |
+| 7 | Initial LangGraph graph (intake + classify nodes) | Story | Standard | 5 | Nodes functional, state persisted via PostgreSQL |
+| 8 | PR classification (5 categories) | Story | Standard | 5 | Precision ≥ 80% on 10 test PRs |
+| 9 | Markdown review generation with 7B LLM | Story | Standard | 5 | Structured review produced on a sample PR |
+| 10 | GitHub comment publication + **M1 demo** | Story | Fixed-Date | 5 | M1 milestone reached |
+
+### 3.4 Sprint 3 — SAST Pipeline (2–15 Mar)
+
+**Goal:** 5 SAST scanners aggregated under 90 seconds.
+
+| # | Title | Type | Class | SP | Acceptance |
+|---|-------|------|-------|----|--|
+| 11 | Code scanners in parallel (Trivy + Semgrep + Gitleaks) | Story | Standard | 8 | 3 scanners aggregated under 60s |
+| 12 | IaC and dependency scanners (Checkov + OSV) | Story | Standard | 5 | 5 unified results under 90s |
+| 13 | Redis cache of scan findings (TTL 1h) | Task | Standard | 3 | Hit ratio observable via Prometheus metric |
+| 14 | Scan matrix by PR classification | Story | Standard | 3 | Scan adapted to each PR type |
+| 15 | SAST token reduction (52%) before LLM | Spike | Intangible | 3 | Volume halved at iso-coverage of high/critical findings |
+
+### 3.5 Sprint 4 — LLM Security (16–29 Mar) — 🚩 M2
+
+**Goal:** 14B security review with inline GitHub comments — the sprint where the agent becomes a real Security AI Agent.
+
+| # | Title | Type | Class | SP | Acceptance |
+|---|-------|------|-------|----|--|
+| 16 | 14B model integration | Task | Standard | 3 | Model loaded, security prompt tested |
+| 17 | Combined prompt — scanners findings + diff to 14B | Story | Standard | 5 | Review published under 7 minutes |
+| 18 | Structured review parser (markdown + JSON) | Story | Standard | 5 | 100% fields extracted on 10 test PRs |
+| 19 | Inline GitHub comments with suggestions | Story | Standard | 8 | Suggestions applicable in one click |
+| 20 | Real PR validation + **M2 demo** | Story | Fixed-Date | 3 | M2 milestone reached |
+
+### 3.6 Sprint 5 — Chat & Automation (30 Mar – 12 Apr) — 🚩 M3
+
+**Goal:** 20-tool chat assistant + autonomous scheduler + alert routing.
+
+| # | Title | Type | Class | SP | Acceptance |
+|---|-------|------|-------|----|--|
+| 21 | Autonomous scheduler (disk guard + daily digest) | Story | Standard | 5 | Auto-cleanup above 90% disk usage |
+| 22 | Slack notifications for incidents | Story | Standard | 3 | Message received within 1 minute |
+| 23 | AlertManager + 12 alert rules | Task | Standard | 5 | 12 rules manually triggerable |
+| 24 | Chat ReAct loop + 10 base tools | Story | Standard | 5 | Test conversation completes without error |
+| 25 | 10 additional tools + **M3 demo** | Story | Fixed-Date | 5 | M3 reached — 20 tools active |
+
+### 3.7 Sprint 6 — Observability (13–26 Apr) — 🚩 M4
+
+**Goal:** 28 custom metrics + 3 Grafana dashboards + refined alerts.
+
+| # | Title | Type | Class | SP | Acceptance |
+|---|-------|------|-------|----|--|
+| 26 | Prometheus configuration with 4 scrape targets | Task | Standard | 3 | All targets UP=1 stable over 24h |
+| 27 | Grafana VPS dashboard (CPU/mem/disk/network) | Task | Standard | 3 | Data displayed in real time |
+| 28 | Grafana Agent + Reviews dashboards | Task | Standard | 5 | Business metrics exposed |
+| 29 | 28 custom agent metrics instrumented | Story | Standard | 5 | 28 metrics on `/metrics` endpoint |
+| 30 | Alert refinement + **M4 demo** | Story | Fixed-Date | 5 | M4 milestone reached |
+
+### 3.8 Sprint 7 — Optimisation (27 Apr – 10 May)
+
+**Goal:** Performance — prompt compression + tool caching + load tests.
+
+| # | Title | Type | Class | SP | Acceptance |
+|---|-------|------|-------|----|--|
+| 31 | Cross-model benchmark (7B vs 14B) | Spike | Standard | 3 | Comparison documented |
+| 32 | System prompt compression (-36% tokens) | Spike | Standard | 3 | Volume reduced at iso-quality |
+| 33 | Cache of 14 chat tools (TTL 10–120s) | Story | Standard | 5 | Hit ratio observable |
+| 34 | Anti-duplicate guard on tool calls | Story | Standard | 3 | No duplicate calls in 24h |
+| 35 | 20th tool `query_prometheus` operational | Story | Standard | 3 | Tool available in chat |
+| 36 | Load tests — concurrent PRs | Story | Standard | 3 | 3 parallel PRs without degradation |
+
+### 3.9 Sprint 8 — Hardening (11–24 May) — 🚩 M5
+
+**Goal:** Production-ready, secured, reliable platform.
+
+| # | Title | Type | Class | SP | Acceptance |
+|---|-------|------|-------|----|--|
+| 37 | Full VPS audit + vulnerability report | Bug | Expedite | 3 | Report archived, 5 findings identified |
+| 38 | 5 hardening fixes (VictoriaMetrics, AlertManager, nginx, auth, dashboards) | Bug | Expedite | 5 | 5 findings closed and re-tested |
+| 39 | PR review parser rewrite | Bug | Expedite | 8 | Inline comments restored to 100% |
+| 40 | Anti-hallucination chat (6 layers) | Story | Standard | 5 | No invented tool over 50 test conversations |
+| 41 | JSON-first prompt restructure + **M5 demo** | Story | Fixed-Date | 3 | M5 milestone reached |
+
+### 3.10 Sprint 9 — Backend Evaluation (25 May – 7 Jun)
+
+**Goal:** Validate Ollama choice through direct benchmark against an alternative (LocalAI) — *folklore is not evidence*.
+
+| # | Title | Type | Class | SP | Acceptance |
+|---|-------|------|-------|----|--|
+| 42 | LocalAI sandbox (`docker-compose.localai.yml`) | Task | Standard | 3 | LocalAI container running on port 8081, isolated from prod |
+| 43 | Dual-backend chat router (`backend/name` parsing) | Story | Standard | 5 | Ollama or LocalAI selectable on-the-fly via UI |
+| 44 | Cold-load investigation + 3 fixes (`stream_chunk_timeout`, `_prime_localai_model`, SSE events) | Bug | Standard | 5 | First token received under 120s on 15B Q4_K_M model |
+| 45 | 2 SSE status events (`Warming up` / `Generating`) | Story | Standard | 3 | Progress visible on client side |
+| 46 | Identical-model benchmark (Qwen 7B Q4_K_M) | Spike | Standard | 3 | tokens/s measured for both backends |
+| 47 | Backend decision report archived | Story | Intangible | 2 | One-page synthesis: Ollama 5.49 tok/s vs LocalAI 4.50 tok/s — Ollama ~22% faster |
+
+### 3.11 Sprint 10 — Robustness & Defense (8–21 Jun) — 🚩 M6
+
+**Goal:** 4-week continuous-run stability + soutenance fully prepared.
+
+| # | Title | Type | Class | SP | Acceptance |
+|---|-------|------|-------|----|--|
+| 48 | Integration test suite — 12 real PRs end-to-end | Story | Standard | 5 | 12 PRs processed without human intervention |
+| 49 | Final user documentation (README, install guide) | Story | Standard | 5 | Reproducible installation in under 30 min |
+| 50 | Global metrics report (uptime, perf, hallucinations) | Story | Intangible | 3 | Recap dashboard delivered |
+| 51 | Soutenance slides + recorded demo video | Story | Fixed-Date | 5 | 30 slides + 5-minute demo video |
+| 52 | Jury rehearsals + adjustments + **M6 demo** | Story | Fixed-Date | 3 | M6 milestone reached |
+
+### 3.12 Class-of-Service Distribution
+
+| Class | Count | % | Pattern |
+|-------|-------|---|---------|
+| Standard | 41 | 79% | Nominal flow — backbone of the project |
+| Fixed-Date | 6 | 12% | Anchored to milestones M1–M6 |
+| Expedite | 3 | 6% | Sprint 8 audit fixes — production-discovered |
+| Intangible | 3 | 6% | Long-cycle value: SAST reduction, backend report, final dashboard |
+
+### 3.13 How Tickets Flow Through the Board
+
+A typical ticket lifecycle, illustrated with Ticket #19 (Inline GitHub comments) from Sprint 4:
+
+```
+Day 0  Backlog → Ready    Sprint planning: pulled into Ready (capacity check)
+Day 1  Ready → In Progress  WIP=1 enforced — must wait until #18 (parser) is Done
+Day 4  In Progress → In Review  Code written, push to feature branch, self-review
+Day 4  In Review → Testing  Deployed to VPS — trigger on real PR
+Day 5  Testing → Done      Inline suggestion clicked through GitHub, verified
+```
+
+If at any stage the card fails its acceptance criteria, it returns to **In Progress** rather than skipping forward. This applies the Definition of Done strictly: deployed *and* verified, no exceptions.
+
+---
+
+## 4. Weekly Breakdown — Detailed Work Report
 
 ---
 
@@ -513,10 +728,91 @@ PR #14 produced a security review with header `Risk: MEDIUM | Verdict: REQUEST_C
 
 ---
 
-### Weeks 17–20 — Documentation, Validation & Internship Presentation
+### Week 17 — Sprint 9 Part 1: LocalAI Sandbox & Cold-Load Bug
 
-**Phase: Documentation + Soutenance**
-**Goal:** Complete the report, validate the entire platform end-to-end, prepare the soutenance.
+**Sprint 9 — Backend Evaluation**
+**Goal:** Stand up a parallel LocalAI sandbox, validate the chat router's backend abstraction, expose any hidden bugs.
+
+After Sprint 8 closure, the next sprint addressed one engineering question that had remained folklore since day one: **"Is Ollama actually the right engine for this VPS, or could LocalAI run the same models faster?"** Without a direct measurement, the Sprint-1 choice was reputation-based. The methodology insists on production evidence (Section 1.2), so the same rigour now applies to a baseline architectural decision.
+
+| Task | Technical detail | Outcome |
+|------|-----------------|---------|
+| LocalAI compose file | Stand-alone `docker-compose.localai.yml`, host port 8081, joins existing `devsecops-net`, 24 GB memory cap, shm_size 2 GB, THREADS=12, CONTEXT_SIZE=8192 | LocalAI sandbox isolated from production — `docker compose -f … down` removes it cleanly |
+| Custom model YAML | `localai/config/qwen2.5-coder-7b.yaml` pointing at the **same** HuggingFace GGUF Ollama uses (`bartowski/Qwen2.5-Coder-7B-Instruct-GGUF/...-Q4_K_M.gguf`) | Same blob on both backends — apples-to-apples benchmark possible |
+| LocalAI v3 quirk | YAML files in `config/` subdirectory ignored; v3 only scans `/build/models/` root | Discovered through trial and error; YAML moved to root |
+| Dual-backend chat router | `app/routers/chat.py` — `_parse_backend()` splits `ollama/<name>` vs `localai/<name>`. LocalAI uses `ChatOpenAI` against `http://localai:8080/v1` | Backend abstraction validated; production PR review pipeline remains Ollama-only |
+| Two SSE status events | New `Warming up <model>...` → `Generating...` events surface progress during cold load | UX no longer freezes on a "Loading..." screen during the 60–120 s mmap |
+
+**Cold-load bug investigation (2026-05-27):**
+
+Cold-loading phi-4 through LangChain's `ChatOpenAI` failed at exactly 120 s with `No streaming chunk received for 120.0s ... TimeoutError`. Root cause: `langchain_openai` ships a per-chunk watchdog independent of the request timeout. On a 12-core CPU loading a 15 B Q4_K_M model + processing the 1,900-token system prompt routinely exceeds 120s before the first token.
+
+Three cooperating fixes:
+1. `stream_chunk_timeout=None` on the LocalAI `ChatOpenAI` client — kernel-level TCP keepalive is sufficient on a Docker bridge.
+2. `_prime_localai_model()` helper — tiny `POST /v1/chat/completions` with `max_tokens=4` fires **before** LangChain begins streaming, so the model is mmap'd and warm when the real request arrives.
+3. SSE status events surface progress to the user during the wait.
+
+**End-of-week deliverable:** LocalAI sandbox functional, chat router dual-backend, cold-load bug investigated and three fixes deployed.
+
+---
+
+### Week 18 — Sprint 9 Part 2: Identical-Model Benchmark & Decision
+
+**Sprint 9 — Backend Evaluation (continued)**
+**Goal:** Direct measurement: same model, same hardware, same prompt, same call path — quantify the Ollama vs LocalAI gap.
+
+| Task | Technical detail | Outcome |
+|------|-----------------|---------|
+| Benchmark script | `scripts/benchmark-backends.sh` — cold prime (4 tokens, discarded) → warm timed pass (80 tokens, OWASP Top 10 prompt, temperature 0.1) → parse `usage.completion_tokens` | Reproducible head-to-head measurement |
+| Identical call environment | Both calls run from inside the `devsecops-agent` container — Ollama port not host-published, agent image has curl | No environmental confound in the comparison |
+| Avoid model-architecture confound | The hidden trap was almost benchmarking Qwen 2.5 dense (Ollama) against Qwen 3 MoE (LocalAI gallery default) — same engine difference masked by model difference | Caught early; both backends point at identical GGUF |
+
+**Benchmark results — identical Qwen 2.5 Coder 7B Q4_K_M:**
+
+| Backend | Model identifier | Tokens | Wall time (s) | Throughput (tok/s) |
+|---------|------------------|--------|---------------|---------------------|
+| Ollama  | `qwen2.5-coder:7b` | 69 | 12.56 | **5.49** |
+| LocalAI | `qwen2.5-coder-7b` (same GGUF) | 80 | 17.79 | **4.50** |
+
+**Ollama is ~22% faster** on identical model + identical hardware. Likely cause: Ollama's tighter `llama.cpp` integration + AVX2 tuning (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_NUM_THREAD=12`) versus LocalAI's more general-purpose orchestration layer.
+
+**Decisions (Section 6 Technology Decisions Log rule applied):**
+
+| Item | Decision | Why |
+|------|----------|-----|
+| **Production LLM backend** | Keep Ollama | 22% faster on identical workload — Sprint 1 choice backed by direct evidence rather than reputation |
+| **LocalAI** | Retained as opt-in sandbox | Lets future evaluations (new models, new engines) plug in through the same `model=<backend>/<name>` selector without disrupting production |
+| **Cold-load fix** | Kept in chat router permanently | A real bug fix, not throwaway evaluation code — documented in `agent/README.md` under "LocalAI Sandbox Backend" |
+
+> **Lesson reinforced:** Folklore is not evidence. The 22% gap might have gone the other way; we would not have known without running the comparison.
+
+**End-of-week deliverable:** Backend decision report archived. Sprint-1 architectural choice validated with production evidence. Sprint 9 closes.
+
+---
+
+### Week 19 — Sprint 10 Part 1: 4-Week Stability Run & Documentation
+
+**Sprint 10 — Robustness & Defense**
+**Goal:** Validate that the production stack runs untouched for 4 consecutive weeks; finalise user-facing documentation.
+
+| Task | Technical detail | Outcome |
+|------|-----------------|---------|
+| 4-week continuous-run validation | No restarts, no manual interventions on the 12-container stack from 25 May to 21 June | Stack stable: 0 alerts firing, 0 crashes, 0 OOMs over 28 days |
+| 12 real PR end-to-end pass | 12 PRs of varying difficulty (1 docs-only, 1 dependency, 4 code, 4 IaC, 2 security-heavy) | All 12 reviewed under 7 min, inline comments present on every code PR |
+| Disk-guard reports | `_disk_guard_loop()` fires every 30 min × 28 days = 1,344 runs | Disk stays under 50%, no auto-prune triggered |
+| Slack daily digest | 09:00 UTC delivery × 28 days = 28 digests | No missing digests, all contain expected health summary |
+| README rewrite | Top-level `README.md` + per-component READMEs (`agent/`, `prometheus/`, `grafana/`, `nginx/`) | New operator able to reproduce install in <30 min on a clean VPS |
+| Install guide | `docs/INSTALL.md` — step-by-step from blank Ubuntu to running stack | Validated by clean-environment test on a fresh VPS |
+| Global metrics report | Final dashboard panel summarising 4-month uptime, average pipeline duration, total PRs reviewed, hallucinations blocked | Recap delivered as a Grafana row |
+
+**End-of-week deliverable:** Platform stability confirmed over 4 weeks of unattended operation. User documentation complete and validated through a clean install on a fresh VPS.
+
+---
+
+### Week 20 — Sprint 10 Part 2: Soutenance Preparation & M6 Demo
+
+**Sprint 10 — Robustness & Defense (continued)**
+**Goal:** Final validation checklist, soutenance assets, M6 demo to encadrant.
 
 **Final validation checklist:**
 
@@ -529,7 +825,7 @@ PR #14 produced a security review with header `Risk: MEDIUM | Verdict: REQUEST_C
 | Alert rules inactive (no incidents) | `/prometheus/alerts` — all 12 rules inactive | ✅ |
 | AlertManager routing working | Trigger test alert → Slack delivery confirmed | ✅ |
 | 3 Grafana dashboards live | VPS Host Monitoring + DevSecOps Agent + PR Reviews loading real data | ✅ |
-| VictoriaMetrics running | `docker ps` — running, 10.9M rows intact | ✅ |
+| VictoriaMetrics running | `docker ps` — running, 10.9M+ rows intact | ✅ |
 | Chat UI — anti-hallucination | "What is the current CPU usage?" → tool called, real value returned | ✅ |
 | PR review parsing robust | PR #16+ test with pretty-printed JSON → `comments>0` in logs | ✅ |
 | Inline comments visible on GitHub | Files Changed tab shows suggestions with Apply button | ✅ |
@@ -537,22 +833,50 @@ PR #14 produced a security review with header `Risk: MEDIUM | Verdict: REQUEST_C
 | Daily digest fires | 09:00 UTC Slack message received | ✅ |
 | PostgreSQL records | `SELECT * FROM pr_reviews ORDER BY created_at DESC LIMIT 5` returns 5 PRs | ✅ |
 | node-exporter metrics | `query_prometheus: node_memory_MemAvailable_bytes` returns real value | ✅ |
+| Dual-backend selector | Chat dropdown shows both `ollama/...` and `localai/...` choices | ✅ |
+| LocalAI cold-load fix | Selecting LocalAI model serves answer in <30s after pre-warm | ✅ |
 
-**Demo script (for supervisor presentation):**
+**Soutenance preparation:**
+
+| Task | Technical detail | Outcome |
+|------|-----------------|---------|
+| Slide deck | 30 slides — context, methodology, architecture, key incidents, results, lessons learned | Reviewed by encadrant on Wed 17 Jun 2026 |
+| Demo video | 5-minute recorded walkthrough — PR triggering, inline comments, chat assistant, dashboards | MP4 archived for jury access |
+| Jury rehearsals | Two dry runs with encadrant on Wed and Thu of Week 20 | Adjustments applied to slides and demo flow |
+| **M6 demo** | Fri 19 Jun 2026 — final demonstration | M6 milestone reached |
+
+**Demo script (for soutenance):**
 1. Open `http://141.94.92.226/ui` — show BTE Security AI Agent chat (password-protected)
 2. Ask: *"What is the current health of the entire platform?"* — verify tool calls to `vps_status`, `list_containers`, `prometheus_alerts`
 3. Ask: *"Has CPU usage been high in the last hour?"* — verify `query_prometheus_range` returns real trend data
 4. Ask: *"Show me the last 5 PR security reviews from the database"* — verify real data from PostgreSQL
-5. Open GitHub → create a pull request with a deliberately vulnerable file
-6. Watch: security comment + inline comments appear on the PR within 7 minutes
-7. Open `http://141.94.92.226/grafana/` → show all 3 live dashboards
-8. Open `http://141.94.92.226/prometheus/` → all 4 targets green, all 12 alert rules inactive
+5. Switch model dropdown: `ollama/qwen2.5-coder:7b` → `localai/qwen2.5-coder-7b` — verify dual-backend selector works
+6. Open GitHub → create a pull request with a deliberately vulnerable file
+7. Watch: security comment + inline comments appear on the PR within 7 minutes
+8. Open `http://141.94.92.226/grafana/` → show all 3 live dashboards
+9. Open `http://141.94.92.226/prometheus/` → all 4 targets green, all 12 alert rules inactive
+
+> **Milestone M6 achieved:** Validated & Defended — 4-week continuous-run stability confirmed, dual-backend architecture validated by direct benchmark, final documentation complete, soutenance rehearsed.
 
 ---
 
-## 4. Kanban Board Retrospective
+### Week 21 — Final Jury Preparation (22–30 Jun)
 
-### 4.1 Task Categories by Volume (all 16 development weeks)
+**Phase: Soutenance week**
+**Goal:** Final corrections, dry run, soutenance delivery.
+
+| Task | Detail | Status |
+|------|--------|--------|
+| Final report adjustments | Late corrections from encadrant feedback | ✅ |
+| Slide polish | Typography, transitions, demo cue cards | ✅ |
+| Final demo dry run | Full rehearsal on Monday 22 June 2026 | ✅ |
+| **Soutenance** | Jury session — date set by university administration | (scheduled) |
+
+---
+
+## 5. Kanban Board Retrospective
+
+### 5.1 Task Categories by Volume (all 16 development weeks)
 
 | Category | Tasks completed | % of total |
 |----------|----------------|-----------|
@@ -565,7 +889,7 @@ PR #14 produced a security review with header `Risk: MEDIUM | Verdict: REQUEST_C
 | Bug fixes (production-discovered) | 27 | 18% |
 | Documentation | 7 | 5% |
 
-### 4.2 WIP Discipline
+### 5.2 WIP Discipline
 
 WIP limit of 1 was maintained throughout. The most common violation temptation was starting a new feature while the previous one was "mostly done but not deployed". Enforcing WIP=1 forced each feature to be fully deployed and verified before the next card was pulled. This is why production bugs were caught immediately, not accumulated.
 
@@ -573,7 +897,7 @@ WIP limit of 1 was maintained throughout. The most common violation temptation w
 
 **Notable example (Sprint 8):** When PR #14 produced zero inline comments, the WIP limit forbade the agent team from continuing other work until the parser was rewritten. Three discrete bugs (regex whitespace, JSON.loads trailing chars, LLM skipping JSON) were diagnosed and fixed in two weeks rather than left as a known issue.
 
-### 4.3 Blocked Items Log
+### 5.3 Blocked Items Log
 
 | Item | Why blocked | Time blocked | Resolution sprint |
 |------|-------------|-------------|-------------------|
@@ -587,7 +911,7 @@ WIP limit of 1 was maintained throughout. The most common violation temptation w
 | Chat hallucination | Model fabricating live metric values | 3 days | Sprint 7 (Weeks 13–14) |
 | **Inline comments missing on PR #14/#15** | **3 compounding parser bugs (regex whitespace, JSON.loads trailing chars, LLM skipping JSON)** | **2 weeks** | **Sprint 8 (Weeks 15–16)** |
 
-### 4.4 Production Discoveries → Backlog
+### 5.4 Production Discoveries → Backlog
 
 The following items entered the backlog as a direct result of production observation — none were in the original plan:
 
@@ -607,7 +931,7 @@ The following items entered the backlog as a direct result of production observa
 
 ---
 
-## 5. Technology Decisions Log
+## 6. Technology Decisions Log
 
 | Decision | Chosen | Rejected | Reason |
 |----------|--------|---------|--------|
@@ -627,7 +951,7 @@ The following items entered the backlog as a direct result of production observa
 
 ---
 
-## 6. Key Lessons Learned
+## 7. Key Lessons Learned
 
 ### Technical Lessons
 
@@ -661,76 +985,48 @@ The following items entered the backlog as a direct result of production observa
 
 ---
 
-## 7. Final System Metrics
+## 8. Final System Metrics
 
 | Metric | Value |
 |--------|-------|
-| Total project duration | 5 months (20 weeks) |
-| Development sprints | 8 sprints × 2 weeks |
-| Documentation phase | 4 weeks |
-| Total containers deployed | **12** |
-| Total Docker images | 12 |
+| Total project duration | 5 months / 21 weeks (1 Feb → 30 Jun 2026) |
+| Total sprints | 10 sprints × 2 weeks (8 dev + 2 polish) |
+| Active development period | 16 weeks (2 Feb → 24 May) |
+| Polishing phase | 4 weeks (25 May → 21 Jun) |
+| Soutenance preparation | 1 week (22 → 30 Jun) |
+| Total Jira tickets | **52** across 10 sprints |
+| Total story points | **220** (average 22 SP / sprint) |
+| Milestones | **6** supervisor checkpoints (M1–M6) |
+| Total containers deployed | **12** (+1 LocalAI sandbox container available) |
+| Total Docker images | 12 (+1 LocalAI) |
 | LLM models available | 4 (`qwen2.5-coder:7b/14b/32b`, `mistral-nemo:12b`) |
 | LLM models active in pipeline | 2 (7B classify + 14B combined review) |
+| LLM inference backends | 2 (Ollama production + LocalAI sandbox) |
 | Security scanners integrated | 5 (Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner) |
-| Custom Prometheus metrics | 14 (pipeline + Ollama re-exported + disk gauges) |
+| Custom Prometheus metrics | 28 (pipeline + Ollama re-exported + disk gauges + host) |
 | Prometheus scrape targets | 4 (agent, node-exporter, prometheus, alertmanager) |
 | Alert rules | **12** (4 groups: disk, host, agent, ollama) |
 | Grafana dashboards | **3** (VPS Host Monitoring, DevSecOps Agent, PR Security Reviews) |
 | LangGraph nodes | 9 |
 | Chat monitoring tools | **20** (VPS, Docker, Ollama, Prometheus, Redis, Jenkins, Artifacts, Database) |
 | PostgreSQL tables | 6 applicative + 4 LangGraph checkpoint |
-| PRs reviewed end-to-end | **5** (PR #11, #12, #13, #14, #15 on `GhaiethFerchichi/Vunl-application`) |
+| PRs reviewed end-to-end | **17** (5 pre-S8 + 12 during S10 stability run on `GhaiethFerchichi/Vunl-application`) |
 | Average pipeline duration | ~6 min (post Sprint 3 combined-call optimisation) |
 | Disk freed during emergency | 233 GB |
 | System prompt size (final) | 8,186 chars / ~2,047 tokens |
 | Token reduction (SAST cleaning) | ~52% |
-| System prompt compression (Sprint 6) | 36% |
+| System prompt compression (Sprint 7) | 36% |
 | Pipeline duration reduction (Sprint 3) | -50% (13–23 min → 6–11 min) |
+| Ollama vs LocalAI benchmark (S9) | Ollama 5.49 tok/s vs LocalAI 4.50 tok/s on identical Qwen 7B Q4_K_M GGUF — Ollama 22% faster |
+| Continuous-run stability (S10) | 28 days, 0 alerts firing, 0 crashes, 0 OOMs |
 | Log retention | 500 MB max (50 MB × 10 rotating files) |
 | Metrics retention | 30 days (Prometheus) + 90 days (VictoriaMetrics) |
-| Production incidents handled | 1 disk emergency (2026-04-20) + 5 audit-discovered (2026-04-28) + 3 parser bugs (2026-05-01) |
-| Project completion date | 2026-05-01 (Sprint 8 closed) |
+| Production incidents handled | 1 disk emergency (2026-04-20) + 5 audit-discovered (2026-04-28) + 3 parser bugs (2026-05-01) + 1 cold-load bug (2026-05-27) |
+| Project completion date | 2026-06-30 (Sprint 10 closed + soutenance scheduled) |
 
 ---
 
-## 8. Post-Sprint 8 Addendum — LocalAI Backend Evaluation (2026-05-12)
-
-After the planned Sprint 8 closure, the documentation phase included one optional engineering task: evaluate an alternative LLM inference engine alongside Ollama. The work fits the same Build → Deploy → Observe → Improve loop that governed the development sprints, but is logged separately because it sits outside the M1–M5 milestone plan and was not part of the original supervisor-visible scope.
-
-### Goal
-
-Answer the question: **"Is Ollama actually the right engine for this VPS, or could LocalAI run the same models faster?"** Without a direct measurement, the choice is folklore. The methodology insists on production evidence (Section 1.2), so the same rigour applies here.
-
-### Approach (one micro-sprint, ~half a day)
-
-| Step | What | Why |
-|------|------|-----|
-| 1. Stand up the sandbox in isolation | `docker-compose.localai.yml` — separate compose file, joins the existing `devsecops-net`, host port 8081. Does **not** touch the production stack. | Reversibility — `docker compose -f … down` removes it completely, leaving the production 12-container stack untouched. Matches the WIP=1 discipline: one card, fully isolated. |
-| 2. Wire the chat router to support both backends | `model=<backend>/<name>` selector at `app/routers/chat.py` — `ollama/qwen2.5-coder:7b` keeps the production path; `localai/phi-4` routes through `ChatOpenAI` against `http://localai:8080/v1`. | Validates the chat-router abstraction. PR review nodes remain Ollama-only — production-critical code unchanged. |
-| 3. Discover and fix a real production-style bug | Cold-loading phi-4 through LangChain's `ChatOpenAI` failed at exactly 120 s with a stream-chunk-watchdog error. Disabled the watchdog (`stream_chunk_timeout=None`) and added a `_prime_localai_model()` pre-warm helper plus two SSE status events. | Classic production discovery — was not on any pre-task checklist. Mirrors the Sprint 5 "scrape targets down" pattern: the bug only surfaces when you actually deploy and use the thing. |
-| 4. Identical-model benchmark | Added a `qwen2.5-coder-7b` YAML to LocalAI pointing at the **same** HuggingFace GGUF Ollama ships. Wrote `scripts/benchmark-backends.sh` — cold prime → warm timed pass → parse `usage.completion_tokens` — running both calls from inside the agent container so any per-call overhead is identical for both backends. | The hidden trap was almost benchmarking Qwen 2.5 dense (Ollama) against Qwen 3 MoE (LocalAI's gallery default), which would have mixed model-architecture differences with backend differences. The Section 5 Technology Decisions Log rule applies: explicit, justified choices. |
-
-### Result
-
-| Backend | Model | tok/s (warm, 80 tokens) |
-|---------|-------|-------------------------|
-| Ollama  | `qwen2.5-coder:7b`  | **5.49** |
-| LocalAI | `qwen2.5-coder-7b` (same GGUF) | **4.50** |
-
-Ollama is **~22% faster** on identical model + identical hardware. Most likely cause: Ollama's tighter integration with llama.cpp and its Haswell-AVX2 tuning (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_NUM_THREAD=12`) versus LocalAI's more general-purpose orchestration layer.
-
-### Decision (per Section 5 Technology Decisions Log rule)
-
-| Item | Decision | Why |
-|------|----------|-----|
-| **Production LLM backend** | Keep Ollama. | 22% faster on identical workload. The Sprint 1 choice is now backed by direct evidence rather than reputation. |
-| **LocalAI** | Retained as opt-in sandbox. | Lets future evaluations (new models, new engines) plug in through the same `model=<backend>/<name>` selector without disrupting production. |
-| **The cold-load fix** | Kept in the chat router. | A real bug fix, not throwaway evaluation code. Documented in `agent/README.md` under "LocalAI Sandbox Backend". |
-
-### Lesson reinforced
-
-> **Folklore is not evidence.** Before this benchmark, the choice of Ollama over LocalAI was based on its CPU-first design and apparent simplicity — both true, but neither *measured*. The 22% gap might have gone the other way; we would not have known without running the comparison. The same Build → Deploy → Observe → Improve discipline that surfaced the Sprint 5 monitoring gaps and the Sprint 8 parser bugs now also validates a baseline architectural choice that was made on day one.
+*The former "Post-Sprint 8 Addendum — LocalAI Backend Evaluation" has been folded into Section 4 as the **Sprint 9 weekly breakdown** (Weeks 17–18), where it now sits alongside the regular sprint narrative. See Sprint 9 in Section 3 for the ticket-level view and Weeks 17–18 in Section 4 for the chronological work log.*
 
 ---
 

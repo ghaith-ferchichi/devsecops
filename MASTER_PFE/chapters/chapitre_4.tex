@@ -7,11 +7,13 @@
 
 Ce chapitre rend compte de la réalisation effective du projet sur le VPS de la BTE.
 Il s'ouvre sur la description de l'environnement matériel et logiciel sur lequel la
-plateforme a été déployée, puis enchaîne sur l'implémentation phase par phase, en
-suivant l'ordre chronologique des sprints : pour chaque phase, nous reportons les
-configurations clés, les extraits de code représentatifs et les obstacles rencontrés
-en production avec la manière dont nous les avons résolus. La dernière partie présente
-les résultats obtenus sur des \textit{Pull Requests} réelles.
+plateforme a été déployée, puis enchaîne sur l'implémentation sprint par sprint
+selon la méthodologie Scrumban introduite au chapitre 1. Chaque sprint est présenté
+selon le même schéma — objectif inscrit au backlog, obstacles rencontrés en
+production, livrable effectif — afin de rendre lisible le caractère itératif du
+projet et de mettre en évidence le passage continu entre le plan prévu et le réel
+observé sur la plateforme. La dernière partie présente les résultats obtenus sur
+des \textit{Pull Requests} réelles ainsi que la validation complète de la plateforme.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Environnement de travail}
@@ -81,12 +83,34 @@ les résultats obtenus sur des \textit{Pull Requests} réelles.
         \end{table}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Implémentation de la solution}
+\section{Implémentation par sprints Scrumban}
 
-    \subsection{Phase 1 — Fondations : VPS, Docker et webhook GitHub}
+    La réalisation s'est étalée sur dix itérations : huit sprints majeurs
+    (Sprint~1 à Sprint~8) qui ont construit la plateforme dans sa forme livrée,
+    et deux micro-sprints d'extension (Post-Sprint~8 et Sprint~8.1) menés après la
+    clôture du périmètre initial pour évaluer un second backend d'inférence et
+    étendre la couverture d'observabilité. Chaque sprint est présenté ci-dessous
+    selon le même encart standardisé — \textit{Objectif du sprint}, \textit{Obstacles
+    rencontrés}, \textit{Livrable} — suivi du détail technique des décisions, des
+    configurations et des correctifs déployés.
 
-        La première phase du projet a consisté à mettre en place l'ensemble de
-        l'infrastructure Docker \cite{Docker} et à valider la réception des webhooks GitHub. La
+    \subsection{Sprint 1 — Fondations : VPS, Docker et webhook GitHub}
+
+        \begin{description}
+            \itemsep 0.3em
+            \item[Objectif du sprint :] Mettre en place l'ensemble de l'infrastructure
+                Docker, configurer Ollama pour un fonctionnement CPU-only et valider
+                la réception du premier webhook GitHub.
+            \item[Obstacles rencontrés :] Nginx, configuré en HTTP/1.0 par défaut,
+                manglait les corps \textit{chunked} des requêtes GitHub, provoquant
+                systématiquement des erreurs 500 en réception.
+            \item[Livrable :] Douze conteneurs déployés et opérationnels, premier
+                webhook GitHub reçu et validé par signature HMAC-SHA256, configuration
+                Ollama tunée pour CPU Haswell AVX2.
+        \end{description}
+
+        Le premier sprint a consisté à mettre en place l'ensemble de l'infrastructure
+        Docker \cite{Docker} et à valider la réception des webhooks GitHub. La
         configuration de performance d'Ollama \cite{Ollama} est critique pour un fonctionnement CPU-only.
         Sans tuning, le modèle 14B consomme plus de onze Go de mémoire KV à seize mille
         tokens de contexte avec les paramètres par défaut. La figure \ref{fig:ollama_compose}
@@ -125,9 +149,23 @@ les résultats obtenus sur des \textit{Pull Requests} réelles.
         a résolu ce problème en forçant nginx à utiliser des connexions persistantes
         HTTP/1.1 avec l'agent, éliminant le mangling des corps chunked.
 
-    \subsection{Phase 2 — Pipeline de sécurité : scanners et LLM}
+    \subsection{Sprint 2 — Pipeline de sécurité : scanners et LLM}
 
-        La deuxième phase a consisté à intégrer les cinq scanners de sécurité — Trivy
+        \begin{description}
+            \itemsep 0.3em
+            \item[Objectif du sprint :] Intégrer les cinq scanners de sécurité
+                (Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner) et le modèle LLM 14B
+                dans le workflow LangGraph.
+            \item[Obstacles rencontrés :] Le diff retourné par l'API GitHub avec ses
+                trois lignes de contexte par défaut s'est révélé trop pauvre pour
+                permettre au modèle d'identifier le contexte d'une vulnérabilité.
+            \item[Livrable :] Génération d'un diff local avec quinze lignes de
+                contexte, exécution parallèle des cinq scanners via
+                \texttt{asyncio.gather()} avec isolation des erreurs par coroutine,
+                mise en cache Redis des résultats avec TTL d'une heure.
+        \end{description}
+
+        Le deuxième sprint a consisté à intégrer les cinq scanners de sécurité — Trivy
         \cite{Trivy}, Gitleaks \cite{Gitleaks}, Semgrep \cite{Semgrep}, Checkov
         \cite{Checkov} et OSV-Scanner \cite{OSVScanner} — et le modèle LLM 14B dans le
         workflow LangGraph \cite{LangGraph}. Une première amélioration significative
@@ -156,9 +194,24 @@ les résultats obtenus sur des \textit{Pull Requests} réelles.
             \label{fig:scan_parallel}
         \end{figure}
 
-    \subsection{Phase 3 — Revue combinée et commentaires inline GitHub}
+    \subsection{Sprint 3 — Revue combinée et commentaires inline GitHub}
 
-        La troisième phase a introduit l'optimisation principale du pipeline : la fusion
+        \begin{description}
+            \itemsep 0.3em
+            \item[Objectif du sprint :] Réduire la durée du pipeline et publier les
+                commentaires inline directement sur les fichiers modifiés de la
+                \textit{Pull Request}.
+            \item[Obstacles rencontrés :] L'analyse de sécurité et la revue de
+                qualité de code nécessitaient deux appels successifs au modèle 14B
+                totalisant entre treize et vingt-trois minutes, durée incompatible
+                avec la fluidité d'un pipeline CI/CD.
+            \item[Livrable :] Fusion des deux appels 14B en un seul appel combiné
+                dans le nœud \texttt{analyze\_review\_node}, durée totale du pipeline
+                ramenée à 6--11 minutes (gain de 50\,\%), commentaires inline
+                opérationnels avec bouton \textit{Apply}.
+        \end{description}
+
+        Le troisième sprint a introduit l'optimisation principale du pipeline : la fusion
         des deux appels 14B séquentiels en un seul appel combiné. Le tableau
         \ref{tab:combined_perf} présente l'impact de cette optimisation sur les performances.
 
@@ -201,7 +254,22 @@ les résultats obtenus sur des \textit{Pull Requests} réelles.
             \label{fig:inline_suggestions}
         \end{figure}
 
-    \subsection{Phase 4 — Opérations autonomes et urgence disque}
+    \subsection{Sprint 4 — Opérations autonomes et urgence disque}
+
+        \begin{description}
+            \itemsep 0.3em
+            \item[Objectif du sprint :] Rendre la plateforme auto-réparante via une
+                surveillance disque autonome et un \textit{health digest} quotidien
+                publié sur Slack.
+            \item[Obstacles rencontrés :] Incident critique du 20 avril 2026 — un
+                téléchargement partiel du modèle \texttt{qwen2.5-coder:32b} a laissé
+                un blob de 242~Go sur le disque sans manifeste associé, portant
+                l'utilisation à 92\,\%.
+            \item[Livrable :] 233~Go récupérés sans aucune interruption de service,
+                gardien disque autonome surveillant l'utilisation toutes les trente
+                minutes, \textit{scheduler} asyncio avec \textit{health digest}
+                quotidien publié à 09:00 UTC.
+        \end{description}
 
         \subsubsection{Urgence disque du 20 avril 2026}
 
@@ -247,7 +315,22 @@ les résultats obtenus sur des \textit{Pull Requests} réelles.
             \label{fig:slack_digest}
         \end{figure}
 
-    \subsection{Phase 5 — Stack de monitoring Prometheus et Grafana}
+    \subsection{Sprint 5 — Stack de monitoring Prometheus et Grafana}
+
+        \begin{description}
+            \itemsep 0.3em
+            \item[Objectif du sprint :] Déployer la stack Prometheus + Grafana avec
+                trois dashboards opérationnels pour la surveillance de la plateforme.
+            \item[Obstacles rencontrés :] Au premier démarrage, les trois cibles
+                Prometheus affichaient toutes l'état \texttt{down} — l'option
+                \texttt{--web.route-prefix} de Prometheus et AlertManager préfixait
+                l'ensemble de leurs chemins HTTP, rendant les chemins de \textit{scrape}
+                par défaut incorrects.
+            \item[Livrable :] Quatre cibles Prometheus en état \texttt{up} après
+                ajout des \texttt{metrics\_path} explicites, trois dashboards Grafana
+                provisionnés (VPS Host Monitoring, DevSecOps AI Agent, PR Security
+                Reviews).
+        \end{description}
 
         \subsubsection{Correction des métriques Prometheus}
 
@@ -313,7 +396,21 @@ les résultats obtenus sur des \textit{Pull Requests} réelles.
             \label{fig:grafana_pr}
         \end{figure}
 
-    \subsection{Phase 6 — Monitoring host et optimisation du chat}
+    \subsection{Sprint 6 — Monitoring host et optimisation du chat}
+
+        \begin{description}
+            \itemsep 0.3em
+            \item[Objectif du sprint :] Étendre la visibilité aux métriques réelles
+                du système hôte et accélérer les réponses de l'assistant de chat.
+            \item[Obstacles rencontrés :] \texttt{node-exporter} en réseau Docker
+                bridge ne pouvait pas accéder aux systèmes de fichiers \texttt{/proc}
+                et \texttt{/sys} du host, le privant des métriques essentielles.
+            \item[Livrable :] \texttt{node-exporter} déployé en \texttt{pid:host}
+                + \texttt{network\_mode:host} avec règle iptables associée, chat
+                basculé sur le modèle \texttt{qwen2.5-coder:7b} (43\,\% plus rapide
+                que le 14B), prompt système compressé de 36\,\% (11\,794 à
+                7\,577 caractères).
+        \end{description}
 
         \subsubsection{Déploiement de node-exporter}
 
@@ -361,7 +458,21 @@ les résultats obtenus sur des \textit{Pull Requests} réelles.
         \label{tab:benchmark_result}
         \end{table}
 
-    \subsection{Phase 7 — Audit VPS et durcissement}
+    \subsection{Sprint 7 — Audit VPS et durcissement}
+
+        \begin{description}
+            \itemsep 0.3em
+            \item[Objectif du sprint :] Conduire un audit complet de la plateforme
+                et éliminer les hallucinations de l'assistant de chat.
+            \item[Obstacles rencontrés :] Cinq découvertes critiques — VictoriaMetrics
+                en panne depuis neuf jours, AlertManager n'ayant reçu aucune alerte
+                depuis le déploiement initial, \texttt{GET /} retournant 404, Grafana
+                \textit{live dashboards} cassés, et chat UI publiquement accessible
+                sans authentification.
+            \item[Livrable :] Cinq correctifs déployés, système anti-hallucination à
+                six couches activé sur le chat, authentification HTTP Basic Auth
+                déployée sur nginx.
+        \end{description}
 
         \subsubsection{Audit VPS du 28 avril 2026}
 
@@ -430,7 +541,22 @@ les résultats obtenus sur des \textit{Pull Requests} réelles.
             \label{fig:chat_ui}
         \end{figure}
 
-    \subsection{Phase 8 — Robustesse du parser de revue PR (Sprint 8)}
+    \subsection{Sprint 8 — Robustesse du parser de revue PR}
+
+        \begin{description}
+            \itemsep 0.3em
+            \item[Objectif du sprint :] Stabiliser la production des commentaires
+                inline GitHub sur l'ensemble des \textit{Pull Requests} réelles.
+            \item[Obstacles rencontrés :] Bug critique observé sur PR \#14 et PR
+                \#15 — le commentaire global s'affichait correctement mais aucun
+                commentaire inline n'apparaissait ; l'analyse approfondie a révélé
+                trois bugs cumulatifs dans le parser de revue.
+            \item[Livrable :] Parser réécrit avec trois stratégies imbriquées
+                (\textit{regex} tolérant aux espaces, \textit{walker brace-depth},
+                fallback markdown), prompt combiné restructuré pour exiger le bloc
+                JSON en première position, bugs reproduits puis vérifiés corrigés
+                sur les PRs \#14 et \#15.
+        \end{description}
 
         Lors de la phase de validation finale, deux \textit{Pull Requests} successives
         (PR \#14 et PR \#15) ont produit des revues de sécurité où le commentaire global
@@ -572,7 +698,24 @@ else:
         JSON pré-formatté, les fences markdown en queue, et l'absence totale de bloc
         JSON. Le bug a été reproduit puis vérifié corrigé sur les PRs \#14 et \#15.
 
-    \subsection{Phase 9 — Évaluation d'un second backend d'inférence (Post-Sprint 8)}
+    \subsection{Post-Sprint 8 — Évaluation d'un second backend d'inférence}
+
+        \begin{description}
+            \itemsep 0.3em
+            \item[Objectif du sprint :] Comparer Ollama à un moteur d'inférence
+                alternatif (LocalAI) sur exactement le même fichier GGUF afin de
+                transformer le choix initial en mesure objective.
+            \item[Obstacles rencontrés :] Bug \textit{cold-load} sur le modèle
+                Phi-4 — le \textit{watchdog} \texttt{stream\_chunk\_timeout=120s}
+                de \texttt{langchain\_openai} tuait le \textit{stream} avant le
+                premier token, le chargement à froid d'un modèle 15B sur CPU
+                dépassant régulièrement deux minutes.
+            \item[Livrable :] Sandbox LocalAI opérationnelle en parallèle d'Ollama,
+                routeur de chat dual-backend (\texttt{ollama/} ou \texttt{localai/}),
+                bug \textit{cold-load} corrigé par désactivation du \textit{watchdog}
+                et \textit{pre-warm} explicite du modèle, benchmark croisé livré
+                (Ollama +22\,\% de débit sur modèle identique).
+        \end{description}
 
         Le Sprint 8 clôturé et la plateforme stabilisée, la phase de documentation a
         été l'occasion de revenir sur une question restée ouverte depuis le premier
@@ -827,7 +970,26 @@ async def _prime_localai_model(model: str) -> None:
         \textit{cold-load} est corrigé, et le choix initial d'Ollama est désormais
         appuyé par une mesure (22\,\% de débit en plus sur modèle identique).
 
-    \subsection{Phase 10 — Expansion de l'observabilité et correction du \textit{template} Phi-4 (Sprint 8.1)}
+    \subsection{Sprint 8.1 — Expansion de l'observabilité et correction du \textit{template} Phi-4}
+
+        \begin{description}
+            \itemsep 0.3em
+            \item[Objectif du sprint :] Étendre la couverture d'observabilité à
+                chaque conteneur du VPS et instrumenter le routeur de chat pour
+                mesurer en production les performances comparées des deux backends.
+            \item[Obstacles rencontrés :] cAdvisor architecturalement incompatible
+                avec le \textit{containerd snapshotter} du Docker 29.4
+                (\texttt{failed to identify the read-write layer ID}) ; bug latent
+                du modèle Phi-4 retournant silencieusement zéro token à chaque
+                requête (\textit{template} ChatML mal formaté).
+            \item[Livrable :] \textit{Poller} Docker autonome interrogeant le
+                socket toutes les trente secondes (six métriques par conteneur),
+                instrumentation A/B du routeur de chat (quatre métriques
+                \texttt{chat\_*} labellisées par couple \texttt{backend} et
+                \texttt{model}), cinq nouvelles \textit{rows} ajoutées au dashboard
+                Grafana de l'agent, \textit{template} Phi-4 corrigé avec injection
+                explicite du \textit{prompt} de génération.
+        \end{description}
 
         Au lendemain du micro-sprint Post-Sprint 8, l'évaluation des backends LocalAI
         a soulevé une nouvelle question de gouvernance : comment objectiver la qualité
@@ -1315,18 +1477,22 @@ template:
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-Ce chapitre a couvert la réalisation effective du BTE Security AI Agent. Nous avons
-décrit l'environnement matériel et logiciel sur lequel la plateforme a été construite,
-puis détaillé sprint par sprint l'implémentation, en gardant à chaque fois l'obstacle
-rencontré en production et la manière dont nous l'avons levé. Plusieurs épisodes ont
-particulièrement marqué la réalisation : l'urgence disque d'avril, la remise en état
-des cibles Prometheus restées \og down \fg{} après le premier déploiement, le travail
-sur node-exporter et la règle iptables associée, la mise en place du système
-anti-hallucination du chat, la correction de l'AlertManager silencieusement cassé
-depuis le déploiement initial, et la réécriture du parser de revue PR au Sprint 8.
-Aucun de ces problèmes n'apparaissait dans le plan initial ; tous ont été détectés
-en production puis transformés en cartes prioritaires du sprint en cours, ce qui
-illustre l'intérêt concret de la méthodologie itérative adoptée. La dernière section
-du chapitre a présenté les résultats obtenus sur des \textit{Pull Requests} réelles,
-avec des revues complètes produites en moins de sept minutes, commentaires inline et
-suggestions de correction publiés directement sur GitHub.
+Ce chapitre a couvert la réalisation effective du BTE Security AI Agent selon la
+méthodologie Scrumban adoptée au chapitre~1. Nous avons décrit l'environnement
+matériel et logiciel sur lequel la plateforme a été construite, puis détaillé sprint
+par sprint l'implémentation — du Sprint~1 (fondations Docker et webhook GitHub)
+jusqu'au Sprint~8.1 (expansion de l'observabilité) — en présentant pour chaque
+itération l'objectif inscrit au backlog, les obstacles rencontrés en production
+et le livrable effectif. Plusieurs épisodes ont particulièrement marqué la
+réalisation : l'urgence disque d'avril, la remise en état des cibles Prometheus
+restées \og down \fg{} après le premier déploiement, le travail sur node-exporter
+et la règle iptables associée, la mise en place du système anti-hallucination du
+chat, la correction de l'AlertManager silencieusement cassé depuis le déploiement
+initial, et la réécriture du parser de revue PR au Sprint~8. Aucun de ces problèmes
+n'apparaissait dans le plan initial ; tous ont été détectés en production puis
+transformés en cartes prioritaires du sprint en cours, illustration concrète du
+\textit{pull system} Scrumban où chaque obstacle remonte au backlog au moment où
+il est observé plutôt qu'au prochain cycle de planification. La dernière section
+du chapitre a présenté les résultats obtenus sur des \textit{Pull Requests}
+réelles, avec des revues complètes produites en moins de sept minutes, commentaires
+inline et suggestions de correction publiés directement sur GitHub.

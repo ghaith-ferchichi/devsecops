@@ -6,16 +6,17 @@
 \addcontentsline{toc}{section}{Introduction}
 
 Ce chapitre décrit la conception architecturale du BTE Security AI Agent. Nous y
-détaillons, schémas à l'appui, l'architecture globale à douze conteneurs, le workflow
-LangGraph à neuf nœuds, l'architecture à deux modèles LLM, le parser de diff, le
-schéma de la base de données, et l'assistant de chat opérationnel avec son système
-anti-hallucination. L'objectif est de fixer toutes les décisions de conception avant
-d'aborder la réalisation au chapitre suivant.
+présentons d'abord la vue globale de l'architecture logicielle, ses douze conteneurs
+et son point d'entrée, puis nous détaillons la conception de chacun des six
+sous-systèmes qui composent la solution : l'inférence LLM, la revue de
+\textit{Pull Request}, l'analyse du diff, l'assistant de chat opérationnel, la
+persistance et l'observabilité. L'objectif est de fixer toutes les décisions de
+conception avant d'aborder la réalisation au chapitre suivant.
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Architecture globale du système}
+\section{Présentation de l'architecture logicielle}
 
-    \subsection{Vue d'ensemble}
+    \subsection{Architecture en couches}
 
         La plateforme BTE Security AI Agent est déployée sous forme de douze conteneurs
         Docker organisés en cinq couches fonctionnelles complémentaires. La figure
@@ -87,7 +88,7 @@ d'aborder la réalisation au chapitre suivant.
         \label{tab:containers}
         \end{table}
 
-    \subsection{Table de routage nginx}
+    \subsection{Routage et point d'entrée}
 
         Nginx constitue le point d'entrée unique de la plateforme. Le tableau
         \ref{tab:nginx_routing} présente l'ensemble des règles de routage configurées.
@@ -118,61 +119,67 @@ d'aborder la réalisation au chapitre suivant.
         \end{table}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Architecture LLM à deux modèles}
+\section{Description de la conception du logiciel}
 
-    La séparation du pipeline LLM en deux modèles distincts répond à une contrainte de
-    performance. Utiliser le modèle 14B pour la classification de la \textit{Pull Request}
-    serait disproportionné : cette tâche ne nécessite que la production d'un simple tag JSON
-    en environ trente secondes, alors que la revue de sécurité approfondie requiert un
-    modèle plus capable. La figure \ref{fig:two_model_arch} illustre cette architecture.
+    \subsection{Sous-système d'inférence LLM}
 
-    \begin{figure}[H]
+        \subsubsection{Architecture logique}
+
+        La séparation du pipeline LLM en deux modèles distincts répond à une contrainte de
+        performance. Utiliser le modèle 14B pour la classification de la
+        \textit{Pull Request} serait disproportionné : cette tâche ne nécessite que la
+        production d'un simple tag JSON en environ trente secondes, alors que la revue de
+        sécurité approfondie requiert un modèle plus capable. La figure
+        \ref{fig:two_model_arch} illustre cette architecture.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.9\columnwidth]{img/two_model_architecture}}
+            \caption{Architecture à deux modèles LLM — configuration et rôles}
+            \label{fig:two_model_arch}
+        \end{figure}
+
+        Toutes les instances LLM sont décorées \texttt{@lru\_cache} et construites une seule
+        fois par processus, puis réutilisées pour tous les appels suivants. Par ailleurs,
+        la configuration \texttt{OLLAMA\_MAX\_LOADED\_MODELS=1} garantit qu'un seul modèle
+        est chargé en RAM à la fois, allouant la totalité des ressources disponibles au
+        modèle actif.
+
+        La fusion de deux appels 14B séquentiels en un seul appel combiné dans le nœud
+        \texttt{analyze\_review\_node} constitue l'optimisation principale du pipeline. Avant
+        cette optimisation, l'analyse de sécurité et la revue de qualité de code nécessitaient
+        deux appels successifs totalisant entre treize et vingt-trois minutes. Après la fusion,
+        un seul appel produit les deux résultats en six à onze minutes, soit un gain de près
+        de cinquante pourcent sur la durée totale.
+
+        \subsubsection{Configuration des factories LLM}
+
+        Le tableau \ref{tab:llm_factories} détaille la configuration de chaque fonction LLM
+        factory utilisée dans le pipeline.
+
+        \begin{table}[H]
         \centering
-        \frame{\includegraphics[width=0.9\columnwidth]{img/two_model_architecture}}
-        \caption{Architecture à deux modèles LLM — configuration et rôles}
-        \label{fig:two_model_arch}
-    \end{figure}
+        \begin{tabular}{|m{3.5cm}|m{2cm}|m{2cm}|m{2cm}|m{2cm}|m{2.5cm}|}
+        \hline
+        \textbf{Fonction} & \textbf{Modèle} & \textbf{num\_ctx} & \textbf{num\_predict} & \textbf{temp.} & \textbf{Durée} \\
+        \hline
+        \texttt{get\_fast\_llm()} & 7b & 4 096 & 512 & 0.0 & \textasciitilde30s \\
+        \hline
+        \texttt{get\_combined\_llm()} & 14b & 12 288 & 2 500 & 0.1 & 6–11 min \\
+        \hline
+        \end{tabular}
+        \caption{Configuration des fonctions LLM factory (décorées \texttt{@lru\_cache})}
+        \label{tab:llm_factories}
+        \end{table}
 
-    Le tableau \ref{tab:llm_factories} détaille la configuration de chaque fonction LLM
-    factory utilisée dans le pipeline.
+    \subsection{Sous-système de revue de Pull Request}
 
-    \begin{table}[H]
-    \centering
-    \begin{tabular}{|m{3.5cm}|m{2cm}|m{2cm}|m{2cm}|m{2cm}|m{2.5cm}|}
-    \hline
-    \textbf{Fonction} & \textbf{Modèle} & \textbf{num\_ctx} & \textbf{num\_predict} & \textbf{temp.} & \textbf{Durée} \\
-    \hline
-    \texttt{get\_fast\_llm()} & 7b & 4 096 & 512 & 0.0 & \textasciitilde30s \\
-    \hline
-    \texttt{get\_combined\_llm()} & 14b & 12 288 & 2 500 & 0.1 & 6–11 min \\
-    \hline
-    \end{tabular}
-    \caption{Configuration des fonctions LLM factory (décorées \texttt{@lru\_cache})}
-    \label{tab:llm_factories}
-    \end{table}
-
-    Toutes les instances LLM sont décorées \texttt{@lru\_cache} et construites une seule
-    fois par processus, puis réutilisées pour tous les appels suivants. Par ailleurs,
-    la configuration \texttt{OLLAMA\_MAX\_LOADED\_MODELS=1} garantit qu'un seul modèle
-    est chargé en RAM à la fois, allouant la totalité des ressources disponibles au
-    modèle actif.
-
-    La fusion de deux appels 14B séquentiels en un seul appel combiné dans le nœud
-    \texttt{analyze\_review\_node} constitue l'optimisation principale du pipeline. Avant
-    cette optimisation, l'analyse de sécurité et la revue de qualité de code nécessitaient
-    deux appels successifs totalisant entre treize et vingt-trois minutes. Après la fusion,
-    un seul appel produit les deux résultats en six à onze minutes, soit un gain de près
-    de cinquante pourcent sur la durée totale.
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Workflow LangGraph — Pipeline de revue PR}
-
-    \subsection{Topologie du graphe d'état}
+        \subsubsection{Architecture logique}
 
         Le workflow de revue de \textit{Pull Request} est modélisé comme un
         \texttt{StateGraph} LangGraph \cite{LangGraph} avec neuf nœuds et un état partagé
-        de type TypedDict nommé \texttt{PRReviewState}. La figure \ref{fig:langgraph_graph} présente la
-        topologie complète du graphe.
+        de type TypedDict nommé \texttt{PRReviewState}. La figure \ref{fig:langgraph_graph}
+        présente la topologie complète du graphe.
 
         \begin{figure}[H]
             \centering
@@ -202,8 +209,6 @@ d'aborder la réalisation au chapitre suivant.
         le score de risque, le verdict et les commentaires inline. Le \texttt{report\_node}
         finalise le traitement en publiant la revue sur GitHub, en fixant le statut du
         commit et en sauvegardant un fichier \texttt{summary.json} dans les artefacts.
-
-    \subsection{Matrice de sélection des scanners}
 
         Le tableau \ref{tab:scan_matrix} présente la matrice de sélection des scanners selon
         la classification de la \textit{Pull Request}. Trivy FS et Gitleaks s'exécutent
@@ -236,8 +241,6 @@ d'aborder la réalisation au chapitre suivant.
         ce cas, l'image Docker est construite puis scannée par Trivy en complément du scan
         du filesystem.
 
-    \subsection{Routage conditionnel}
-
         Deux fonctions de routage guident le flux du graphe. La fonction \texttt{route\_scans}
         redirige vers \texttt{skip\_scan\_node} pour les PRs de documentation, vers
         \texttt{scan\_full\_node} si un Dockerfile est détecté, et vers \texttt{scan\_fs\_node}
@@ -247,12 +250,7 @@ d'aborder la réalisation au chapitre suivant.
         Tout nœud qui lève une exception positionne \texttt{state["error"]} et déclenche
         le routage vers \texttt{error\_node}.
 
-    \subsection{Diagrammes d'interaction du pipeline}
-
-        Afin d'illustrer les échanges entre les composants lors de l'exécution du pipeline,
-        nous présentons ci-après les diagrammes d'interaction pour les trois flux principaux.
-
-        \subsubsection{Diagramme d'interaction — Réception et validation du webhook}
+        \subsubsection{Diagramme d'interaction — Réception du webhook}
 
         La figure \ref{fig:inter_webhook} présente le flux d'interaction entre GitHub,
         nginx, l'agent FastAPI et Redis lors de la réception d'un événement
@@ -267,7 +265,7 @@ d'aborder la réalisation au chapitre suivant.
             \label{fig:inter_webhook}
         \end{figure}
 
-        \subsubsection{Diagramme d'interaction — Pipeline de revue de sécurité}
+        \subsubsection{Diagramme d'interaction — Pipeline de revue}
 
         La figure \ref{fig:inter_pipeline} illustre la séquence d'interactions entre
         les nœuds LangGraph, Ollama, les outils SAST et l'API GitHub lors du traitement
@@ -282,33 +280,15 @@ d'aborder la réalisation au chapitre suivant.
             \label{fig:inter_pipeline}
         \end{figure}
 
-        \subsubsection{Diagramme d'interaction — Boucle ReAct du chat opérationnel}
+    \subsection{Sous-système d'analyse du diff}
 
-        La figure \ref{fig:inter_react} décrit le cycle d'interaction entre l'utilisateur,
-        le serveur SSE, le modèle LLM et les outils de monitoring lors d'une question
-        portant sur l'état de l'infrastructure. Le modèle génère un appel d'outil, l'agent
-        l'exécute et injecte le résultat comme observation, puis le modèle produit la
-        réponse finale en citant uniquement les valeurs présentes dans l'observation.
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{img/inter_react}}
-            \caption{Diagramme d'interaction — Boucle ReAct du chat opérationnel}
-            \label{fig:inter_react}
-        \end{figure}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Conception du parser de diff}
-
-    \subsection{Problématique des hallucinations de numéros de lignes}
+        \subsubsection{Architecture logique}
 
         Un modèle de langage peut halluciner des numéros de lignes qui n'existent pas dans
         le diff réel de la \textit{Pull Request}. Poster un commentaire inline sur une ligne
         inexistante provoque une erreur 422 de l'API GitHub. Le module \texttt{diff\_parser.py}
         résout ce problème en construisant, pour chaque fichier modifié, l'ensemble exact
         des numéros de lignes valides avant tout posting.
-
-    \subsection{Architecture logique}
 
         \begin{figure}[H]
             \centering
@@ -333,7 +313,7 @@ d'aborder la réalisation au chapitre suivant.
         que le modèle peut légitimement référencer. Tout commentaire sur une ligne absente
         de cet ensemble est silencieusement éliminé, éliminant les hallucinations.
 
-    \subsection{Format du diff annoté}
+        \subsubsection{Format du diff annoté}
 
         En plus du diff brut utilisé pour la narrative de sécurité, un diff annoté avec
         numéros de lignes visibles est généré et transmis au LLM. Cette annotation
@@ -347,50 +327,9 @@ d'aborder la réalisation au chapitre suivant.
             \label{fig:annotated_diff}
         \end{figure}
 
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Schéma de la base de données}
+    \subsection{Sous-système d'assistant de chat opérationnel}
 
-    \subsection{Diagramme entité-association}
-
-        La base de données PostgreSQL comprend six tables applicatives, auxquelles s'ajoutent
-        les quatre tables créées automatiquement par LangGraph pour la persistance des
-        checkpoints. La figure \ref{fig:db_er} présente le diagramme entité-association
-        de l'ensemble des tables applicatives.
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{img/database_er_diagram}}
-            \caption{Diagramme E-A de la base de données PostgreSQL — 6 tables applicatives}
-            \label{fig:db_er}
-        \end{figure}
-
-    \subsection{Description des tables}
-
-        La table \texttt{pr\_reviews} constitue la table centrale de la base de connaissances.
-        Elle stocke pour chaque revue de \textit{Pull Request} : l'identifiant du dépôt, le
-        numéro de PR, le titre, l'auteur, la classification, le score de risque, le verdict,
-        le texte complet de la revue en markdown, le résumé des scanners en JSONB, les
-        fichiers modifiés en JSONB, la durée du pipeline et la date de création. La table
-        \texttt{scan\_results} enregistre les sorties brutes de chaque scanner par dépôt et
-        par déclencheur. La table \texttt{repo\_profiles} maintient un score de risque moyen
-        glissant et un compteur de revues par dépôt, mis à jour après chaque exécution du
-        nœud d'analyse. La table \texttt{security\_policies} contient les politiques de
-        sécurité qui définissent les seuils de blocage — par exemple, zéro CVE critique
-        autorisé ou obligation de scan des secrets. La table \texttt{sbom\_cache} met en
-        cache le Software Bill of Materials par dépôt pour éviter de rescanner les
-        dépendances inchangées. Enfin, la table \texttt{incidents} permet de tracer les
-        incidents de sécurité détectés via le chat ou les alertes.
-
-        Les quatre tables LangGraph — \texttt{checkpoints}, \texttt{checkpoint\_blobs},
-        \texttt{checkpoint\_writes} et \texttt{checkpoint\_migrations} — sont créées
-        automatiquement par le checkpointer au démarrage de l'application. Elles contiennent
-        l'état complet du graphe sérialisé, permettant la reprise automatique du pipeline
-        après tout redémarrage du conteneur.
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Architecture de l'assistant de chat opérationnel}
-
-    \subsection{Boucle ReAct personnalisée}
+        \subsubsection{Architecture logique}
 
         L'assistant de chat BTE Security AI Agent utilise une boucle ReAct
         (Reasoning + Acting) personnalisée. Cette conception est rendue nécessaire par le
@@ -418,12 +357,11 @@ d'aborder la réalisation au chapitre suivant.
         verbatim. La boucle se répète jusqu'à un maximum de huit appels d'outils par réponse,
         après quoi la réponse finale est streamée en événements SSE.
 
-    \subsection{Système anti-hallucination}
-
         Un modèle de langage a tendance à inventer des valeurs de métriques (pourcentage de
         CPU, espace disque libre, nombre de conteneurs) lorsqu'il répond à des questions sur
         l'état de l'infrastructure. Six couches de protection ont été conçues pour éliminer
-        complètement ce comportement, comme présenté dans la figure \ref{fig:anti_hallucination_layers}.
+        complètement ce comportement, comme présenté dans la figure
+        \ref{fig:anti_hallucination_layers}.
 
         \begin{figure}[H]
             \centering
@@ -444,8 +382,6 @@ d'aborder la réalisation au chapitre suivant.
         ANTI-HALLUCINATION dans le prompt système, comportant cinq règles explicites. La
         sixième couche est l'injection d'observation renforcée après chaque résultat d'outil,
         exigeant que toute valeur citée apparaisse verbatim dans un bloc \texttt{[OBSERVATION]}.
-
-    \subsection{Les vingt outils de monitoring}
 
         L'assistant dispose de vingt outils de monitoring couvrant l'ensemble de
         l'infrastructure. Le tableau \ref{tab:tools} présente ces outils organisés par
@@ -478,87 +414,142 @@ d'aborder la réalisation au chapitre suivant.
         \label{tab:tools}
         \end{table}
 
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Architecture de monitoring}
+        \subsubsection{Diagramme d'interaction — Boucle ReAct}
 
-    La stack d'observabilité assure la surveillance complète de la plateforme. La figure
-    \ref{fig:monitoring_stack} présente le flux de métriques depuis les sources de collecte
-    jusqu'aux dashboards Grafana et aux alertes Slack.
+        La figure \ref{fig:inter_react} décrit le cycle d'interaction entre l'utilisateur,
+        le serveur SSE, le modèle LLM et les outils de monitoring lors d'une question
+        portant sur l'état de l'infrastructure. Le modèle génère un appel d'outil, l'agent
+        l'exécute et injecte le résultat comme observation, puis le modèle produit la
+        réponse finale en citant uniquement les valeurs présentes dans l'observation.
 
-    \begin{figure}[H]
-        \centering
-        \frame{\includegraphics[width=0.88\columnwidth]{img/monitoring_stack}}
-        \caption{Architecture de la stack d'observabilité — flux de métriques}
-        \label{fig:monitoring_stack}
-    \end{figure}
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/inter_react}}
+            \caption{Diagramme d'interaction — Boucle ReAct du chat opérationnel}
+            \label{fig:inter_react}
+        \end{figure}
 
-    L'agent expose vingt-trois métriques Prometheus personnalisées à l'endpoint
-    \texttt{/metrics}, en plus des métriques HTTP auto-instrumentées. Ce nombre intègre
-    l'expansion de monitoring du sprint 8.1 (cf. Phase 10 du chapitre suivant) qui a porté
-    la couverture observabilité de \og agent + Ollama uniquement \fg{} à \og l'ensemble du
-    VPS \fg{}, avec trois nouvelles familles de métriques : six métriques par conteneur
-    (\texttt{container\_running}, \texttt{container\_memory\_bytes},
-    \texttt{container\_cpu\_percent}, \texttt{container\_network\_rx/tx\_bytes}, plus
-    \texttt{container\_memory\_limit\_bytes}) émises par un \textit{poller} interrogeant le
-    socket Docker toutes les trente secondes ; cinq métriques de santé pour la sandbox
-    LocalAI (\texttt{localai\_reachable}, \texttt{localai\_models\_total},
-    \texttt{localai\_model\_installed}, \texttt{localai\_model\_size\_gb},
-    \texttt{localai\_health\_check\_latency\_seconds}) ; et quatre métriques de télémétrie
-    A/B sur le routeur de chat (\texttt{chat\_requests\_total},
-    \texttt{chat\_request\_seconds}, \texttt{chat\_first\_token\_seconds},
-    \texttt{chat\_tokens\_streamed\_total}, toutes labellisées par \texttt{backend} et
-    \texttt{model}) permettant la comparaison directe Ollama vs LocalAI sur les mêmes
-    requêtes.
+    \subsection{Sous-système de persistance}
 
-    Le choix d'écrire un \textit{poller} interne plutôt que de déployer cAdvisor comme
-    \textit{sidecar} mérite une justification architecturale. cAdvisor s'appuie sur la
-    base d'images Docker historique située dans \texttt{/var/lib/docker/image/overlayfs/
-    layerdb/mounts/} pour résoudre les identifiants de couches par conteneur. Or le démon
-    Docker 29.4 de notre VPS utilise le \textit{containerd snapshotter}, qui ne maintient
-    pas cette base : l'arborescence est désormais \texttt{/var/lib/docker/buildkit/
-    containerd-overlayfs/}. Toute tentative de découverte de conteneurs par cAdvisor
-    échoue avec le message \texttt{failed to identify the read-write layer ID}. Le
-    \textit{poller} intégré à l'agent contourne entièrement cette dépendance en
-    s'adressant directement à l'API Docker Engine sur le socket UNIX déjà monté par le
-    conteneur, ce qui le rend insensible au pilote de stockage utilisé par l'hôte.
+        \subsubsection{Architecture logique}
 
-    Parmi les métriques héritées des sprints précédents, \texttt{ollama\_reachable} mérite
-    une attention particulière. Elle est mise à jour toutes les trente secondes par un
-    \textit{poller} asynchrone qui interroge l'API Ollama. Cette métrique distingue deux
-    états fondamentalement différents : Ollama inactif (aucun modèle chargé, état normal
-    entre deux revues PR) où \texttt{ollama\_reachable=1}, et Ollama injoignable (panne
-    réelle) où \texttt{ollama\_reachable=0}. L'ancienne expression d'alerte utilisant
-    \texttt{ollama\_models\_loaded\_total == 0} déclenchait systématiquement une fausse
-    alerte CRITICAL pendant les périodes de veille. La métrique \texttt{ollama\_reachable}
-    résout définitivement ce problème.
+        La base de données PostgreSQL comprend six tables applicatives, auxquelles s'ajoutent
+        les quatre tables créées automatiquement par LangGraph pour la persistance des
+        checkpoints. La figure \ref{fig:db_er} présente le diagramme entité-association
+        de l'ensemble des tables applicatives.
 
-    Les règles d'alerte sont organisées en cinq groupes. Le groupe \textit{disk} comporte
-    quatre règles couvrant les alertes DiskWarning et DiskCritical via node-exporter ainsi
-    que les jauges AgentDiskWarning et AgentDiskCritical de l'agent. Le groupe
-    \textit{host} comprend trois règles surveillant l'usage CPU, la mémoire RAM et les
-    I/O disque. Le groupe \textit{agent} contient trois règles pour l'état de l'agent,
-    son taux d'erreur et son backlog de revues. Le groupe \textit{ollama} comporte deux
-    règles pour la joignabilité d'Ollama et la durée sans modèle chargé. Enfin, le groupe
-    \textit{localai} ajoute trois règles \texttt{info} pour la disponibilité de la
-    sandbox, l'absence de modèles installés et la latence du \textit{health probe} ; une
-    règle d'inhibition dans AlertManager garantit que LocalAISandboxDown supprime les
-    deux autres lorsque la sandbox est arrêtée volontairement, évitant ainsi le bruit
-    d'alerte lors des sessions de test.
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/database_er_diagram}}
+            \caption{Diagramme E-A de la base de données PostgreSQL — 6 tables applicatives}
+            \label{fig:db_er}
+        \end{figure}
+
+        \subsubsection{Description des tables}
+
+        La table \texttt{pr\_reviews} constitue la table centrale de la base de connaissances.
+        Elle stocke pour chaque revue de \textit{Pull Request} : l'identifiant du dépôt, le
+        numéro de PR, le titre, l'auteur, la classification, le score de risque, le verdict,
+        le texte complet de la revue en markdown, le résumé des scanners en JSONB, les
+        fichiers modifiés en JSONB, la durée du pipeline et la date de création. La table
+        \texttt{scan\_results} enregistre les sorties brutes de chaque scanner par dépôt et
+        par déclencheur. La table \texttt{repo\_profiles} maintient un score de risque moyen
+        glissant et un compteur de revues par dépôt, mis à jour après chaque exécution du
+        nœud d'analyse. La table \texttt{security\_policies} contient les politiques de
+        sécurité qui définissent les seuils de blocage — par exemple, zéro CVE critique
+        autorisé ou obligation de scan des secrets. La table \texttt{sbom\_cache} met en
+        cache le Software Bill of Materials par dépôt pour éviter de rescanner les
+        dépendances inchangées. Enfin, la table \texttt{incidents} permet de tracer les
+        incidents de sécurité détectés via le chat ou les alertes.
+
+        Les quatre tables LangGraph — \texttt{checkpoints}, \texttt{checkpoint\_blobs},
+        \texttt{checkpoint\_writes} et \texttt{checkpoint\_migrations} — sont créées
+        automatiquement par le checkpointer au démarrage de l'application. Elles contiennent
+        l'état complet du graphe sérialisé, permettant la reprise automatique du pipeline
+        après tout redémarrage du conteneur.
+
+    \subsection{Sous-système d'observabilité}
+
+        \subsubsection{Architecture logique}
+
+        La stack d'observabilité assure la surveillance complète de la plateforme. La figure
+        \ref{fig:monitoring_stack} présente le flux de métriques depuis les sources de collecte
+        jusqu'aux dashboards Grafana et aux alertes Slack.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{img/monitoring_stack}}
+            \caption{Architecture de la stack d'observabilité — flux de métriques}
+            \label{fig:monitoring_stack}
+        \end{figure}
+
+        L'agent expose vingt-trois métriques Prometheus personnalisées à l'endpoint
+        \texttt{/metrics}, en plus des métriques HTTP auto-instrumentées. Ce nombre intègre
+        l'expansion de monitoring du sprint 8.1 (cf. Phase 10 du chapitre suivant) qui a porté
+        la couverture observabilité de \og agent + Ollama uniquement \fg{} à \og l'ensemble du
+        VPS \fg{}, avec trois nouvelles familles de métriques : six métriques par conteneur
+        (\texttt{container\_running}, \texttt{container\_memory\_bytes},
+        \texttt{container\_cpu\_percent}, \texttt{container\_network\_rx/tx\_bytes}, plus
+        \texttt{container\_memory\_limit\_bytes}) émises par un \textit{poller} interrogeant le
+        socket Docker toutes les trente secondes ; cinq métriques de santé pour la sandbox
+        LocalAI (\texttt{localai\_reachable}, \texttt{localai\_models\_total},
+        \texttt{localai\_model\_installed}, \texttt{localai\_model\_size\_gb},
+        \texttt{localai\_health\_check\_latency\_seconds}) ; et quatre métriques de télémétrie
+        A/B sur le routeur de chat (\texttt{chat\_requests\_total},
+        \texttt{chat\_request\_seconds}, \texttt{chat\_first\_token\_seconds},
+        \texttt{chat\_tokens\_streamed\_total}, toutes labellisées par \texttt{backend} et
+        \texttt{model}) permettant la comparaison directe Ollama vs LocalAI sur les mêmes
+        requêtes.
+
+        Parmi les métriques héritées des sprints précédents, \texttt{ollama\_reachable} mérite
+        une attention particulière. Elle est mise à jour toutes les trente secondes par un
+        \textit{poller} asynchrone qui interroge l'API Ollama. Cette métrique distingue deux
+        états fondamentalement différents : Ollama inactif (aucun modèle chargé, état normal
+        entre deux revues PR) où \texttt{ollama\_reachable=1}, et Ollama injoignable (panne
+        réelle) où \texttt{ollama\_reachable=0}. L'ancienne expression d'alerte utilisant
+        \texttt{ollama\_models\_loaded\_total == 0} déclenchait systématiquement une fausse
+        alerte CRITICAL pendant les périodes de veille. La métrique \texttt{ollama\_reachable}
+        résout définitivement ce problème.
+
+        Les règles d'alerte sont organisées en cinq groupes. Le groupe \textit{disk} comporte
+        quatre règles couvrant les alertes DiskWarning et DiskCritical via node-exporter ainsi
+        que les jauges AgentDiskWarning et AgentDiskCritical de l'agent. Le groupe
+        \textit{host} comprend trois règles surveillant l'usage CPU, la mémoire RAM et les
+        I/O disque. Le groupe \textit{agent} contient trois règles pour l'état de l'agent,
+        son taux d'erreur et son backlog de revues. Le groupe \textit{ollama} comporte deux
+        règles pour la joignabilité d'Ollama et la durée sans modèle chargé. Enfin, le groupe
+        \textit{localai} ajoute trois règles \texttt{info} pour la disponibilité de la
+        sandbox, l'absence de modèles installés et la latence du \textit{health probe} ; une
+        règle d'inhibition dans AlertManager garantit que LocalAISandboxDown supprime les
+        deux autres lorsque la sandbox est arrêtée volontairement, évitant ainsi le bruit
+        d'alerte lors des sessions de test.
+
+        \subsubsection{Justification du poller interne vs cAdvisor}
+
+        Le choix d'écrire un \textit{poller} interne plutôt que de déployer cAdvisor comme
+        \textit{sidecar} mérite une justification architecturale. cAdvisor s'appuie sur la
+        base d'images Docker historique située dans \texttt{/var/lib/docker/image/overlayfs/
+        layerdb/mounts/} pour résoudre les identifiants de couches par conteneur. Or le démon
+        Docker 29.4 de notre VPS utilise le \textit{containerd snapshotter}, qui ne maintient
+        pas cette base : l'arborescence est désormais \texttt{/var/lib/docker/buildkit/
+        containerd-overlayfs/}. Toute tentative de découverte de conteneurs par cAdvisor
+        échoue avec le message \texttt{failed to identify the read-write layer ID}. Le
+        \textit{poller} intégré à l'agent contourne entièrement cette dépendance en
+        s'adressant directement à l'API Docker Engine sur le socket UNIX déjà monté par le
+        conteneur, ce qui le rend insensible au pilote de stockage utilisé par l'hôte.
 
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
 Ce chapitre a couvert la conception complète du BTE Security AI Agent. L'architecture
-globale repose sur douze conteneurs Docker organisés en couches, et l'inférence est
-prise en charge par deux modèles LLM dont les rôles sont distincts. Le pipeline de
-revue de PR est piloté par un workflow LangGraph à neuf nœuds, avec des arêtes
-conditionnelles qui adaptent la suite d'actions au type de \textit{Pull Request}
-classifiée. Trois diagrammes d'interaction illustrent les flux principaux : la
-réception du webhook GitHub, l'exécution du pipeline et la boucle ReAct de l'assistant
-de chat. Le parser de diff a été spécifiquement conçu pour éliminer les hallucinations
-de numéros de lignes, et le système anti-hallucination du chat agit à six niveaux.
-Toutes ces décisions de conception sont reprises et concrétisées dans le chapitre
-suivant, consacré à la réalisation.
-
-Le chapitre suivant présentera la mise en œuvre concrète de cette architecture, phase par
-phase, avec les interfaces graphiques, les configurations et les résultats obtenus.
+globale repose sur douze conteneurs Docker organisés en cinq couches, exposés derrière
+un unique point d'entrée nginx. La conception logicielle a ensuite été détaillée
+sous-système par sous-système : l'inférence LLM à deux modèles, le pipeline LangGraph
+à neuf nœuds piloté par des arêtes conditionnelles selon la classification de la PR,
+le parser de diff qui élimine les hallucinations de numéros de lignes, l'assistant de
+chat ReAct protégé par six couches anti-hallucination et dix-neuf outils de monitoring,
+la base PostgreSQL à six tables applicatives, et la stack d'observabilité étendue à
+vingt-trois métriques personnalisées. Chaque sous-système a été présenté selon le même
+schéma — architecture logique puis diagramme d'interaction — afin d'offrir au lecteur
+une lecture homogène et progressive. Toutes ces décisions de conception sont reprises
+et concrétisées dans le chapitre suivant, consacré à la réalisation phase par phase.
