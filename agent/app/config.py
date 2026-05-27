@@ -24,11 +24,6 @@ class Settings(BaseSettings):
     slack_signing_secret: str = ""
     slack_escalation_enabled: bool = False  # requires working HTTPS callback URL
 
-    # Jenkins
-    jenkins_url: str = "http://jenkins:8080"
-    jenkins_user: str = "admin"
-    jenkins_api_token: str = ""
-
     # PostgreSQL
     postgres_host: str = "postgres"
     postgres_port: int = 5432

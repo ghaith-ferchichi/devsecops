@@ -112,20 +112,6 @@ services:
     networks:
       - devsecops-net
 
-  # ==================== CI/CD ====================
-  jenkins:
-    build: ./jenkins
-    container_name: jenkins
-    ports:
-      - "8080:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_data:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
-    networks:
-      - devsecops-net
-
   # ==================== Reverse Proxy ====================
   nginx:
     image: nginx:alpine
@@ -138,7 +124,6 @@ services:
       - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
     depends_on:
       - agent
-      - jenkins
       - grafana
       - open-webui
     restart: unless-stopped
@@ -273,7 +258,6 @@ volumes:
   ollama_data:
   postgres_data:
   redis_data:
-  jenkins_data:
   agent_workspace:
   prometheus_data:
   grafana_data:

@@ -6,7 +6,7 @@
 \addcontentsline{toc}{section}{Introduction}
 
 Ce chapitre décrit la conception architecturale du BTE Security AI Agent. Nous y
-présentons d'abord la vue globale de l'architecture logicielle, ses douze conteneurs
+présentons d'abord la vue globale de l'architecture logicielle, ses onze conteneurs
 et son point d'entrée, puis nous détaillons la conception de chacun des six
 sous-systèmes qui composent la solution : l'inférence LLM, la revue de
 \textit{Pull Request}, l'analyse du diff, l'assistant de chat opérationnel, la
@@ -18,15 +18,15 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
     \subsection{Architecture en couches}
 
-        La plateforme BTE Security AI Agent est déployée sous forme de douze conteneurs
-        Docker organisés en cinq couches fonctionnelles complémentaires. La figure
+        La plateforme BTE Security AI Agent est déployée sous forme de onze conteneurs
+        Docker organisés en quatre couches fonctionnelles complémentaires. La figure
         \ref{fig:full_arch} présente cette architecture globale avec l'ensemble des
         interactions entre les composants.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=\textwidth]{img/full_architecture}}
-            \caption{Architecture globale du BTE Security AI Agent — 12 conteneurs Docker}
+            \frame{\includegraphics[width=\textwidth]{full_architecture}}
+            \caption{Architecture globale du BTE Security AI Agent — 11 conteneurs Docker}
             \label{fig:full_arch}
         \end{figure}
 
@@ -35,22 +35,22 @@ conception avant d'aborder la réalisation au chapitre suivant.
         requêtes vers les services internes selon le chemin URL et applique une
         authentification HTTP Basic sur les interfaces sensibles. La \textbf{couche IA}
         comprend le FastAPI \cite{FastAPI} agent, qui orchestre le workflow LangGraph
-        \cite{LangGraph}, appelle les modèles LLM et exécute les scanners, ainsi qu'Ollama
+        \cite{LangGraph}, appelle les modèles LLM et exécute les scanners, Ollama
         \cite{Ollama}, le serveur d'inférence LLM accessible uniquement depuis le réseau
-        Docker \cite{Docker} interne. La \textbf{couche données} est constituée de
+        Docker \cite{Docker} interne, et Open WebUI qui offre une interface graphique
+        complémentaire pour interagir directement avec les modèles Ollama lors des phases
+        de mise au point. La \textbf{couche données} est constituée de
         PostgreSQL \cite{PostgreSQL}, qui héberge la base de connaissances sécurité et les
         checkpoints LangGraph, et de Redis \cite{Redis}, qui assure la déduplication des
-        webhooks, le rate limiting et le cache des résultats de scanners. La
+        webhooks, le rate limiting et le cache des résultats de scanners. Enfin, la
         \textbf{couche observabilité} regroupe Prometheus \cite{Prometheus},
         VictoriaMetrics \cite{VictoriaMetrics}, Grafana \cite{Grafana},
         node-exporter \cite{NodeExporter} et AlertManager \cite{AlertManager} pour une
-        surveillance complète de la plateforme. Enfin, la \textbf{couche CI/CD} est
-        composée de Jenkins \cite{Jenkins} pour l'exécution des pipelines de build et
-        d'Open WebUI pour l'accès direct aux modèles Ollama.
+        surveillance complète de la plateforme.
 
     \subsection{Inventaire des conteneurs}
 
-        Le tableau \ref{tab:containers} présente l'inventaire détaillé des douze conteneurs
+        Le tableau \ref{tab:containers} présente l'inventaire détaillé des onze conteneurs
         avec leurs caractéristiques principales.
 
         \begin{table}[H]
@@ -79,12 +79,10 @@ conception avant d'aborder la réalisation au chapitre suivant.
         \hline
         \texttt{node-exporter} & prom/node-exporter & host:9100 & \textasciitilde10 Mo & Métriques host \\
         \hline
-        \texttt{jenkins} & Jenkins LTS custom & 8080 & \textasciitilde1 Go & CI/CD \\
-        \hline
         \texttt{open-webui} & open-webui:main & 3001 & \textasciitilde300 Mo & UI Ollama \\
         \hline
         \end{tabular}
-        \caption{Inventaire des 12 conteneurs — ports, mémoire et rôles}
+        \caption{Inventaire des 11 conteneurs — ports, mémoire et rôles}
         \label{tab:containers}
         \end{table}
 
@@ -111,8 +109,6 @@ conception avant d'aborder la réalisation au chapitre suivant.
         \hline
         \texttt{/prometheus/} & prometheus:9090 & défaut & — \\
         \hline
-        \texttt{/jenkins/} & jenkins:8080 & défaut & Jenkins auth \\
-        \hline
         \end{tabular}
         \caption{Table de routage nginx}
         \label{tab:nginx_routing}
@@ -134,7 +130,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.9\columnwidth]{img/two_model_architecture}}
+            \frame{\includegraphics[width=0.9\columnwidth]{two_model_architecture}}
             \caption{Architecture à deux modèles LLM — configuration et rôles}
             \label{fig:two_model_arch}
         \end{figure}
@@ -183,7 +179,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.72\columnwidth]{img/langgraph_state_graph}}
+            \frame{\includegraphics[width=0.72\columnwidth]{langgraph_state_graph}}
             \caption{Graphe d'état LangGraph — 9 nœuds et arêtes conditionnelles}
             \label{fig:langgraph_graph}
         \end{figure}
@@ -260,7 +256,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{img/inter_webhook}}
+            \frame{\includegraphics[width=0.88\columnwidth]{inter_webhook}}
             \caption{Diagramme d'interaction — Réception et validation du webhook GitHub}
             \label{fig:inter_webhook}
         \end{figure}
@@ -275,7 +271,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=\textwidth]{img/inter_pipeline}}
+            \frame{\includegraphics[width=\textwidth]{inter_pipeline}}
             \caption{Diagramme d'interaction — Pipeline LangGraph de revue de sécurité}
             \label{fig:inter_pipeline}
         \end{figure}
@@ -292,7 +288,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.82\columnwidth]{img/diff_parser_state_machine}}
+            \frame{\includegraphics[width=0.82\columnwidth]{diff_parser_state_machine}}
             \caption{Machine à états du diff parser — extraction des lignes valides}
             \label{fig:diff_parser}
         \end{figure}
@@ -322,7 +318,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.82\columnwidth]{img/annotated_diff_format}}
+            \frame{\includegraphics[width=0.82\columnwidth]{annotated_diff_format}}
             \caption{Format du diff annoté avec numéros de lignes transmis au modèle 14B}
             \label{fig:annotated_diff}
         \end{figure}
@@ -339,7 +335,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.85\columnwidth]{img/react_loop_architecture}}
+            \frame{\includegraphics[width=0.85\columnwidth]{react_loop_architecture}}
             \caption{Boucle ReAct personnalisée — de la détection de l'appel outil à la réponse finale}
             \label{fig:react_loop_arch}
         \end{figure}
@@ -365,7 +361,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.85\columnwidth]{img/anti_hallucination_layers}}
+            \frame{\includegraphics[width=0.85\columnwidth]{anti_hallucination_layers}}
             \caption{Système anti-hallucination — 6 couches de protection empilées}
             \label{fig:anti_hallucination_layers}
         \end{figure}
@@ -383,7 +379,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
         sixième couche est l'injection d'observation renforcée après chaque résultat d'outil,
         exigeant que toute valeur citée apparaisse verbatim dans un bloc \texttt{[OBSERVATION]}.
 
-        L'assistant dispose de vingt outils de monitoring couvrant l'ensemble de
+        L'assistant dispose de dix-neuf outils de monitoring couvrant l'ensemble de
         l'infrastructure. Le tableau \ref{tab:tools} présente ces outils organisés par
         catégorie.
 
@@ -403,14 +399,12 @@ conception avant d'aborder la réalisation au chapitre suivant.
         \hline
         Redis & \texttt{redis\_info} & Mémoire, hit rate, clients \\
         \hline
-        Jenkins & \texttt{jenkins\_status} & Résultat dernier build par job \\
-        \hline
         Artifacts & \texttt{list\_scan\_artifacts}, \texttt{read\_scan\_artifact} & Fichiers SAST par PR \\
         \hline
         Base de données & \texttt{query\_database} & SELECT lecture seule \\
         \hline
         \end{tabular}
-        \caption{Les 20 outils de monitoring du chat opérationnel}
+        \caption{Les 19 outils de monitoring du chat opérationnel}
         \label{tab:tools}
         \end{table}
 
@@ -424,7 +418,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{img/inter_react}}
+            \frame{\includegraphics[width=0.88\columnwidth]{inter_react}}
             \caption{Diagramme d'interaction — Boucle ReAct du chat opérationnel}
             \label{fig:inter_react}
         \end{figure}
@@ -440,7 +434,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{img/database_er_diagram}}
+            \frame{\includegraphics[width=0.88\columnwidth]{database_er_diagram}}
             \caption{Diagramme E-A de la base de données PostgreSQL — 6 tables applicatives}
             \label{fig:db_er}
         \end{figure}
@@ -478,14 +472,14 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{img/monitoring_stack}}
+            \frame{\includegraphics[width=0.88\columnwidth]{monitoring_stack}}
             \caption{Architecture de la stack d'observabilité — flux de métriques}
             \label{fig:monitoring_stack}
         \end{figure}
 
-        L'agent expose vingt-trois métriques Prometheus personnalisées à l'endpoint
+        L'agent expose vingt-huit métriques Prometheus personnalisées à l'endpoint
         \texttt{/metrics}, en plus des métriques HTTP auto-instrumentées. Ce nombre intègre
-        l'expansion de monitoring du sprint 8.1 (cf. Phase 10 du chapitre suivant) qui a porté
+        l'expansion de monitoring du sprint 8.1 (cf. Sprint~8.1 du chapitre suivant) qui a porté
         la couverture observabilité de \og agent + Ollama uniquement \fg{} à \og l'ensemble du
         VPS \fg{}, avec trois nouvelles familles de métriques : six métriques par conteneur
         (\texttt{container\_running}, \texttt{container\_memory\_bytes},
@@ -542,14 +536,14 @@ conception avant d'aborder la réalisation au chapitre suivant.
 \addcontentsline{toc}{section}{Conclusion}
 
 Ce chapitre a couvert la conception complète du BTE Security AI Agent. L'architecture
-globale repose sur douze conteneurs Docker organisés en cinq couches, exposés derrière
+globale repose sur onze conteneurs Docker organisés en quatre couches, exposés derrière
 un unique point d'entrée nginx. La conception logicielle a ensuite été détaillée
 sous-système par sous-système : l'inférence LLM à deux modèles, le pipeline LangGraph
 à neuf nœuds piloté par des arêtes conditionnelles selon la classification de la PR,
 le parser de diff qui élimine les hallucinations de numéros de lignes, l'assistant de
 chat ReAct protégé par six couches anti-hallucination et dix-neuf outils de monitoring,
 la base PostgreSQL à six tables applicatives, et la stack d'observabilité étendue à
-vingt-trois métriques personnalisées. Chaque sous-système a été présenté selon le même
+vingt-huit métriques personnalisées. Chaque sous-système a été présenté selon le même
 schéma — architecture logique puis diagramme d'interaction — afin d'offrir au lecteur
 une lecture homogène et progressive. Toutes ces décisions de conception sont reprises
 et concrétisées dans le chapitre suivant, consacré à la réalisation phase par phase.

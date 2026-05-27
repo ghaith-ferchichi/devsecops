@@ -223,7 +223,6 @@ _TOOL_TTL: dict[str, int] = {
     "query_prometheus_range": 120,
     "ollama_status":           20,
     "redis_info":              30,
-    "jenkins_status":          30,
     "network_stats":           15,
     "system_net_io":           15,
     "query_database":          60,
@@ -396,7 +395,7 @@ async def _stream_react(req: ChatRequest) -> AsyncIterator[str]:
         "usage", "uptime", "free", "used", "available",
         # System entities
         "container", "containers", "process", "processes",
-        "ollama", "redis", "jenkins", "prometheus", "grafana", "victoriametrics",
+        "ollama", "redis", "prometheus", "grafana", "victoriametrics",
         # Operational concepts
         "running", "status", "health", "error", "errors",
         "log", "logs", "metric", "metrics", "alert", "alerts",

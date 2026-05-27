@@ -187,7 +187,7 @@ def container_logs(container: str, tail: int = 100, since: str = "") -> str:
 
     Args:
         container: Container name. Available: devsecops-agent, ollama, postgres,
-                   redis, nginx, jenkins, prometheus, grafana, victoriametrics
+                   redis, nginx, prometheus, grafana, victoriametrics
         tail: Number of lines from the end (default 100, max 500)
         since: Only logs newer than this — e.g. '30m', '2h', '1d'. Empty = no filter.
     """
@@ -525,52 +525,6 @@ def redis_info() -> str:
 
 
 # ───────────────────────────────────────────────────────────
-# JENKINS
-# ───────────────────────────────────────────────────────────
-
-@tool
-def jenkins_status() -> str:
-    """Show Jenkins job health and the result of the most recent build per job."""
-    settings = get_settings()
-    if not settings.jenkins_api_token:
-        return "Jenkins API token not configured (JENKINS_API_TOKEN env var is empty)."
-    try:
-        with httpx.Client(
-            timeout=10,
-            auth=(settings.jenkins_user, settings.jenkins_api_token),
-        ) as client:
-            resp = client.get(
-                "http://jenkins:8080/api/json",
-                params={
-                    "tree": "jobs[name,color,lastBuild[number,result,timestamp,duration,url]]"
-                },
-            )
-        if resp.status_code == 401:
-            return "Jenkins authentication failed — check JENKINS_API_TOKEN."
-        if resp.status_code != 200:
-            return f"Jenkins returned HTTP {resp.status_code}."
-
-        jobs = resp.json().get("jobs", [])
-        if not jobs:
-            return "No Jenkins jobs found."
-
-        result = []
-        for job in jobs:
-            last = job.get("lastBuild") or {}
-            result.append({
-                "job":        job.get("name"),
-                "health":     job.get("color", "unknown"),
-                "last_build": last.get("number", "none"),
-                "result":     last.get("result", "N/A"),
-                "duration_s": round((last.get("duration") or 0) / 1000),
-            })
-
-        return json.dumps(result, indent=2)
-    except Exception as exc:
-        return f"Jenkins error: {exc}"
-
-
-# ───────────────────────────────────────────────────────────
 # SCAN ARTIFACTS
 # ───────────────────────────────────────────────────────────
 
@@ -723,8 +677,6 @@ ALL_TOOLS = [
     prometheus_alerts,
     # Redis
     redis_info,
-    # Jenkins
-    jenkins_status,
     # Scan Artifacts
     list_scan_artifacts,
     read_scan_artifact,
