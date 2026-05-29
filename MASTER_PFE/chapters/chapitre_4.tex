@@ -9,8 +9,8 @@ Ce chapitre rend compte de la réalisation effective du projet sur le VPS de la 
 Il s'ouvre sur la description de l'environnement matériel et logiciel sur lequel la
 plateforme a été déployée, puis enchaîne sur l'implémentation sprint par sprint
 selon la méthodologie Scrumban introduite au chapitre 1. Chaque sprint suit le même
-gabarit — objectif inscrit au backlog, obstacles rencontrés en production, livrable
-effectif — choix de présentation qui laisse apparaître l'écart entre le plan prévu
+gabarit (objectif inscrit au backlog, obstacles rencontrés en production, livrable
+effectif). Ce choix de présentation laisse apparaître l'écart entre le plan prévu
 et ce que la production a effectivement renvoyé. La dernière partie présente les
 résultats obtenus sur des \textit{Pull Requests} réelles ainsi que la validation de
 bout en bout de la plateforme.
@@ -90,8 +90,8 @@ bout en bout de la plateforme.
     et deux micro-sprints d'extension (Post-Sprint~8 et Sprint~8.1) menés après la
     clôture du périmètre initial pour évaluer un second backend d'inférence et
     étendre la couverture d'observabilité. Chaque sprint est présenté ci-dessous
-    selon le même encart standardisé — \textit{Objectif du sprint}, \textit{Obstacles
-    rencontrés}, \textit{Livrable} — suivi du détail technique des décisions, des
+    selon le même encart standardisé (\textit{Objectif du sprint}, \textit{Obstacles
+    rencontrés}, \textit{Livrable}), suivi du détail technique des décisions, des
     configurations et des correctifs déployés.
 
     \subsection{Sprint 1 — Fondations : VPS, Docker et webhook GitHub}
@@ -110,8 +110,21 @@ bout en bout de la plateforme.
         \end{description}
 
         Le premier sprint a consisté à mettre en place l'ensemble de l'infrastructure
-        Docker \cite{Docker} et à valider la réception des webhooks GitHub. La
-        configuration de performance d'Ollama \cite{Ollama} est critique pour un fonctionnement CPU-only.
+        Docker \cite{Docker} et à valider la réception des webhooks GitHub.
+        Le déploiement initial de la plateforme a comporté l'installation de
+        Docker Engine 29.4.0 sur l'OS Ubuntu existant, la configuration des
+        règles \texttt{iptables} limitant l'exposition externe aux ports 80 et
+        443 via nginx, l'initialisation du schéma PostgreSQL ainsi que le clone
+        et le démarrage des onze conteneurs. Ces étapes, relevant de la pratique
+        courante d'administration système Linux, ne sont pas détaillées ici ; le
+        chapitre 3 présente l'architecture résultante et le tableau
+        \ref{tab:containers} liste les onze conteneurs déployés. La suite de
+        cette sous-section se concentre sur les deux tunings spécifiques qui
+        ont conditionné la réussite du sprint : la configuration de performance
+        d'Ollama pour un fonctionnement CPU-only, et le correctif nginx
+        nécessaire à la bonne réception des webhooks GitHub.
+
+        La configuration de performance d'Ollama \cite{Ollama} est critique pour un fonctionnement CPU-only.
         Sans tuning, le modèle 14B consomme plus de onze Go de mémoire KV à seize mille
         tokens de contexte avec les paramètres par défaut. La figure \ref{fig:ollama_compose}
         présente la configuration Ollama dans le fichier \texttt{docker-compose.yml}.
@@ -149,6 +162,45 @@ bout en bout de la plateforme.
         a résolu ce problème en forçant nginx à utiliser des connexions persistantes
         HTTP/1.1 avec l'agent, éliminant le mangling des corps \textit{chunked}.
 
+        \paragraph{Configuration de l'intégration GitHub.}
+        Côté GitHub, deux configurations ont été nécessaires pour permettre la
+        communication bidirectionnelle entre la plateforme et le dépôt cible.
+        En premier lieu, un \textit{Personal Access Token} a été créé sur le
+        compte de l'agent avec les scopes \texttt{repo} (lecture/écriture du
+        contenu) et \texttt{write:discussion} (publication des commentaires
+        \textit{inline} et mise à jour du statut du commit), comme présenté
+        sur la figure \ref{fig:github_token_creation}. Ce token est injecté
+        dans l'agent via la variable d'environnement \texttt{GITHUB\_TOKEN}
+        et stocké en \textit{secret} Docker pour ne pas apparaître dans les
+        logs ou les images.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{github_token_creation}}
+            \caption{Création du Personal Access Token GitHub avec les scopes
+                     \texttt{repo} et \texttt{write:discussion} nécessaires à
+                     la publication des commentaires et du statut du commit.
+                     Le token complet est masqué pour des raisons de sécurité.}
+            \label{fig:github_token_creation}
+        \end{figure}
+
+        En second lieu, un \textit{webhook} a été configuré sur le dépôt cible
+        pour notifier l'agent à chaque événement de \textit{Pull Request}.
+        La figure \ref{fig:github_webhook_config} présente cette configuration :
+        l'URL pointe vers l'endpoint public \texttt{/webhooks/github} de l'agent,
+        un secret partagé est défini pour la signature HMAC-SHA256 des charges
+        utiles, et le \textit{content type} est fixé à \texttt{application/json}
+        conformément à ce qu'attend le router FastAPI.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{github_webhook_config}}
+            \caption{Configuration du \textit{webhook} GitHub sur le dépôt cible —
+                     URL de l'endpoint, secret HMAC partagé et content type JSON.
+                     Le secret est masqué pour des raisons de sécurité.}
+            \label{fig:github_webhook_config}
+        \end{figure}
+
         La figure \ref{fig:webhook_received_github} confirme la réception correcte
         du webhook côté GitHub après ce correctif : l'événement \textit{pull
         request} est livré avec succès à l'endpoint de l'agent, qui répond par un
@@ -185,9 +237,9 @@ bout en bout de la plateforme.
                 mise en cache Redis des résultats avec TTL d'une heure.
         \end{description}
 
-        Le deuxième sprint a consisté à intégrer les cinq scanners de sécurité — Trivy
+        Le deuxième sprint a consisté à intégrer les cinq scanners de sécurité (Trivy
         \cite{Trivy}, Gitleaks \cite{Gitleaks}, Semgrep \cite{Semgrep}, Checkov
-        \cite{Checkov} et OSV-Scanner \cite{OSVScanner} — et le modèle LLM 14B dans le
+        \cite{Checkov} et OSV-Scanner \cite{OSVScanner}) et le modèle LLM 14B dans le
         workflow LangGraph \cite{LangGraph}. Une première amélioration significative
         par rapport au diff de l'API GitHub a été mise en place : la génération d'un diff
         local avec quinze lignes de contexte au lieu des trois lignes retournées par
@@ -342,7 +394,7 @@ bout en bout de la plateforme.
             \item[Objectif du sprint :] Rendre la plateforme auto-réparante via une
                 surveillance disque autonome et un \textit{health digest} quotidien
                 publié sur Slack.
-            \item[Obstacles rencontrés :] Incident critique du 20 avril 2026 — un
+            \item[Obstacles rencontrés :] Incident critique du 20 avril 2026. Un
                 téléchargement partiel du modèle \texttt{qwen2.5-coder:32b} a laissé
                 un blob de 242~Go sur le disque sans manifeste associé, portant
                 l'utilisation à 92\,\%.
@@ -380,9 +432,29 @@ bout en bout de la plateforme.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{scheduler_tasks}}
+            \frame{\includegraphics[width=0.65\columnwidth,height=0.80\textheight,keepaspectratio]{scheduler_tasks}}
             \caption{Scheduler autonome — gardien disque et health digest quotidien}
             \label{fig:scheduler}
+        \end{figure}
+
+        Pour permettre à l'agent d'émettre des notifications sur Slack, un
+        \textit{bot} Slack a été créé dans l'espace de travail
+        \texttt{team-devsecops} avec les permissions \texttt{chat:write} et
+        \texttt{channels:read}, comme présenté sur la figure
+        \ref{fig:slack_bot_config}. Son \textit{bot token} est injecté dans
+        l'agent via la variable \texttt{SLACK\_BOT\_TOKEN}, et l'identifiant
+        du canal cible (\texttt{C0XXXXXXXXX}) via \texttt{SLACK\_CHANNEL\_ID}.
+        Le scheduler asyncio peut ainsi publier le \textit{health digest}
+        quotidien sans intervention manuelle.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{slack_bot_config}}
+            \caption{Configuration du \textit{bot} Slack avec les permissions
+                     \texttt{chat:write} et \texttt{channels:read}.
+                     Le \textit{bot token} est masqué pour des raisons de
+                     sécurité.}
+            \label{fig:slack_bot_config}
         \end{figure}
 
         La figure \ref{fig:slack_digest} montre un exemple du health digest Slack publié
@@ -403,10 +475,10 @@ bout en bout de la plateforme.
             \item[Objectif du sprint :] Déployer la stack Prometheus + Grafana avec
                 trois dashboards opérationnels pour la surveillance de la plateforme.
             \item[Obstacles rencontrés :] Au premier démarrage, les trois cibles
-                Prometheus affichaient toutes l'état \texttt{down} — l'option
+                Prometheus affichaient toutes l'état \texttt{down}. L'option
                 \texttt{--web.route-prefix} de Prometheus et AlertManager préfixait
-                l'ensemble de leurs chemins HTTP, rendant les chemins de \textit{scrape}
-                par défaut incorrects.
+                l'ensemble de leurs chemins HTTP, ce qui rendait les chemins de
+                \textit{scrape} par défaut incorrects.
             \item[Livrable :] Quatre cibles Prometheus en état \texttt{up} après
                 ajout des \texttt{metrics\_path} explicites, trois dashboards Grafana
                 provisionnés (VPS Host Monitoring, DevSecOps AI Agent, PR Security
@@ -545,11 +617,11 @@ bout en bout de la plateforme.
             \itemsep 0.3em
             \item[Objectif du sprint :] Conduire un audit complet de la plateforme
                 et éliminer les hallucinations de l'assistant de chat.
-            \item[Obstacles rencontrés :] Cinq découvertes critiques — VictoriaMetrics
-                en panne depuis neuf jours, AlertManager n'ayant reçu aucune alerte
-                depuis le déploiement initial, \texttt{GET /} retournant 404, Grafana
-                \textit{live dashboards} cassés, et chat UI publiquement accessible
-                sans authentification.
+            \item[Obstacles rencontrés :] Cinq découvertes critiques. VictoriaMetrics
+                était en panne depuis neuf jours, AlertManager n'avait reçu aucune
+                alerte depuis le déploiement initial, \texttt{GET /} retournait 404,
+                les \textit{live dashboards} Grafana étaient cassés, et le chat UI
+                était publiquement accessible sans authentification.
             \item[Livrable :] Cinq correctifs déployés, système anti-hallucination à
                 six couches activé sur le chat, authentification HTTP Basic Auth
                 déployée sur nginx.
@@ -631,7 +703,7 @@ bout en bout de la plateforme.
         \texttt{pr\_reviews}, puis présente les résultats sous forme de tableau
         markdown. Conformément au système anti-hallucination, chaque valeur
         affichée provient verbatim de l'observation injectée après l'appel
-        d'outil — aucune donnée n'est inventée.
+        d'outil, sans qu'aucune donnée ne soit inventée.
 
         \begin{figure}[H]
             \centering
@@ -657,8 +729,8 @@ bout en bout de la plateforme.
             \item[Objectif du sprint :] Stabiliser la production des commentaires
                 inline GitHub sur l'ensemble des \textit{Pull Requests} réelles.
             \item[Obstacles rencontrés :] Bug critique observé sur PR \#14 et PR
-                \#15 — le commentaire global s'affichait correctement mais aucun
-                commentaire inline n'apparaissait ; l'analyse approfondie a révélé
+                \#15. Le commentaire global s'affichait correctement mais aucun
+                commentaire inline n'apparaissait. L'analyse approfondie a révélé
                 trois bugs cumulatifs dans le parser de revue.
             \item[Livrable :] Parser réécrit avec trois stratégies imbriquées
                 (\textit{regex} tolérant aux espaces, \textit{walker brace-depth},
@@ -713,7 +785,7 @@ bout en bout de la plateforme.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{parser_rewrite}}
+            \frame{\includegraphics[width=0.40\columnwidth,height=0.85\textheight,keepaspectratio]{parser_rewrite}}
             \caption{Architecture du parser réécrit — trois stratégies imbriquées}
             \label{fig:parser_rewrite}
         \end{figure}
@@ -825,10 +897,10 @@ else:
                 alternatif (LocalAI) sur exactement le même fichier GGUF afin de
                 transformer le choix initial en mesure objective.
             \item[Obstacles rencontrés :] Bug \textit{cold-load} sur le modèle
-                Phi-4 — le \textit{watchdog} \texttt{stream\_chunk\_timeout=120s}
+                Phi-4. Le \textit{watchdog} \texttt{stream\_chunk\_timeout=120s}
                 de \texttt{langchain\_openai} tuait le \textit{stream} avant le
-                premier token, le chargement à froid d'un modèle 15B sur CPU
-                dépassant régulièrement deux minutes.
+                premier token, car le chargement à froid d'un modèle 15B sur CPU
+                dépassait régulièrement deux minutes.
             \item[Livrable :] Sandbox LocalAI opérationnelle en parallèle d'Ollama,
                 routeur de chat dual-backend (\texttt{ollama/} ou \texttt{localai/}),
                 bug \textit{cold-load} corrigé par désactivation du \textit{watchdog}
@@ -1199,7 +1271,7 @@ async def _poll_docker_stats():
         que Grafana peut tracer côte à côte la performance d'Ollama et de LocalAI sur
         la même question. L'instrumentation est strictement passive : aucune branche
         logique de la boucle ReAct n'a été modifiée, et le chemin de revue de Pull
-        Request — qui n'emprunte pas \texttt{\_stream\_react()} — reste totalement
+        Request, qui n'emprunte pas \texttt{\_stream\_react()}, reste totalement
         inchangé.
 
         \begin{lstlisting}[language=Python, caption={Instrumentation A/B du \textit{stream} de chat — observation pure}, label={lst:chat_ab_telemetry}]
@@ -1290,7 +1362,7 @@ async def _stream_react(req: ChatRequest):
         Phi-4 : la requête se terminait avec un statut \texttt{ok}, mais le compteur
         \texttt{chat\_tokens\_streamed\_total\{model="phi-4"\}} restait obstinément à
         zéro. Sans la nouvelle télémétrie, ce comportement aurait été indétectable
-        au niveau opérationnel — l'utilisateur voyait simplement une réponse vide,
+        au niveau opérationnel. L'utilisateur voyait simplement une réponse vide,
         sans qu'aucun log ne rapporte d'erreur. La cause racine, localisée dans le
         fichier \texttt{localai/config/phi-4.yaml}, était subtile : la chaîne de
         \textit{template} utilisée pour la clé \texttt{chat} était identique à celle
@@ -1328,13 +1400,13 @@ template:
         manuelle via \texttt{docker exec}.
 
         \textbf{Validation expérimentale.} Un appel direct à l'endpoint
-        \texttt{/v1/chat/completions} de LocalAI, contournant l'agent, retourne
-        désormais le contenu \texttt{Pong} avec \texttt{completion\_tokens = 3} —
+        \texttt{/v1/chat/completions} de LocalAI, en contournant l'agent, retourne
+        désormais le contenu \texttt{Pong} avec \texttt{completion\_tokens = 3},
         valeur strictement positive là où elle valait 0 avant le correctif. Par le
         chemin du routeur de chat de l'agent, le compteur
         \texttt{chat\_tokens\_streamed\_total\{model="phi-4"\}} est passé de 0 à 51
-        \textit{tokens}, confirmant que le \textit{stream} fonctionne aussi bien en
-        appel direct qu'à travers la pile complète.
+        \textit{tokens}. Le \textit{stream} fonctionne donc aussi bien en appel
+        direct qu'à travers la pile complète.
 
         \subsubsection{Synthèse de la couverture observabilité}
 
@@ -1415,8 +1487,8 @@ template:
         Le troisième test vérifie le comportement de l'agent lorsque Ollama est
         indisponible. Après trois échecs consécutifs d'appels LLM, le circuit breaker
         passe en état OPEN et active le fallback de classification regex. La figure
-        \ref{fig:test_circuit} montre que le pipeline continue de fonctionner — avec une
-        classification basée sur les extensions de fichiers — sans bloquer sur
+        \ref{fig:test_circuit} montre que le pipeline continue de fonctionner avec une
+        classification basée sur les extensions de fichiers, sans bloquer sur
         l'indisponibilité du modèle.
 
         \begin{figure}[H]
@@ -1466,9 +1538,9 @@ template:
         \hline
         \textbf{PR} & \textbf{Risque} & \textbf{Verdict} & \textbf{Classification} & \textbf{Durée} & \textbf{Commentaires} \\
         \hline
-        \#11 & HIGH & REQUEST\_CHANGES & infrastructure & \textasciitilde6 min & 4 inline \\
+        \#11 & HIGH & REQUEST\_CHANGES & infrastructure & \textasciitilde18 min & 4 inline \\
         \hline
-        \#12 & HIGH & REQUEST\_CHANGES & infrastructure & \textasciitilde5,6 min & 3 inline \\
+        \#12 & HIGH & REQUEST\_CHANGES & infrastructure & \textasciitilde15 min & 3 inline \\
         \hline
         \end{tabular}
         \caption{Résultats des revues PR réelles — dépôt GhaiethFerchichi/Vunl-application}
@@ -1538,9 +1610,10 @@ template:
         la plateforme reste configurée pour l'itération quotidienne plutôt que pour une
         exploitation durcie. Plusieurs services internes ont conservé un \textit{binding}
         sur l'hôte hérité de la phase de mise au point. Ce choix a facilité le diagnostic
-        au cours des sprints — \texttt{curl http://vps:9090/api/v1/query} était plus
-        rapide à taper que d'ouvrir un tunnel SSH — mais expose une surface qu'il faut
-        réduire avant tout passage en production réelle. Le tableau \ref{tab:hardening_gaps}
+        au cours des sprints, dans la mesure où une commande \texttt{curl
+        http://vps:9090/api/v1/query} était plus rapide à taper que l'ouverture d'un
+        tunnel SSH. Il expose toutefois une surface qu'il faut réduire avant tout
+        passage en production réelle. Le tableau \ref{tab:hardening_gaps}
         récapitule les écarts relevés et la correction prévue.
 
         \begin{table}[H]
@@ -1579,10 +1652,10 @@ template:
         Le durcissement complet exige par ailleurs trois chantiers distincts des ports.
         Un certificat Let's Encrypt installé sur nginx chiffrera tout ce qui sort du VPS
         et fermera la dernière exposition en clair du flux externe. Une sauvegarde
-        quotidienne de PostgreSQL — base de connaissances sécurité et
-        \textit{checkpoints} LangGraph confondus — protégera contre une perte du volume
-        Docker, scénario dont la panne VictoriaMetrics du mois d'avril a déjà montré
-        qu'il pouvait survenir sans préavis. Restent enfin les cinq conteneurs sans
+        quotidienne de PostgreSQL, qui héberge à la fois la base de connaissances
+        sécurité et les \textit{checkpoints} LangGraph, protégera contre une perte du
+        volume Docker. La panne VictoriaMetrics du mois d'avril a déjà montré qu'un
+        tel scénario peut survenir sans préavis. Restent enfin les cinq conteneurs sans
         \textit{healthcheck} Docker (\texttt{nginx}, \texttt{alertmanager},
         \texttt{victoriametrics}, \texttt{node-exporter} et \texttt{open-webui}) ;
         leur instrumentation permettra au démon Docker de détecter
@@ -1597,8 +1670,8 @@ template:
 Ce chapitre a couvert la réalisation effective du BTE Security AI Agent selon la
 méthodologie Scrumban adoptée au chapitre~1. Nous avons décrit l'environnement
 matériel et logiciel sur lequel la plateforme a été construite, puis détaillé sprint
-par sprint l'implémentation — du Sprint~1 (fondations Docker et webhook GitHub)
-jusqu'au Sprint~8.1 (expansion de l'observabilité) — en présentant pour chaque
+par sprint l'implémentation. Du Sprint~1 (fondations Docker et webhook GitHub)
+jusqu'au Sprint~8.1 (expansion de l'observabilité), nous avons présenté pour chaque
 itération l'objectif inscrit au backlog, les obstacles rencontrés en production
 et le livrable effectif. Plusieurs épisodes ont particulièrement marqué la
 réalisation : l'urgence disque d'avril, la remise en état des cibles Prometheus

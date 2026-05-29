@@ -5,12 +5,12 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
-Dans ce chapitre introductif, nous allons définir le cadre global de notre projet en
-présentant l'organisme d'accueil, la Banque de Tunisie et des Emirats, au sein de laquelle
-ce stage a été réalisé. Nous décrirons ensuite le processus de revue de sécurité tel
-qu'il existe aujourd'hui à la BTE, avant d'en pointer les limites et de présenter la
-solution proposée pour y répondre. Nous exposerons enfin la méthodologie adoptée — du
-choix du framework Agile au déroulement effectif du projet sur cinq mois.
+Dans ce chapitre introductif, nous définissons le cadre global de notre projet.
+Nous présentons d'abord l'organisme d'accueil, la Banque de Tunisie et des Emirats,
+au sein de laquelle ce stage a été réalisé. Nous décrivons ensuite le processus de
+revue de sécurité tel qu'il existe aujourd'hui à la BTE, avant d'en pointer les
+limites et de présenter la solution proposée. Nous exposons enfin la méthodologie
+adoptée, du choix du framework Agile au déroulement effectif du projet sur cinq mois.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Présentation de l'organisme d'accueil}
@@ -66,12 +66,12 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
         \end{table}
 
         Dans le cadre de sa transformation numérique, la BTE a mis en place une Direction
-        des Systèmes d'Information (DSI) chargée d'assurer la disponibilité, la sécurité
-        et l'évolution continue de ses infrastructures informatiques. C'est au sein du
-        département Informatique et Digital de cette direction — responsable de la
-        modernisation des systèmes d'information et de la plateforme NEO BTE — que s'est
-        déroulé notre stage, avec pour mission de renforcer les pratiques DevSecOps
-        de l'organisation.
+        des Systèmes d'Information (DSI). Celle-ci est chargée d'assurer la disponibilité,
+        la sécurité et l'évolution continue de ses infrastructures informatiques. Notre
+        stage s'est déroulé au sein du département Informatique et Digital de cette
+        direction, responsable de la modernisation des systèmes d'information et de
+        la plateforme NEO BTE. La mission qui nous a été confiée est de renforcer les
+        pratiques DevSecOps de l'organisation.
 
     \subsection{Secteur d'activité}
 
@@ -109,8 +109,8 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Présentation du projet}
 
-    Le projet vise à automatiser la revue de sécurité du code à la BTE en combinant
-    de l'intelligence artificielle locale et des outils d'analyse statique. L'agent
+    Le projet vise à automatiser la revue de sécurité du code à la BTE. Il associe
+    pour cela de l'intelligence artificielle locale et des outils d'analyse statique. L'agent
     prend en charge l'ensemble du cycle, du déclenchement des scanners à la publication
     des commentaires de correction sur la \textit{Pull Request}, sans intervention
     humaine entre les deux. L'objectif est double : raccourcir un délai de revue qui
@@ -162,11 +162,6 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
         outil, en particulier les secrets accidentellement commités et les dépendances
         vulnérables introduites en transitif.
 
-        Pour rendre tangible le delta entre le processus actuel et la solution
-        proposée, les figures \ref{fig:asis_workflow} et \ref{fig:tobe_workflow}
-        confrontent les deux flux : d'abord la revue manuelle telle qu'elle existe
-        aujourd'hui à la BTE, puis le pipeline automatisé que nous mettons en place.
-
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.78\textwidth]{asis_workflow}}
@@ -175,13 +170,7 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
             \label{fig:asis_workflow}
         \end{figure}
 
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.78\textwidth]{tobe_workflow}}
-            \caption{Processus \textit{TO-BE} — revue automatisée par le BTE
-                     Security AI Agent, déclenchée à chaque \textit{Pull Request}.}
-            \label{fig:tobe_workflow}
-        \end{figure}
+
 
     \subsection{Solution proposée}
 
@@ -201,13 +190,20 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
         Cinq outils d'analyse s'exécutent en parallèle selon la classification de la
         \textit{Pull Request} : Trivy pour les CVE, Gitleaks pour la détection de secrets,
         Semgrep pour les failles OWASP, Checkov pour les misconfigurations d'infrastructure,
-        et OSV-Scanner pour les dépendances vulnérables. Le résultat — une revue de sécurité
-        complète avec score de risque, verdict, et commentaires inline avec suggestions de
-        correction — est publié directement sur la \textit{Pull Request} GitHub en
-        environ 15 à 25 minutes selon la complexité de la PR. La totalité de
-        l'inférence s'exécute en local, garantissant
-        qu'aucun code source ne quitte l'infrastructure de la BTE.
+        et OSV-Scanner pour les dépendances vulnérables. Le résultat est publié directement
+        sur la \textit{Pull Request} GitHub en environ 15 à 25 minutes selon la complexité
+        de la PR. Cette publication comprend une revue de sécurité complète avec score de
+        risque, verdict et commentaires inline accompagnés de suggestions de correction.
+        La totalité de l'inférence s'exécute en local. Aucun code source ne quitte
+        l'infrastructure de la BTE.
 
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.78\textwidth]{tobe_workflow}}
+            \caption{Processus \textit{TO-BE} — revue automatisée par le BTE
+                     Security AI Agent, déclenchée à chaque \textit{Pull Request}.}
+            \label{fig:tobe_workflow}
+        \end{figure}
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Approche méthodologique}
 
@@ -306,8 +302,8 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
         ce découpage perd son sens lorsque l'équipe se réduit à une seule personne,
         et le sprint engagé devient rigide dès qu'un incident de production
         s'impose en milieu de quinzaine. \textit{eXtreme Programming} pousse plus
-        loin encore les pratiques d'ingénierie — \textit{pair programming}, TDD
-        strict, refactoring continu — dont l'essentiel est inopérant en solo.
+        loin encore les pratiques d'ingénierie (\textit{pair programming}, TDD strict,
+        refactoring continu), dont l'essentiel est inopérant en solo.
         Kanban offre la souplesse maximale du flux continu, mais sacrifie la
         cadence et les jalons fixes utiles à l'encadrement académique d'un projet
         de fin d'études.
@@ -336,11 +332,11 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
         solo, dans un environnement où les incidents arrivent rarement au moment
         où on les attend. Le rythme reste celui de Scrum \cite{Scrum} : sprints
         de deux semaines, \textit{sprint planning} en début de quinzaine, démo
-        et rétrospective à la fin. Les cérémonies prévues pour les équipes —
-        daily standup formel, planning poker, Scrum Master dédié — ont été
-        simplifiées, mais la structure fondamentale a été conservée : backlog
-        priorisé, sprints à durée fixe, jalons de livraison et définition de
-        terminé. La figure \ref{fig:agile_scrum} illustre ce cycle.
+        et rétrospective à la fin. Les cérémonies prévues pour les équipes
+        (daily standup formel, planning poker, Scrum Master dédié) ont été
+        simplifiées. La structure fondamentale a toutefois été conservée :
+        backlog priorisé, sprints à durée fixe, jalons de livraison et
+        définition de terminé. La figure \ref{fig:agile_scrum} illustre ce cycle.
 
         \begin{figure}[H]
             \centering
@@ -422,7 +418,7 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
         le sur-engagement, ce piège classique de début de sprint quand l'optimisme prend
         le pas sur la mesure réelle de la capacité.
 
-        \textbf{In Progress} est la colonne centrale, et sa limite WIP de 1 constitue la
+        \textbf{In Progress} est la colonne centrale. Sa limite WIP de 1 est la
         règle structurante de tout le système. Une carte y entre quand le développement
         commence et n'en sort que lorsque le code est livré et qu'une revue peut être
         déclenchée. Tant qu'elle n'a pas avancé, aucune autre carte ne peut prendre sa
@@ -464,7 +460,7 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
         types} natifs de Jira : \textit{Story} pour le développement applicatif,
         \textit{Task} pour le travail d'infrastructure et d'exploitation,
         \textit{Bug} pour les correctifs, et \textit{Spike} pour les investigations
-        de recherche-évaluation. Cette distinction est purement visuelle —
+        de recherche-évaluation. Cette distinction est purement visuelle :
         l'icône colorée portée par chaque carte permet de lire d'un coup d'œil si
         le sprint en cours est à dominante développement, infrastructure ou
         correction. Le flux et les limites WIP restent globaux : la règle WIP=1
@@ -487,12 +483,12 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
     \subsection{Illustration d'un sprint sur l'agent}
 
         L'outil Jira a servi de support à la gestion quotidienne du tableau
-        Scrumban tout au long du projet — création des cartes, suivi des
-        transitions de colonne, application des limites WIP, association
-        aux jalons. Plutôt que d'énumérer ici la totalité du backlog, il
-        est plus parlant d'en détailler un sprint représentatif du cœur
-        du travail : le sprint 3, consacré à l'assemblage du moteur de
-        revue de sécurité.
+        Scrumban tout au long du projet. Il a permis la création des cartes,
+        le suivi des transitions de colonne, l'application des limites WIP
+        et l'association aux jalons. Plutôt que d'énumérer ici la totalité
+        du backlog, nous détaillons un sprint représentatif du cœur du
+        travail : le sprint 3, consacré à l'assemblage du moteur de revue
+        de sécurité.
 
         Ce sprint marque le moment où l'agent cesse d'être un assemblage
         de briques techniques et devient réellement un \textit{Security
@@ -504,7 +500,7 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
 
         Cinq cartes ont été tirées du backlog vers la colonne
         \textit{Ready}. La première a installé le moteur d'inférence dédié
-        à l'analyse sécurité — le modèle \texttt{qwen2.5-coder:14b}, plus
+        à l'analyse sécurité : le modèle \texttt{qwen2.5-coder:14b}, plus
         lent que le 7B utilisé pour la classification mais nécessaire à
         la qualité du raisonnement attendu. La deuxième a construit le
         prompt sécurité combinant les \textit{findings} agrégés des cinq
@@ -516,13 +512,13 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
         commentaire \textit{inline} cliquable. Enfin la cinquième carte,
         étiquetée \textit{Fixed Date}, a clos le sprint par une
         démonstration sur une \textit{Pull Request} réelle du projet à
-        l'encadrant — c'est le jalon M2.
+        l'encadrant. Cette démonstration constitue le jalon M2.
 
         Sur ces deux semaines, la règle WIP=1 a été particulièrement
         utile. Les cartes étaient fortement dépendantes les unes des
-        autres — le parser ne peut être écrit avant que le format de
-        sortie soit stabilisé, la publication GitHub suppose un parser
-        fonctionnel — et la tentation d'attaquer plusieurs fronts en
+        autres. Le parser ne pouvait être écrit avant que le format de
+        sortie soit stabilisé, et la publication GitHub supposait un
+        parser fonctionnel. La tentation d'attaquer plusieurs fronts en
         parallèle aurait conduit à des intégrations bâclées. En tirant
         une carte à la fois jusqu'à son déploiement effectif en
         production, le sprint s'est terminé sans dette technique reportée
@@ -551,16 +547,17 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
 
         Six jalons rythment cette progression et constituent les points
         d'engagement pris vis-à-vis de l'encadrement. Le jalon M1 marque
-        l'existence d'un pipeline vivant — une \textit{Pull Request} réelle
-        analysée de bout en bout. Le jalon M2 certifie l'intelligence
-        complète du système avec les cinq scanners et la revue LLM publiée
-        sur GitHub. Le jalon M3 valide l'autonomie opérationnelle —
-        alertes, Slack et scheduler sans intervention humaine. Le jalon M4
-        confirme l'observabilité complète. Le jalon M5 atteste le
-        durcissement de production après l'audit VPS et la réécriture du
-        parser. Enfin, le jalon M6 valide la robustesse de la plateforme
-        sur quatre semaines de fonctionnement continu, juste avant la
-        soutenance.
+        l'existence d'un pipeline vivant, capable d'analyser une
+        \textit{Pull Request} réelle de bout en bout. Le jalon M2 certifie
+        l'intelligence complète du système avec les cinq scanners et la
+        revue LLM publiée sur GitHub. Le jalon M3 valide l'autonomie
+        opérationnelle, c'est-à-dire la capacité du système à émettre des
+        alertes, à publier sur Slack et à exécuter son scheduler sans
+        intervention humaine. Le jalon M4 confirme l'observabilité
+        complète. Le jalon M5 atteste le durcissement de production après
+        l'audit VPS et la réécriture du parser. Enfin, le jalon M6 valide
+        la robustesse de la plateforme sur quatre semaines de
+        fonctionnement continu, juste avant la soutenance.
 
         Le diagramme de Gantt de la figure \ref{fig:gantt} synthétise cette
         progression sur l'axe temporel. Les dix sprints y apparaissent sous
@@ -568,10 +565,10 @@ choix du framework Agile au déroulement effectif du projet sur cinq mois.
         positionnés en fin de sprint correspondant, et la rédaction du
         rapport sous forme d'une bande continue chevauchant les derniers
         sprints. La lecture verticale met en évidence les transitions de
-        phase — passage du développement aux micro-sprints d'extension entre
-        Sprint~8 et Post-Sprint~8 —
-        tandis que la lecture horizontale révèle la cadence régulière des
-        livraisons sur l'ensemble de la période.
+        phase, notamment le passage du développement aux micro-sprints
+        d'extension entre Sprint~8 et Post-Sprint~8. La lecture horizontale
+        révèle quant à elle la cadence régulière des livraisons sur
+        l'ensemble de la période.
 
         \begin{figure}[H]
             \centering
@@ -592,8 +589,9 @@ le BTE Security AI Agent comme solution à ces lacunes. Le choix méthodologique
 l'objet d'une comparaison entre les principaux frameworks Agile, à l'issue de laquelle
 Scrumban a été retenu : sa combinaison de la cadence des sprints héritée de Scrum et
 du pilotage par le flux propre à Kanban offre un cadre adapté à un projet solo de cinq
-mois en environnement de production — visibilité sur les jalons côté encadrement,
-souplesse côté gestion quotidienne quand les incidents arrivent sans prévenir.
+mois en environnement de production. Ce cadre apporte à la fois une visibilité sur les
+jalons pour l'encadrement et une souplesse dans la gestion quotidienne lorsque les
+incidents arrivent sans prévenir.
 
 Le chapitre suivant porte sur la présentation des différentes technologies sur lesquelles
 repose notre solution, avec une étude comparative entre les alternatives disponibles pour

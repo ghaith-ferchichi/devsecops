@@ -1,0 +1,13 @@
+! LaTeX Error: File `github_token_creation' not found.
+! LaTeX Error: File `github_webhook_config' not found.
+! LaTeX Error: File `disk_emergency_resolution' not found.
+! LaTeX Error: File `slack_bot_config' not found.
+! LaTeX Error: File `prometheus_targets_down' not found.
+! LaTeX Error: File `grafana_agent_dashboard' not found.
+! LaTeX Error: File `grafana_pr_reviews_dashboard' not found.
+! LaTeX Error: File `hallucination_before_after' not found.
+! LaTeX Error: Can be used only in preamble.
+Output written on main.pdf (129 pages, 23502015 bytes).
+
+
+BTE-DSI

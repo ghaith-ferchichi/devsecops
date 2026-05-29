@@ -82,9 +82,10 @@ fonctionnels et non fonctionnels du projet.
     \subsection{Du DevOps au DevSecOps}
 
         Le DevOps tel qu'il vient d'être décrit traite la sécurité comme une étape
-        séparée, généralement repoussée à la fin du cycle. Le DevSecOps — contraction de
-        Development, Security et Operations \cite{DevSecOps} — corrige cette omission en
-        intégrant la sécurité à chaque étape du cycle plutôt qu'en aval \cite{NIST_DevSecOps}.
+        séparée, généralement repoussée à la fin du cycle. Le DevSecOps, contraction
+        de Development, Security et Operations \cite{DevSecOps}, corrige cette omission
+        en intégrant la sécurité à chaque étape du cycle plutôt qu'en aval
+        \cite{NIST_DevSecOps}.
         L'objectif est de détecter les vulnérabilités au plus tôt, là où elles coûtent le
         moins cher à corriger ; un bug de sécurité repéré sur une \textit{Pull Request}
         avant fusion n'a presque aucun coût comparé à la même faille découverte en
@@ -102,8 +103,8 @@ fonctionnels et non fonctionnels du projet.
         quelques principes structurants. Le \textit{Security as Code} consiste à exprimer
         les politiques de sécurité sous forme de code versionné et déployé automatiquement,
         au même titre qu'une configuration applicative. Le \textit{Shift Left} pousse la
-        détection des vulnérabilités le plus en amont possible — idéalement sur la
-        \textit{Pull Request}, avant toute fusion. Le \textit{feedback continu} complète
+        détection des vulnérabilités le plus en amont possible, idéalement sur la
+        \textit{Pull Request} et avant toute fusion. Le \textit{feedback continu} complète
         l'ensemble en remontant les résultats des analyses aux développeurs concernés, sur
         leur outil de travail, dès qu'ils sont disponibles.
 
@@ -140,9 +141,10 @@ fonctionnels et non fonctionnels du projet.
         L'agent recalcule la signature à partir de la charge utile reçue et la compare en
         temps constant à celle envoyée dans l'en-tête \texttt{X-Hub-Signature-256} : toute
         requête dont la signature ne correspond pas est rejetée en 401 avant la moindre
-        opération. Ce double mécanisme — déclenchement automatique côté événement,
-        validation cryptographique côté réception — incarne à la fois l'idée d'automatisation
-        du DevOps et celle de \textit{Security as Code} du DevSecOps.
+        opération. Ce double mécanisme associe un déclenchement automatique côté
+        événement à une validation cryptographique côté réception. Il rejoint ainsi
+        à la fois l'idée d'automatisation du DevOps et celle de \textit{Security as
+        Code} du DevSecOps.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Les grands modèles de langage (LLM)}
@@ -152,13 +154,14 @@ fonctionnels et non fonctionnels du projet.
         Les grands modèles de langage (Large Language Models, LLM) sont des réseaux de
         neurones de type Transformeur entraînés sur d'immenses corpus de texte et de code
         \cite{QwenCoder}.
-        Ils sont capables de comprendre le contexte d'un fichier source, d'identifier des
-        patterns de vulnérabilité connus — tels que la concaténation directe de chaînes
-        dans une requête SQL ou l'utilisation de fonctions dangereuses de désérialisation
-        — et de proposer des corrections dans le langage du développeur. Le paramètre
-        \texttt{num\_ctx} (fenêtre de contexte) est critique dans notre cas : un contexte
-        insuffisant oblige le modèle à tronquer l'entrée ou à compléter depuis sa mémoire
-        d'entraînement, engendrant des hallucinations. Nous avons calibré ce paramètre à
+        Ils sont capables de comprendre le contexte d'un fichier source et d'identifier
+        des patterns de vulnérabilité connus, tels que la concaténation directe de
+        chaînes dans une requête SQL ou l'utilisation de fonctions dangereuses de
+        désérialisation. Ils savent également proposer des corrections dans le langage
+        du développeur. Le paramètre \texttt{num\_ctx} (fenêtre de contexte) est
+        critique dans notre cas. Un contexte insuffisant oblige le modèle à tronquer
+        l'entrée ou à compléter depuis sa mémoire d'entraînement, ce qui produit des
+        hallucinations. Nous avons calibré ce paramètre à
         12 288 tokens pour l'analyse de \textit{Pull Request} et à 6 144 tokens pour
         l'assistant de chat.
 
@@ -297,10 +300,10 @@ fonctionnels et non fonctionnels du projet.
         Notre architecture confie à une base de données relationnelle deux rôles distincts.
         D'une part, elle sert de \textbf{base de connaissances sécurité} pour stocker
         l'ensemble des revues de \textit{Pull Requests}, des résultats de scanners et des
-        profils de risque par dépôt, alimentant ainsi les requêtes de tendances. D'autre
-        part, elle assure la \textbf{persistance des checkpoints} de l'orchestrateur de
-        workflows, permettant à un pipeline de dix minutes de survivre à un redémarrage
-        du conteneur.
+        profils de risque par dépôt. Cette base alimente ainsi les requêtes de tendances.
+        D'autre part, elle assure la \textbf{persistance des checkpoints} de l'orchestrateur
+        de workflows. Un pipeline de dix minutes peut ainsi survivre à un redémarrage du
+        conteneur.
 
     \subsection{Cache et déduplication}
 
@@ -429,8 +432,9 @@ fonctionnels et non fonctionnels du projet.
         Après l'évaluation présentée dans le tableau \ref{tab:langgraph_comp}, nous avons
         choisi LangGraph \cite{LangGraph}, bibliothèque Python construite sur LangChain
         \cite{LangChain}. Sa persistance d'état native sur PostgreSQL garantit qu'un
-        pipeline de dix minutes survit aux redémarrages du conteneur, reprenant exactement
-        là où il s'était arrêté — une exigence fondamentale pour notre cas d'usage.
+        pipeline de dix minutes survit aux redémarrages du conteneur et reprend exactement
+        là où il s'était arrêté. Il s'agit d'une exigence fondamentale pour notre cas
+        d'usage.
 
     \subsection{Choix des outils SAST}
 
@@ -471,12 +475,12 @@ fonctionnels et non fonctionnels du projet.
         Sa gestion native de l'asynchronisme via \texttt{asyncio} est essentielle pour
         exécuter des sous-processus de scanning et des appels LLM en parallèle sans
         bloquer le thread principal. Il assure également une validation automatique des
-        payloads via Pydantic, garantissant l'intégrité des données reçues depuis les
-        webhooks GitHub.
+        payloads via Pydantic. Cette validation préserve l'intégrité des données reçues
+        depuis les webhooks GitHub.
 
         Pour la base de données relationnelle, nous retenons \textbf{PostgreSQL}
-        \cite{PostgreSQL} qui assume les deux rôles décrits précédemment — base de
-        connaissances sécurité et persistance des checkpoints LangGraph via
+        \cite{PostgreSQL}, qui assume les deux rôles décrits précédemment : la base de
+        connaissances sécurité et la persistance des checkpoints LangGraph via
         l'\texttt{AsyncPostgresSaver}. Son écosystème mature et son support natif des
         types JSON facilitent le stockage des résultats hétérogènes des scanners.
 
@@ -516,9 +520,9 @@ fonctionnels et non fonctionnels du projet.
         AlertManager} a été retenue. C'est d'abord la seule pile entièrement open source
         et auto-hébergeable qui couvre les quatre besoins, ce qui prolonge la contrainte
         de confidentialité déjà appliquée au moteur LLM. Les cinq composants ont par
-        ailleurs été conçus pour s'intégrer entre eux sans adaptateur — Prometheus émet
+        ailleurs été conçus pour s'intégrer entre eux sans adaptateur. Prometheus émet
         vers AlertManager nativement et Grafana lit indifféremment Prometheus et
-        VictoriaMetrics — ce qui nous a évité d'écrire des couches de pontage. Reste le
+        VictoriaMetrics, ce qui nous a évité d'écrire des couches de pontage. Reste le
         cas particulier de \texttt{node-exporter} \cite{NodeExporter} : sur un VPS qui
         utilise le \textit{containerd snapshotter}, c'était la seule option capable
         d'exposer les vraies métriques de l'hôte, cAdvisor \cite{cAdvisor} restant
@@ -590,10 +594,10 @@ fonctionnels et non fonctionnels du projet.
         (\textsc{info} → \textsc{critical}), verdict
         (\textsc{approve} / \textsc{request\_changes} / \textsc{block}) et commentaires
         \textit{inline} porteurs de suggestions de correction. Le résultat est ensuite
-        \textbf{publié sur GitHub} — commentaire global dans l'onglet
-        \textit{Conversation}, commentaires \textit{inline} dans l'onglet
-        \textit{Files Changed}, et statut de commit positionné pour servir de \textit{gate}
-        au CI/CD. Une fois la PR clôturée, la revue, les sorties brutes des scanners et la
+        \textbf{publié sur GitHub} sous trois formes : un commentaire global dans
+        l'onglet \textit{Conversation}, des commentaires \textit{inline} dans l'onglet
+        \textit{Files Changed} et un statut de commit positionné pour servir de
+        \textit{gate} au CI/CD. Une fois la PR clôturée, la revue, les sorties brutes des scanners et la
         liste des fichiers touchés sont \textbf{persistés dans PostgreSQL}, ce qui alimente
         les analyses de tendance par dépôt et les requêtes ultérieures depuis le chat.
         Cette dernière fonction est précisément le \textbf{chat opérationnel en temps réel} :
@@ -607,8 +611,8 @@ fonctionnels et non fonctionnels du projet.
 
         La contrainte la plus structurante est la \textbf{confidentialité} : la totalité
         de l'inférence LLM doit s'exécuter en local, sans qu'aucun code source ni diff
-        ne quitte l'infrastructure BTE — c'est la condition de conformité réglementaire
-        imposée par le secteur bancaire. Vient ensuite la \textbf{performance} : le
+        ne quitte l'infrastructure BTE. Il s'agit de la condition de conformité
+        réglementaire imposée par le secteur bancaire. Vient ensuite la \textbf{performance} : le
         pipeline complet, de la réception du webhook à la publication de la revue, doit
         tenir en moins de dix minutes pour ne pas peser sur les cycles de livraison. La
         \textbf{résilience} et la \textbf{fiabilité} sont deux exigences proches mais
@@ -617,8 +621,8 @@ fonctionnels et non fonctionnels du projet.
         charge le circuit breaker et les fallbacks. La seconde impose qu'un pipeline en
         cours d'exécution survive à un redémarrage du conteneur, ce qui repose sur la
         persistance des checkpoints LangGraph dans PostgreSQL. L'\textbf{observabilité}
-        demande que toutes les métriques critiques — durée du pipeline, taux d'erreur,
-        usage disque, état d'Ollama — remontent à Prometheus et soient consultables dans
+        demande que toutes les métriques critiques (durée du pipeline, taux d'erreur,
+        usage disque, état d'Ollama) remontent à Prometheus et soient consultables dans
         Grafana. Enfin, la \textbf{sécurité de la plateforme elle-même} couvre trois
         points concrets : signature HMAC-SHA256 des webhooks, authentification sur les
         interfaces exposées, et exclusion des secrets détectés par Gitleaks du payload

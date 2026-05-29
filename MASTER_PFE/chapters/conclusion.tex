@@ -4,13 +4,14 @@
 
 Ce projet nous a permis de concevoir et de déployer le BTE Security AI Agent, un
 moteur DevSecOps autonome piloté par de l'intelligence artificielle locale. Le point
-de départ était un VPS Ubuntu vide ; le point d'arrivée est une plateforme de
+de départ était un VPS Ubuntu vide. Le point d'arrivée est une plateforme de
 production à onze conteneurs, complétée par une douzième sandbox LocalAI activable
 à la demande pour évaluer des moteurs d'inférence alternatifs. L'objectif posé au
-départ — automatiser la détection des vulnérabilités dans les \textit{Pull Requests}
-en environ 15 à 25 minutes selon la complexité de la \textit{Pull Request}, sans externaliser le code source et avec une couverture
-complète de l'OWASP Top 10 — a été atteint et vérifié sur des \textit{Pull Requests}
-réelles ouvertes pendant le stage.
+départ a été atteint et vérifié sur des \textit{Pull Requests} réelles ouvertes
+pendant le stage. Cet objectif consistait à automatiser la détection des
+vulnérabilités dans les \textit{Pull Requests} en environ 15 à 25 minutes selon
+la complexité de la PR, sans externaliser le code source et avec une couverture
+complète de l'OWASP Top 10.
 
 La combinaison du modèle \texttt{qwen2.5-coder:7b} pour la classification rapide et du
 modèle \texttt{qwen2.5-coder:14b} pour l'analyse de sécurité approfondie, tous deux
@@ -44,9 +45,9 @@ de la surface d'exposition : les ports hôte de Redis, Prometheus, AlertManager,
 VictoriaMetrics et de l'agent sont encore ouverts et doivent être refermés, Redis
 attend toujours son mot de passe, et la mise en place de HTTPS via Let's Encrypt
 reste un prérequis pour un usage bancaire. Vient ensuite la résilience opérationnelle :
-PostgreSQL n'a pas encore de sauvegarde quotidienne — alors qu'il héberge la base de
-connaissances sécurité et les checkpoints LangGraph — et six conteneurs tournent
-toujours sans \textit{healthcheck} Docker. Sur le volet inférence, l'évaluation menée
+PostgreSQL n'a pas encore de sauvegarde quotidienne, alors qu'il héberge la base de
+connaissances sécurité et les checkpoints LangGraph. Six conteneurs tournent par
+ailleurs toujours sans \textit{healthcheck} Docker. Sur le volet inférence, l'évaluation menée
 en post-Sprint 8 d'un second moteur (LocalAI servant le même Qwen2.5-Coder 7B que
 la production) a tranché en faveur d'Ollama : 5,49 contre 4,50 tokens par seconde sur
 le même matériel, soit 22\,\% de débit en plus. Le sprint 8.1 a prolongé ce travail
@@ -85,9 +86,9 @@ Sur le plan personnel, ce stage a été l'occasion de pratiquer concrètement
 l'automatisation de la sécurité d'une chaîne CI/CD, le déploiement et l'exploitation
 de grands modèles de langage en local, et la mise en place d'un système
 d'observabilité capable de détecter ses propres pannes. Plusieurs des obstacles
-rencontrés en cours de route — l'urgence disque, le parser de revue PR à réécrire,
-le bug de cold-load de LocalAI — n'auraient pas été visibles sans un déploiement en
-conditions réelles, et c'est probablement la leçon la plus durable que nous tirons
+rencontrés en cours de route (l'urgence disque, le parser de revue PR à réécrire,
+le bug de cold-load de LocalAI) n'auraient pas été visibles sans un déploiement en
+conditions réelles. C'est probablement la leçon la plus durable que nous tirons
 de ce projet. La plateforme livrée à la BTE est prête à servir au-delà du périmètre
 du stage : elle apporte à la banque un outil tangible pour soutenir sa transformation
 DevSecOps.

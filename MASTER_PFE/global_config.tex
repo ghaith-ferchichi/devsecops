@@ -6,7 +6,7 @@
 
 %========= Config the cover section ==========%
 
-\title{BTE Security AI Agent — Moteur DevSecOps Autonome Piloté par l'Intelligence Artificielle}
+\title{Agent IA pour revue automatisée de code}
 
 \author{Ghaith FERCHICHI}
 
@@ -33,7 +33,7 @@
 
 %%% AR
 \arabicAbstract{%
-يهدف هذا المشروع إلى بناء محرك أمني متكامل مدفوع بالذكاء الاصطناعي المحلي لمراجعة طلبات الدمج (Pull Requests) تلقائياً على منصة GitHub. يعتمد النظام على خط أنابيب متوازٍ من خمسة أدوات تحليل أمني (Trivy وGitleaks وSemgrep وCheckov وOSV-Scanner)، مع استخدام نموذجَي لغة محليَّين (7B للتصنيف و14B للتحليل الأمني) عبر Ollama. النظام مدعوم بمكون LangGraph للتنسيق، وPostgreSQL لحفظ السياق، وRedis للتخزين المؤقت، ومنظومة رصد شاملة (Prometheus وGrafana) دون الاعتماد على أي خدمة سحابية خارجية.%
+يصف هذا التقرير تصميم ونشر BTE Security AI Agent، وهو أداة DevSecOps تتولى مراجعة أمان طلبات الدمج (Pull Requests) على GitHub تلقائياً. عند وصول حدث webhook موثق بـ HMAC-SHA256، يتم تشغيل خمسة ماسحات (Trivy وGitleaks وSemgrep وCheckov وOSV-Scanner) بالتوازي، ثم يتولى نموذجا qwen2.5-coder بحجمَي 7B و14B المشغّلان محلياً عبر Ollama دمج النتائج. يتم نشر مراجعة OWASP Top 10 مع درجة المخاطر وقرار الحظر على طلب الدمج خلال 15 إلى 25 دقيقة حسب درجة التعقيد. لا تغادر الشيفرة المصدرية البنية التحتية للبنك. تعتمد المنصة على أحد عشر حاوية Docker في الإنتاج، وبيئة اختبار LocalAI، ومساعد دردشة مزود بتسعة عشر أداة تشغيلية، وطبقة رصد تتكون من Prometheus وGrafana وAlertManager وVictoriaMetrics وnode-exporter مع خمس عشرة قاعدة تنبيه.%
 }
 
 \arabicAbstractKeywords{%
@@ -42,7 +42,7 @@ DevSecOps، ذكاء اصطناعي، نموذج لغة محلي، Ollama، Lang
 
 %%% FR
 \frenchAbstract{%
-Ce projet présente la conception et le déploiement du BTE Security AI Agent, un moteur DevSecOps autonome piloté par l'intelligence artificielle locale. Le système intercepte les événements de Pull Request GitHub via webhook (validé HMAC-SHA256), orchestre en parallèle cinq outils d'analyse de sécurité (Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner) et produit une revue de sécurité complète (OWASP Top 10, score de risque, verdict) en moins de 7 minutes. L'inférence LLM s'exécute entièrement en local via Ollama (\texttt{qwen2.5-coder:7b/14b}) sans aucune exfiltration de code. La plateforme comprend 12 conteneurs Docker, un assistant de chat opérationnel avec 20 outils de monitoring, et une stack d'observabilité complète (Prometheus, Grafana, AlertManager, VictoriaMetrics, node-exporter) avec 12 règles d'alerte.%
+Ce rapport décrit la conception et le déploiement du BTE Security AI Agent, un outil DevSecOps qui automatise la revue de sécurité des \textit{Pull Requests} GitHub. À la réception d'un événement webhook validé HMAC-SHA256, cinq scanners statiques (Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner) sont exécutés en parallèle ; leurs résultats sont ensuite consolidés par les modèles \texttt{qwen2.5-coder:7b} et \texttt{qwen2.5-coder:14b} servis localement par Ollama. La revue OWASP Top 10, accompagnée d'un score de risque et d'un verdict de blocage, est publiée sur la \textit{Pull Request} en 15 à 25 minutes selon sa complexité. Le code source ne quitte jamais l'infrastructure de la BTE. La plateforme s'appuie sur onze conteneurs Docker en production, une sandbox LocalAI activable à la demande, un assistant de chat doté de dix-neuf outils opérationnels, et une couche d'observabilité Prometheus, Grafana, AlertManager, VictoriaMetrics et node-exporter avec quinze règles d'alerte.%
 }
 
 \frenchAbstractKeywords{%
@@ -51,7 +51,7 @@ DevSecOps, Intelligence Artificielle, LLM Local, Ollama, LangGraph, FastAPI, Tri
 
 %%% EN
 \englishAbstract{%
-This project presents the design and deployment of the BTE Security AI Agent, an autonomous DevSecOps engine powered by local AI inference. The system intercepts GitHub Pull Request webhook events (HMAC-SHA256 validated), orchestrates five security scanning tools in parallel (Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner), and produces a full security review (OWASP Top 10, risk score, verdict) in under 7 minutes. LLM inference runs entirely on-premise via Ollama (\texttt{qwen2.5-coder:7b/14b}) — no code or diffs leave the infrastructure. The platform includes 12 Docker containers, an operational chat assistant with 20 live monitoring tools, and a full observability stack (Prometheus, Grafana, AlertManager, VictoriaMetrics, node-exporter) with 12 alert rules.%
+This report describes the design and deployment of the BTE Security AI Agent, a DevSecOps tool that automates the security review of GitHub \textit{Pull Requests}. When an HMAC-SHA256-validated webhook event arrives, five static scanners (Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner) run in parallel; their findings are then consolidated by the \texttt{qwen2.5-coder:7b} and \texttt{qwen2.5-coder:14b} models served locally through Ollama. The OWASP Top 10 review, together with a risk score and a blocking verdict, is posted back to the \textit{Pull Request} in 15 to 25 minutes depending on PR complexity. Source code never leaves the BTE infrastructure. The platform relies on eleven production Docker containers, an on-demand LocalAI sandbox, a chat assistant with nineteen operational tools, and a Prometheus, Grafana, AlertManager, VictoriaMetrics and node-exporter observability layer with fifteen alert rules.%
 }
 
 \englishAbstractKeywords{%

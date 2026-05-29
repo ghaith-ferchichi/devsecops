@@ -88,7 +88,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
     \subsection{Routage et point d'entrée}
 
-        Nginx constitue le point d'entrée unique de la plateforme. Le tableau
+        Nginx est le point d'entrée unique de la plateforme. Le tableau
         \ref{tab:nginx_routing} présente l'ensemble des règles de routage configurées.
 
         \begin{table}[H]
@@ -142,7 +142,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
         modèle actif.
 
         La fusion de deux appels 14B séquentiels en un seul appel combiné dans le nœud
-        \texttt{analyze\_review\_node} constitue l'optimisation principale du pipeline. Avant
+        \texttt{analyze\_review\_node} est l'optimisation principale du pipeline. Avant
         cette optimisation, l'analyse de sécurité et la revue de qualité de code nécessitaient
         deux appels successifs totalisant entre trente et cinquante minutes. Après la fusion,
         un seul appel produit les deux résultats en quinze à vingt-cinq minutes
@@ -202,7 +202,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
             \label{fig:langgraph_graph}
         \end{figure}
 
-        L'\texttt{intake\_node} constitue le point d'entrée du workflow. Il assure la
+        L'\texttt{intake\_node} est le point d'entrée du workflow. Il assure la
         déduplication Redis avec l'opération \texttt{SET NX}, le rate limiting, le clone
         shallow du dépôt avec token injecté dans l'URL, la génération du diff local avec
         quinze lignes de contexte via \texttt{git diff -U15}, et la récupération des
@@ -213,13 +213,13 @@ conception avant d'aborder la réalisation au chapitre suivant.
         circuit breaker active le fallback regex \texttt{\_fallback\_classify()} basé sur
         les extensions de fichiers.
 
-        Les nœuds de scanning — \texttt{scan\_full\_node} et \texttt{scan\_fs\_node} —
+        Les nœuds de scanning, à savoir \texttt{scan\_full\_node} et \texttt{scan\_fs\_node},
         exécutent les scanners applicables en parallèle via \texttt{asyncio.gather()},
         avec isolation des erreurs par coroutine. Si un scanner échoue, le pipeline
         continue avec les autres. Chaque résultat est mis en cache dans Redis avec un TTL
-        d'une heure. L'\texttt{analyze\_review\_node} constitue le cœur du pipeline : il
-        envoie le diff annoté avec numéros de lignes, les résultats nettoyés des scanners
-        et le prompt combiné au modèle 14B, puis extrait par regex le JSON tail contenant
+        d'une heure. L'\texttt{analyze\_review\_node} est le cœur du pipeline. Il envoie
+        au modèle 14B le diff annoté avec numéros de lignes, les résultats nettoyés des
+        scanners et le prompt combiné. Il extrait ensuite par regex le JSON tail contenant
         le score de risque, le verdict et les commentaires inline. Le \texttt{report\_node}
         finalise le traitement en publiant la revue sur GitHub, en fixant le statut du
         commit et en sauvegardant un fichier \texttt{summary.json} dans les artefacts.
@@ -389,8 +389,8 @@ conception avant d'aborder la réalisation au chapitre suivant.
         de valeurs. La deuxième couche est l'augmentation du \texttt{num\_ctx} à 6 144 tokens,
         laissant 4 100 tokens libres après le prompt système pour les observations des outils.
         La troisième couche est la limitation de \texttt{num\_predict} à 800 tokens pour
-        garantir des réponses complètes sans troncature — les réponses tronquées amenaient
-        le modèle à compléter depuis sa mémoire d'entraînement. La quatrième couche est la
+        garantir des réponses complètes sans troncature. Les réponses tronquées amenaient
+        en effet le modèle à compléter depuis sa mémoire d'entraînement. La quatrième couche est la
         garde sans-outil au niveau du code, qui intercepte toute réponse finale sur une
         question live et force un appel d'outil. La cinquième couche est le bloc
         ANTI-HALLUCINATION dans le prompt système, comportant cinq règles explicites. La
@@ -459,7 +459,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \subsubsection{Description des tables}
 
-        La table \texttt{pr\_reviews} constitue la table centrale de la base de connaissances.
+        La table \texttt{pr\_reviews} est la table centrale de la base de connaissances.
         Elle stocke pour chaque revue de \textit{Pull Request} : l'identifiant du dépôt, le
         numéro de PR, le titre, l'auteur, la classification, le score de risque, le verdict,
         le texte complet de la revue en markdown, le résumé des scanners en JSONB, les
@@ -468,16 +468,16 @@ conception avant d'aborder la réalisation au chapitre suivant.
         par déclencheur. La table \texttt{repo\_profiles} maintient un score de risque moyen
         glissant et un compteur de revues par dépôt, mis à jour après chaque exécution du
         nœud d'analyse. La table \texttt{security\_policies} contient les politiques de
-        sécurité qui définissent les seuils de blocage — par exemple, zéro CVE critique
+        sécurité qui définissent les seuils de blocage, par exemple zéro CVE critique
         autorisé ou obligation de scan des secrets. La table \texttt{sbom\_cache} met en
         cache le Software Bill of Materials par dépôt pour éviter de rescanner les
         dépendances inchangées. Enfin, la table \texttt{incidents} permet de tracer les
         incidents de sécurité détectés via le chat ou les alertes.
 
-        Les quatre tables LangGraph — \texttt{checkpoints}, \texttt{checkpoint\_blobs},
-        \texttt{checkpoint\_writes} et \texttt{checkpoint\_migrations} — sont créées
+        Les quatre tables LangGraph (\texttt{checkpoints}, \texttt{checkpoint\_blobs},
+        \texttt{checkpoint\_writes} et \texttt{checkpoint\_migrations}) sont créées
         automatiquement par le checkpointer au démarrage de l'application. Elles contiennent
-        l'état complet du graphe sérialisé, permettant la reprise automatique du pipeline
+        l'état complet du graphe sérialisé et permettent la reprise automatique du pipeline
         après tout redémarrage du conteneur.
 
     \subsection{Sous-système d'observabilité}
@@ -562,6 +562,6 @@ le parser de diff qui élimine les hallucinations de numéros de lignes, l'assis
 chat ReAct protégé par six couches anti-hallucination et ses dix-neuf outils de
 monitoring, la base PostgreSQL à six tables applicatives, et la stack d'observabilité
 étendue à vingt-huit métriques personnalisées. Chaque sous-système a été présenté
-selon le même gabarit — architecture logique puis diagramme d'interaction — pour
+selon le même gabarit (architecture logique puis diagramme d'interaction) pour
 garder une lecture uniforme d'un bloc à l'autre. La concrétisation de ces décisions,
 sprint par sprint, fait l'objet du chapitre suivant.

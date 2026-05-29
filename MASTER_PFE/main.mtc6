@@ -1,0 +1,49 @@
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode Introduction}{\reset@font\mtcSfont 66}{section*.57}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {1}Environnement de travail}{\reset@font\mtcSfont 66}{section.4.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {1.1}Environnement matériel}{\reset@font\mtcSSfont 66}{subsection.4.1.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {1.2}Environnement logiciel}{\reset@font\mtcSSfont 67}{subsection.4.1.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {2}Implémentation par sprints Scrumban}{\reset@font\mtcSfont 68}{section.4.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.1}Sprint 1 — Fondations : VPS, Docker et webhook GitHub}{\reset@font\mtcSSfont 68}{subsection.4.2.1}}
+{\reset@font\mtcPfont\mtc@string\contentsline{paragraph}{\noexpand \leavevmode Configuration de l'intégration GitHub.}{\reset@font\mtcPfont 70}{paragraph*.62}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.2}Sprint 2 — Pipeline de sécurité : scanners et LLM}{\reset@font\mtcSSfont 74}{subsection.4.2.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.3}Sprint 3 — Revue combinée et commentaires inline GitHub}{\reset@font\mtcSSfont 76}{subsection.4.2.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.4}Sprint 4 — Opérations autonomes et urgence disque}{\reset@font\mtcSSfont 80}{subsection.4.2.4}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.4.1}Urgence disque du 20 avril 2026}{\reset@font\mtcSSSfont 80}{subsubsection.4.2.4.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.4.2}Scheduler autonome et health digest}{\reset@font\mtcSSSfont 82}{subsubsection.4.2.4.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.5}Sprint 5 — Stack de monitoring Prometheus et Grafana}{\reset@font\mtcSSfont 85}{subsection.4.2.5}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.5.1}Correction des métriques Prometheus}{\reset@font\mtcSSSfont 85}{subsubsection.4.2.5.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.5.2}Dashboards Grafana}{\reset@font\mtcSSSfont 87}{subsubsection.4.2.5.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.6}Sprint 6 — Monitoring host et optimisation du chat}{\reset@font\mtcSSfont 92}{subsection.4.2.6}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.6.1}Déploiement de node-exporter}{\reset@font\mtcSSSfont 92}{subsubsection.4.2.6.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.6.2}Optimisation du chat agent}{\reset@font\mtcSSSfont 92}{subsubsection.4.2.6.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.7}Sprint 7 — Audit VPS et durcissement}{\reset@font\mtcSSfont 93}{subsection.4.2.7}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.7.1}Audit VPS du 28 avril 2026}{\reset@font\mtcSSSfont 93}{subsubsection.4.2.7.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.7.2}Implémentation du système anti-hallucination}{\reset@font\mtcSSSfont 94}{subsubsection.4.2.7.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.8}Sprint 8 — Robustesse du parser de revue PR}{\reset@font\mtcSSfont 98}{subsection.4.2.8}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.8.1}Investigation du bug}{\reset@font\mtcSSSfont 99}{subsubsection.4.2.8.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.8.2}Réécriture du parser et restructuration du prompt}{\reset@font\mtcSSSfont 100}{subsubsection.4.2.8.2}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.8.3}Vérification}{\reset@font\mtcSSSfont 104}{subsubsection.4.2.8.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.9}Post-Sprint 8 — Évaluation d'un second backend d'inférence}{\reset@font\mtcSSfont 105}{subsection.4.2.9}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.9.1}Motivation et cadre du micro-sprint}{\reset@font\mtcSSSfont 106}{subsubsection.4.2.9.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.9.2}Mise en place de la sandbox LocalAI}{\reset@font\mtcSSSfont 106}{subsubsection.4.2.9.2}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.9.3}Architecture du routeur dual-backend}{\reset@font\mtcSSSfont 107}{subsubsection.4.2.9.3}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.9.4}Découverte et résolution d'un bug de \@FB@og cold-load \@FB@fg \xspace {}}{\reset@font\mtcSSSfont 108}{subsubsection.4.2.9.4}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.9.5}Benchmark croisé sur modèle identique}{\reset@font\mtcSSSfont 109}{subsubsection.4.2.9.5}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.9.6}Interprétation et décision}{\reset@font\mtcSSSfont 110}{subsubsection.4.2.9.6}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.10}Sprint 8.1 — Expansion de l'observabilité et correction du \textit {template} Phi-4}{\reset@font\mtcSSfont 111}{subsection.4.2.10}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.10.1}Tentative de déploiement de cAdvisor et pivot architectural}{\reset@font\mtcSSSfont 112}{subsubsection.4.2.10.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.10.2}Instrumentation du routeur de chat pour la télémétrie A/B}{\reset@font\mtcSSSfont 113}{subsubsection.4.2.10.2}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.10.3}Cinq nouvelles \textit {rows} sur le dashboard Grafana}{\reset@font\mtcSSSfont 115}{subsubsection.4.2.10.3}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.10.4}Découverte et correction du bug du \textit {template} Phi-4}{\reset@font\mtcSSSfont 115}{subsubsection.4.2.10.4}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.10.5}Synthèse de la couverture observabilité}{\reset@font\mtcSSSfont 116}{subsubsection.4.2.10.5}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {3}Tests de validation}{\reset@font\mtcSfont 117}{section.4.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.1}Test de la validation HMAC-SHA256}{\reset@font\mtcSSfont 117}{subsection.4.3.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.2}Test de la déduplication Redis}{\reset@font\mtcSSfont 118}{subsection.4.3.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.3}Test du circuit breaker LLM}{\reset@font\mtcSSfont 118}{subsection.4.3.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {3.4}Test du gardien disque}{\reset@font\mtcSSfont 119}{subsection.4.3.4}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {4}Résultats}{\reset@font\mtcSfont 120}{section.4.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.1}Résultats des revues de Pull Requests réelles}{\reset@font\mtcSSfont 120}{subsection.4.4.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.2}Résultats de l'analyse de conformité et observabilité}{\reset@font\mtcSSfont 122}{subsection.4.4.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.3}Validation de la plateforme}{\reset@font\mtcSSfont 122}{subsection.4.4.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.4}Limites identifiées et plan de durcissement}{\reset@font\mtcSSfont 123}{subsection.4.4.4}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode Conclusion}{\reset@font\mtcSfont 125}{table.caption.110}}

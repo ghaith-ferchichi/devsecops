@@ -2,45 +2,48 @@
 \addcontentsline{toc}{chapter}{Introduction générale}
 \markboth{Introduction générale}{}
 
-La sécurité du code source est devenue un enjeu majeur pour tout établissement bancaire.
-L'adoption généralisée des pratiques DevOps a accéléré le rythme de livraison des
-fonctionnalités, et a du même coup élargi la surface d'attaque exposée par chaque déploiement.
-Une vulnérabilité qui passe inaperçue avant fusion (par exemple une injection SQL dans une
-API de paiement, un secret d'authentification commité par erreur dans un dépôt Git, ou une
-image Docker basée sur une librairie touchée par un CVE critique) peut compromettre
-l'intégrité du système d'information et engager la responsabilité de la banque vis-à-vis de
-ses clients et de ses régulateurs. Or, le modèle classique de revue de sécurité repose
-toujours sur des experts humains qui examinent manuellement chaque \textit{Pull Request} :
-cette approche est lente, parfois incohérente d'un relecteur à l'autre, et ne tient pas à
-mesure que les équipes de développement grandissent.
+La sécurité du code source représente aujourd'hui un enjeu majeur pour tout
+établissement bancaire. L'adoption généralisée des pratiques DevOps a accéléré le
+rythme de livraison des fonctionnalités. Elle a également élargi la surface d'attaque
+exposée par chaque déploiement. Une vulnérabilité qui passe inaperçue avant fusion
+peut compromettre l'intégrité du système d'information et engager la responsabilité
+de la banque vis-à-vis de ses clients et de ses régulateurs. Plusieurs cas typiques
+illustrent ce risque : une injection SQL dans une API de paiement, un secret
+d'authentification commité par erreur dans un dépôt Git, ou une image Docker basée
+sur une librairie touchée par un CVE critique. Or, le modèle classique de revue de
+sécurité repose encore sur des experts humains qui examinent manuellement chaque
+\textit{Pull Request}. Cette approche est lente, parfois incohérente d'un relecteur
+à l'autre, et ne tient plus à mesure que les équipes de développement grandissent.
 
-Deux évolutions récentes rendent envisageable une autre approche. Les grands modèles de
-langage (LLM) savent désormais analyser du code source et formuler des suggestions de
-correction lisibles. Les outils d'analyse de sécurité statique (SAST), de leur côté, ont
-mûri au point d'être utilisables en production. Mis bout à bout, ils permettent de
-déclencher sur chaque \textit{Pull Request} une revue automatisée qui livre en quelques
-minutes une analyse alignée sur l'OWASP Top 10 et publie ses commentaires de correction
-directement sur GitHub. C'est l'objet du présent projet de fin d'études,
-réalisé au sein de la Banque de Tunisie et des Emirats (BTE). Son objectif est de concevoir
-et de déployer le \textbf{BTE Security AI Agent} : un moteur DevSecOps autonome piloté par
-de l'intelligence artificielle locale, qui intercepte les événements de \textit{Pull Request}
+Deux évolutions récentes rendent envisageable une autre approche. Les grands modèles
+de langage (LLM) savent désormais analyser du code source et formuler des suggestions
+de correction lisibles. Les outils d'analyse de sécurité statique (SAST) ont, de leur
+côté, atteint une maturité suffisante pour un usage en production. Mis bout à bout,
+ces deux outils permettent de déclencher sur chaque \textit{Pull Request} une revue
+automatisée. Cette revue livre en quelques minutes une analyse alignée sur l'OWASP
+Top 10 et publie ses commentaires de correction directement sur GitHub. Tel est
+l'objet du présent projet de fin d'études, réalisé au sein de la Banque de Tunisie
+et des Emirats (BTE). Son objectif est de concevoir et de déployer le \textbf{BTE
+Security AI Agent}, un moteur DevSecOps autonome piloté par de l'intelligence
+artificielle locale. Cet agent intercepte les événements de \textit{Pull Request}
 GitHub, orchestre en parallèle cinq outils d'analyse de sécurité et produit une revue
-complète en environ 15 à 25 minutes selon la complexité de la \textit{Pull Request}, sans qu'aucun code source ne quitte l'infrastructure
-interne de la banque.
+complète en environ 15 à 25 minutes selon la complexité de la \textit{Pull Request},
+sans qu'aucun code source ne quitte l'infrastructure interne de la banque.
 
-Pour répondre aux exigences posées par le sujet, nous avons adopté le plan suivant. Le
-\textbf{premier chapitre} présente l'organisme d'accueil, le cadre général du projet, la
-problématique et la solution proposée. Il décrit également la méthodologie Scrumban
-adoptée et le déroulement du projet sur dix sprints répartis sur cinq mois. Le \textbf{deuxième chapitre} abordera les aspects
-fondamentaux du DevSecOps, de l'inférence locale par grands modèles de langage, et des outils
-d'analyse de sécurité statique, où nous expliquerons de façon détaillée les technologies
-utilisées tout au long de ce projet ainsi que la spécification des besoins fonctionnels et
-non fonctionnels. Le \textbf{troisième chapitre} présentera l'architecture logicielle de notre
-solution, détaillant le workflow LangGraph à neuf nœuds, l'architecture à deux modèles LLM,
-le schéma de la base de données, et la conception de l'assistant de chat opérationnel avec
-son système anti-hallucination. Le \textbf{quatrième chapitre} décrira l'environnement de
-déploiement et détaillera le travail réalisé phase par phase, notamment la configuration des
-services Docker, l'intégration des outils de sécurité, l'implémentation du pipeline LLM et
-la mise en place du système d'observabilité. Nous finirons ce rapport par une conclusion
-générale dans laquelle nous récapitulerons le travail réalisé et exposerons les perspectives
-d'amélioration envisagées.
+Pour répondre aux exigences posées par le sujet, nous avons adopté le plan suivant.
+Le \textbf{premier chapitre} présente l'organisme d'accueil, le cadre général du
+projet, la problématique et la solution proposée. Il décrit également la méthodologie
+Scrumban adoptée et le déroulement du projet sur dix sprints répartis sur cinq mois.
+Le \textbf{deuxième chapitre} aborde les aspects fondamentaux du DevSecOps, de
+l'inférence locale par grands modèles de langage, et des outils d'analyse de sécurité
+statique. Nous y détaillons les technologies retenues ainsi que la spécification des
+besoins fonctionnels et non fonctionnels. Le \textbf{troisième chapitre} présente
+l'architecture logicielle de notre solution. Nous y détaillons le workflow LangGraph
+à neuf nœuds, l'architecture à deux modèles LLM, le schéma de la base de données et
+la conception de l'assistant de chat opérationnel avec son système anti-hallucination.
+Le \textbf{quatrième chapitre} décrit l'environnement de déploiement et présente le
+travail réalisé phase par phase, notamment la configuration des services Docker,
+l'intégration des outils de sécurité, l'implémentation du pipeline LLM et la mise
+en place du système d'observabilité. Le rapport se clôt par une conclusion générale
+qui récapitule le travail réalisé et expose les perspectives d'amélioration
+envisagées.

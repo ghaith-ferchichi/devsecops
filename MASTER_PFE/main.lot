@@ -1,0 +1,45 @@
+\babel@toc {french}{}\relax 
+\babel@toc {french}{}\relax 
+\addvspace {10\p@ }
+\contentsline {xchapter}{Étude préalable du sujet}{4}{chapter.1}%
+\contentsline {table}{\numberline {\if@rl \I {1.1}\else \textLR {1.1}\fi }{\ignorespaces Fiche d'identité de la Banque de Tunisie et des Emirats}}{5}{table.caption.11}%
+\contentsline {table}{\numberline {\if@rl \I {2.1}\else \textLR {1.2}\fi }{\ignorespaces Comparaison synthétique des frameworks Agile évalués}}{12}{table.caption.16}%
+\contentsline {table}{\numberline {\if@rl \I {3.1}\else \textLR {1.3}\fi }{\ignorespaces Colonnes du tableau Scrumban et limites WIP appliquées}}{15}{table.caption.19}%
+\addvspace {10\p@ }
+\contentsline {xchapter}{État de l'art et choix technologiques}{21}{chapter.2}%
+\contentsline {table}{\numberline {\if@rl \I {1.2}\else \textLR {2.1}\fi }{\ignorespaces Réduction des tokens SAST avant transmission au LLM}}{30}{table.caption.31}%
+\contentsline {table}{\numberline {\if@rl \I {2.2}\else \textLR {2.2}\fi }{\ignorespaces Comparaison entre l'inférence locale (Ollama) et les API cloud LLM}}{32}{table.caption.32}%
+\contentsline {table}{\numberline {\if@rl \I {3.2}\else \textLR {2.3}\fi }{\ignorespaces Benchmark des modèles LLM — 5 requêtes, prompt système complet, CPU BTE}}{33}{table.caption.33}%
+\contentsline {table}{\numberline {\if@rl \I {4.2}\else \textLR {2.4}\fi }{\ignorespaces Comparaison entre LangGraph et les alternatives d'orchestration}}{34}{table.caption.34}%
+\contentsline {table}{\numberline {\if@rl \I {5.2}\else \textLR {2.5}\fi }{\ignorespaces Étude comparative des outils SAST par catégorie de risque}}{35}{table.caption.35}%
+\contentsline {table}{\numberline {\if@rl \I {6.2}\else \textLR {2.6}\fi }{\ignorespaces Stack d'observabilité et alternatives rejetées}}{36}{table.caption.36}%
+\contentsline {table}{\numberline {\if@rl \I {7.2}\else \textLR {2.7}\fi }{\ignorespaces Tableau de synthèse des choix technologiques}}{37}{table.caption.37}%
+\addvspace {10\p@ }
+\contentsline {xchapter}{Conception de la solution}{41}{chapter.3}%
+\contentsline {table}{\numberline {\if@rl \I {1.3}\else \textLR {3.1}\fi }{\ignorespaces Inventaire des 11 conteneurs — ports, mémoire et rôles}}{43}{table.caption.40}%
+\contentsline {table}{\numberline {\if@rl \I {2.3}\else \textLR {3.2}\fi }{\ignorespaces Table de routage nginx}}{44}{table.caption.41}%
+\contentsline {table}{\numberline {\if@rl \I {3.3}\else \textLR {3.3}\fi }{\ignorespaces Configuration des fonctions LLM factory (décorées \texttt {@lru\_cache})}}{46}{table.caption.44}%
+\contentsline {table}{\numberline {\if@rl \I {4.3}\else \textLR {3.4}\fi }{\ignorespaces Matrice de sélection des scanners selon la classification de la PR}}{48}{table.caption.46}%
+\contentsline {table}{\numberline {\if@rl \I {5.3}\else \textLR {3.5}\fi }{\ignorespaces Les 19 outils de monitoring du chat opérationnel}}{59}{table.caption.53}%
+\addvspace {10\p@ }
+\contentsline {xchapter}{Réalisation et résultats}{66}{chapter.4}%
+\contentsline {table}{\numberline {\if@rl \I {1.4}\else \textLR {4.1}\fi }{\ignorespaces Environnement matériel — VPS de production BTE}}{67}{table.caption.58}%
+\contentsline {table}{\numberline {\if@rl \I {2.4}\else \textLR {4.2}\fi }{\ignorespaces Environnement logiciel — versions des composants clés}}{67}{table.caption.59}%
+\contentsline {table}{\numberline {\if@rl \I {3.4}\else \textLR {4.3}\fi }{\ignorespaces Impact de la fusion des appels LLM sur la performance du pipeline}}{76}{table.caption.68}%
+\contentsline {table}{\numberline {\if@rl \I {4.4}\else \textLR {4.4}\fi }{\ignorespaces Résultats du benchmark — décision finale par modèle}}{93}{table.caption.86}%
+\contentsline {table}{\numberline {\if@rl \I {5.4}\else \textLR {4.5}\fi }{\ignorespaces Découvertes et corrections de l'audit VPS du 28 avril 2026}}{94}{table.caption.87}%
+\contentsline {table}{\numberline {\if@rl \I {6.4}\else \textLR {4.6}\fi }{\ignorespaces Les trois bugs cumulatifs identifiés sur PR \#14 et PR \#15}}{100}{table.caption.93}%
+\contentsline {table}{\numberline {\if@rl \I {7.4}\else \textLR {4.7}\fi }{\ignorespaces Vérifications post-réécriture du parser PR review}}{105}{table.caption.97}%
+\contentsline {table}{\numberline {\if@rl \I {8.4}\else \textLR {4.8}\fi }{\ignorespaces Benchmark croisé Ollama vs LocalAI sur modèle identique (Qwen2.5-Coder 7B, quantification Q4\_K\_M, prompt OWASP Top 10, douze cœurs Haswell, sans GPU)}}{110}{table.caption.98}%
+\contentsline {table}{\numberline {\if@rl \I {9.4}\else \textLR {4.9}\fi }{\ignorespaces Fichiers modifiés ou créés lors du Post-Sprint~8}}{111}{table.caption.99}%
+\contentsline {table}{\numberline {\if@rl \I {10.4}\else \textLR {4.10}\fi }{\ignorespaces Organisation des cinq nouvelles \textit {rows} ajoutées au \textit {dashboard} Grafana lors du sprint 8.1}}{115}{table.caption.100}%
+\contentsline {table}{\numberline {\if@rl \I {11.4}\else \textLR {4.11}\fi }{\ignorespaces Inventaire consolidé des métriques Prometheus à l'issue du sprint 8.1}}{117}{table.caption.101}%
+\contentsline {table}{\numberline {\if@rl \I {12.4}\else \textLR {4.12}\fi }{\ignorespaces Résultats des revues PR réelles — dépôt GhaiethFerchichi/Vunl-application}}{122}{table.caption.107}%
+\contentsline {table}{\numberline {\if@rl \I {13.4}\else \textLR {4.13}\fi }{\ignorespaces Checklist de validation complète de la plateforme}}{123}{table.caption.109}%
+\contentsline {table}{\numberline {\if@rl \I {14.4}\else \textLR {4.14}\fi }{\ignorespaces Écarts de durcissement identifiés sur la configuration de production}}{124}{table.caption.110}%
+\babel@toc {arabic}{}\relax 
+\babel@toc {french}{}\relax 
+\babel@toc {english}{}\relax 
+\babel@toc {french}{}\relax 
+\babel@toc {arabic}{}\relax 
+\babel@toc {french}{}\relax 
