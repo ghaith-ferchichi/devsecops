@@ -144,9 +144,27 @@ conception avant d'aborder la réalisation au chapitre suivant.
         La fusion de deux appels 14B séquentiels en un seul appel combiné dans le nœud
         \texttt{analyze\_review\_node} constitue l'optimisation principale du pipeline. Avant
         cette optimisation, l'analyse de sécurité et la revue de qualité de code nécessitaient
-        deux appels successifs totalisant entre treize et vingt-trois minutes. Après la fusion,
-        un seul appel produit les deux résultats en six à onze minutes, soit un gain de près
-        de cinquante pourcent sur la durée totale.
+        deux appels successifs totalisant entre trente et cinquante minutes. Après la fusion,
+        un seul appel produit les deux résultats en quinze à vingt-cinq minutes
+        selon la complexité de la \textit{Pull Request} (mesure empirique sur CPU
+        Haswell 12 cœurs sans GPU), soit un gain de près de cinquante pourcent
+        sur la durée totale.
+
+        \paragraph{Contrainte matérielle et perspective d'évolution.}
+        La durée d'analyse de 15 à 25 minutes par \textit{Pull Request} est la
+        conséquence directe du choix d'inférence locale sur CPU Haswell 12 cœurs
+        sans GPU, contrainte imposée par les exigences de confidentialité bancaire
+        de la BCT qui interdisent toute sortie de code source vers une
+        infrastructure tierce. Sur ce matériel, le débit mesuré du modèle
+        \texttt{qwen2.5-coder:14B} est d'environ 3 tokens par seconde. Une
+        migration vers un GPU dédié (par exemple NVIDIA RTX 4090 ou A100)
+        porterait ce débit à 30--50 tokens/seconde, ramenant la durée d'analyse
+        à 2 à 5 minutes par PR --- soit un facteur d'accélération de 5 à 10.
+        Cette migration matérielle ne remettrait pas en cause l'architecture
+        locale --- l'inférence resterait sur l'infrastructure BTE, conformément
+        aux exigences de la BCT --- et constitue le levier d'évolution le plus
+        direct pour passer à l'échelle de l'ensemble des dépôts BTE. Le détail
+        de cette perspective d'évolution figure dans la conclusion générale.
 
         \subsubsection{Configuration des factories LLM}
 
@@ -161,7 +179,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
         \hline
         \texttt{get\_fast\_llm()} & 7b & 4 096 & 512 & 0.0 & \textasciitilde30s \\
         \hline
-        \texttt{get\_combined\_llm()} & 14b & 12 288 & 2 500 & 0.1 & 6–11 min \\
+        \texttt{get\_combined\_llm()} & 14b & 12 288 & 2 500 & 0.1 & 15–25 min \\
         \hline
         \end{tabular}
         \caption{Configuration des fonctions LLM factory (décorées \texttt{@lru\_cache})}
@@ -541,9 +559,9 @@ un unique point d'entrée nginx. La conception logicielle a ensuite été détai
 sous-système par sous-système : l'inférence LLM à deux modèles, le pipeline LangGraph
 à neuf nœuds piloté par des arêtes conditionnelles selon la classification de la PR,
 le parser de diff qui élimine les hallucinations de numéros de lignes, l'assistant de
-chat ReAct protégé par six couches anti-hallucination et dix-neuf outils de monitoring,
-la base PostgreSQL à six tables applicatives, et la stack d'observabilité étendue à
-vingt-huit métriques personnalisées. Chaque sous-système a été présenté selon le même
-schéma — architecture logique puis diagramme d'interaction — afin d'offrir au lecteur
-une lecture homogène et progressive. Toutes ces décisions de conception sont reprises
-et concrétisées dans le chapitre suivant, consacré à la réalisation phase par phase.
+chat ReAct protégé par six couches anti-hallucination et ses dix-neuf outils de
+monitoring, la base PostgreSQL à six tables applicatives, et la stack d'observabilité
+étendue à vingt-huit métriques personnalisées. Chaque sous-système a été présenté
+selon le même gabarit — architecture logique puis diagramme d'interaction — pour
+garder une lecture uniforme d'un bloc à l'autre. La concrétisation de ces décisions,
+sprint par sprint, fait l'objet du chapitre suivant.

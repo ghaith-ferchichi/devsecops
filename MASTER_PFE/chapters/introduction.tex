@@ -14,17 +14,18 @@ toujours sur des experts humains qui examinent manuellement chaque \textit{Pull 
 cette approche est lente, parfois incohérente d'un relecteur à l'autre, et ne tient pas à
 mesure que les équipes de développement grandissent.
 
-Les grands modèles de langage (LLM) savent désormais analyser du code source, et les outils
-d'analyse de sécurité statique (SAST) ont atteint un niveau de maturité suffisant pour un
-usage en production. Combinés, ils rendent possible une revue de sécurité entièrement
-automatisée, déclenchée à chaque \textit{Pull Request}, qui produit en quelques minutes une
-analyse structurée selon l'OWASP Top 10, accompagnée de suggestions de correction publiées
-directement sur GitHub. C'est dans ce contexte que s'inscrit ce projet de fin d'études,
+Deux évolutions récentes rendent envisageable une autre approche. Les grands modèles de
+langage (LLM) savent désormais analyser du code source et formuler des suggestions de
+correction lisibles. Les outils d'analyse de sécurité statique (SAST), de leur côté, ont
+mûri au point d'être utilisables en production. Mis bout à bout, ils permettent de
+déclencher sur chaque \textit{Pull Request} une revue automatisée qui livre en quelques
+minutes une analyse alignée sur l'OWASP Top 10 et publie ses commentaires de correction
+directement sur GitHub. C'est l'objet du présent projet de fin d'études,
 réalisé au sein de la Banque de Tunisie et des Emirats (BTE). Son objectif est de concevoir
 et de déployer le \textbf{BTE Security AI Agent} : un moteur DevSecOps autonome piloté par
 de l'intelligence artificielle locale, qui intercepte les événements de \textit{Pull Request}
 GitHub, orchestre en parallèle cinq outils d'analyse de sécurité et produit une revue
-complète en moins de sept minutes, sans qu'aucun code source ne quitte l'infrastructure
+complète en environ 15 à 25 minutes selon la complexité de la \textit{Pull Request}, sans qu'aucun code source ne quitte l'infrastructure
 interne de la banque.
 
 Pour répondre aux exigences posées par le sujet, nous avons adopté le plan suivant. Le

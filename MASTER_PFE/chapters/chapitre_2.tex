@@ -98,15 +98,14 @@ fonctionnels et non fonctionnels du projet.
             \label{fig:devsecops}
         \end{figure}
 
-        Comme le montre la figure \ref{fig:devsecops}, le DevSecOps s'appuie sur trois
-        idées qui structurent toute la chaîne. La première, le \textit{Security as Code},
-        consiste à exprimer les politiques de sécurité sous forme de code versionné et
-        déployé automatiquement, exactement comme une configuration applicative. Vient
-        ensuite le \textit{Shift Left} : déplacer la détection des vulnérabilités le
-        plus en amont possible, idéalement au moment de la \textit{Pull Request}, avant
-        toute fusion. La troisième idée est le \textit{feedback} continu, qui consiste
-        à remettre les résultats des analyses directement aux développeurs concernés,
-        sur leur outil de travail, dès qu'ils sont disponibles.
+        Comme le montre la figure \ref{fig:devsecops}, le DevSecOps s'organise autour de
+        quelques principes structurants. Le \textit{Security as Code} consiste à exprimer
+        les politiques de sécurité sous forme de code versionné et déployé automatiquement,
+        au même titre qu'une configuration applicative. Le \textit{Shift Left} pousse la
+        détection des vulnérabilités le plus en amont possible — idéalement sur la
+        \textit{Pull Request}, avant toute fusion. Le \textit{feedback continu} complète
+        l'ensemble en remontant les résultats des analyses aux développeurs concernés, sur
+        leur outil de travail, dès qu'ils sont disponibles.
 
     \subsection{L'OWASP Top 10}
 
@@ -399,7 +398,7 @@ fonctionnels et non fonctionnels du projet.
         de 80\%, mais le modèle 7b est 43\% plus rapide par token. Nous retenons donc une
         architecture à deux modèles : le 7b pour la classification rapide de la
         \textit{Pull Request} (environ 30 secondes) et le 14b pour l'analyse de sécurité
-        approfondie (6 à 11 minutes).
+        approfondie (15 à 25 minutes selon la complexité de la PR sur CPU sans GPU).
 
     \subsection{Choix de l'orchestrateur}
 
@@ -514,16 +513,16 @@ fonctionnels et non fonctionnels du projet.
         \end{table}
 
         La combinaison \textbf{Prometheus + VictoriaMetrics + Grafana + node-exporter +
-        AlertManager} a été retenue. Trois critères ont pesé. D'abord, l'ensemble est
-        open source et sans dépendance cloud externe, ce qui s'aligne sur la même
-        contrainte de confidentialité que celle qui a guidé le choix du moteur LLM.
-        Ensuite, ces cinq composants forment un écosystème conçu pour s'intégrer entre
-        eux — Prometheus émet vers AlertManager nativement, Grafana lit Prometheus et
-        VictoriaMetrics par un connecteur identique — ce qui élimine les couches
-        d'adaptation. Enfin, node-exporter \cite{NodeExporter} était la seule option
-        capable d'exposer les vraies métriques de l'hôte depuis le snapshotter
-        \texttt{containerd}, cAdvisor \cite{cAdvisor} étant limité au namespace Docker
-        et donc aveugle au noyau sous-jacent.
+        AlertManager} a été retenue. C'est d'abord la seule pile entièrement open source
+        et auto-hébergeable qui couvre les quatre besoins, ce qui prolonge la contrainte
+        de confidentialité déjà appliquée au moteur LLM. Les cinq composants ont par
+        ailleurs été conçus pour s'intégrer entre eux sans adaptateur — Prometheus émet
+        vers AlertManager nativement et Grafana lit indifféremment Prometheus et
+        VictoriaMetrics — ce qui nous a évité d'écrire des couches de pontage. Reste le
+        cas particulier de \texttt{node-exporter} \cite{NodeExporter} : sur un VPS qui
+        utilise le \textit{containerd snapshotter}, c'était la seule option capable
+        d'exposer les vraies métriques de l'hôte, cAdvisor \cite{cAdvisor} restant
+        aveugle au noyau sous-jacent.
 
     \subsection{Synthèse des choix technologiques}
 
@@ -580,60 +579,61 @@ fonctionnels et non fonctionnels du projet.
 
     \subsection{Besoins fonctionnels}
 
-        Les besoins fonctionnels définissent les fonctionnalités à implémenter afin que
-        notre système fonctionne comme prévu. Les fonctionnalités attendues de la solution
-        BTE Security AI Agent sont les suivantes.
+        La plateforme couvre cinq fonctions principales, qui suivent le parcours naturel
+        d'une \textit{Pull Request} depuis son ouverture jusqu'à son archivage.
 
-        Le système doit assurer la \textbf{détection automatisée des vulnérabilités} en
-        interceptant chaque événement de \textit{Pull Request} GitHub, en clonant le dépôt
-        concerné et en exécutant en parallèle les cinq outils d'analyse de sécurité selon
-        la classification de la PR. Il doit produire une \textbf{revue de sécurité IA}
-        complète en un seul appel au modèle LLM 14B, incluant l'analyse OWASP Top 10,
-        le score de risque (INFO / LOW / MEDIUM / HIGH / CRITICAL), le verdict
-        (APPROVE / REQUEST\_CHANGES / BLOCK) et des commentaires inline avec suggestions de
-        correction. La solution doit \textbf{publier les résultats} directement sur la
-        \textit{Pull Request} GitHub sous forme de commentaires dans l'onglet de conversation
-        et de commentaires inline dans l'onglet des fichiers modifiés, et fixer le statut
-        du commit pour servir de gate CI/CD. Elle doit \textbf{persister les résultats}
-        dans une base PostgreSQL pour permettre l'analyse de tendances de risques par dépôt
-        et la consultation via l'assistant de chat. Enfin, elle doit offrir un
-        \textbf{assistant de monitoring en temps réel} permettant d'interroger l'état de
-        l'infrastructure via une interface de chat SSE avec dix-neuf outils de monitoring.
+        La première est la \textbf{détection automatisée des vulnérabilités} : à l'ouverture
+        ou à la mise à jour d'une PR, l'agent clone le dépôt et lance en parallèle les
+        scanners retenus pour la classification observée. Sur cette base, il produit une
+        \textbf{revue de sécurité combinée} en un unique appel au modèle 14B, structurée en
+        quatre éléments : analyse OWASP Top 10, score de risque
+        (\textsc{info} → \textsc{critical}), verdict
+        (\textsc{approve} / \textsc{request\_changes} / \textsc{block}) et commentaires
+        \textit{inline} porteurs de suggestions de correction. Le résultat est ensuite
+        \textbf{publié sur GitHub} — commentaire global dans l'onglet
+        \textit{Conversation}, commentaires \textit{inline} dans l'onglet
+        \textit{Files Changed}, et statut de commit positionné pour servir de \textit{gate}
+        au CI/CD. Une fois la PR clôturée, la revue, les sorties brutes des scanners et la
+        liste des fichiers touchés sont \textbf{persistés dans PostgreSQL}, ce qui alimente
+        les analyses de tendance par dépôt et les requêtes ultérieures depuis le chat.
+        Cette dernière fonction est précisément le \textbf{chat opérationnel en temps réel} :
+        servi en SSE, il pilote dix-neuf outils qui couvrent l'hôte, Docker, Ollama, Redis,
+        Prometheus, PostgreSQL et les artefacts SAST.
 
     \subsection{Besoins non fonctionnels}
 
-        Certains besoins, bien que non directement liés aux fonctionnalités, revêtent une
-        importance significative pour la qualité du service. Les principaux besoins non
-        fonctionnels de notre solution sont les suivants.
+        Au-delà des fonctionnalités elles-mêmes, plusieurs contraintes pèsent sur la
+        qualité de service attendue de la plateforme.
 
-        En matière de \textbf{confidentialité}, la totalité de l'inférence LLM doit
-        s'exécuter en local. Aucun code source ni aucun diff ne doit transiter hors de
-        l'infrastructure BTE, conformément aux exigences réglementaires du secteur bancaire.
-        Concernant la \textbf{performance}, le pipeline complet — de la réception du webhook
-        à la publication de la revue — doit s'exécuter en moins de dix minutes pour ne pas
-        bloquer les cycles de livraison. En termes de \textbf{résilience}, le système doit
-        continuer à fonctionner même si un scanner ou le modèle LLM est temporairement
-        indisponible, grâce au circuit breaker et aux fallbacks. La \textbf{fiabilité}
-        implique que le pipeline doit survivre aux redémarrages du conteneur via la
-        persistance des checkpoints LangGraph dans PostgreSQL. Pour l'\textbf{observabilité},
-        toutes les métriques critiques (durée pipeline, erreurs, usage disque, état Ollama)
-        doivent être exposées à Prometheus et visualisables dans Grafana. Enfin, la
-        \textbf{sécurité du système lui-même} exige que les webhooks soient validés par
-        signature HMAC-SHA256, que les interfaces soient protégées par authentification,
-        et que les secrets exposés dans les scans ne soient jamais transmis au LLM.
+        La contrainte la plus structurante est la \textbf{confidentialité} : la totalité
+        de l'inférence LLM doit s'exécuter en local, sans qu'aucun code source ni diff
+        ne quitte l'infrastructure BTE — c'est la condition de conformité réglementaire
+        imposée par le secteur bancaire. Vient ensuite la \textbf{performance} : le
+        pipeline complet, de la réception du webhook à la publication de la revue, doit
+        tenir en moins de dix minutes pour ne pas peser sur les cycles de livraison. La
+        \textbf{résilience} et la \textbf{fiabilité} sont deux exigences proches mais
+        distinctes. La première impose que le système continue à fonctionner si un
+        scanner ou le modèle LLM devient temporairement injoignable, ce que prennent en
+        charge le circuit breaker et les fallbacks. La seconde impose qu'un pipeline en
+        cours d'exécution survive à un redémarrage du conteneur, ce qui repose sur la
+        persistance des checkpoints LangGraph dans PostgreSQL. L'\textbf{observabilité}
+        demande que toutes les métriques critiques — durée du pipeline, taux d'erreur,
+        usage disque, état d'Ollama — remontent à Prometheus et soient consultables dans
+        Grafana. Enfin, la \textbf{sécurité de la plateforme elle-même} couvre trois
+        points concrets : signature HMAC-SHA256 des webhooks, authentification sur les
+        interfaces exposées, et exclusion des secrets détectés par Gitleaks du payload
+        envoyé au LLM.
 
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-Ce chapitre a posé les bases conceptuelles du projet. Nous y avons rappelé les
-principes du DevOps, de la CI/CD et de leur extension DevSecOps qui intègre la
-sécurité à chaque étape. Nous avons ensuite décrit le fonctionnement des grands
-modèles de langage, les enjeux conceptuels de l'inférence locale, ainsi que les
-principes d'orchestration de workflows IA et les cinq catégories couvertes par les
-outils d'analyse SAST. L'étude comparative menée pour chaque composant a permis de
-justifier les choix retenus : Ollama \cite{Ollama} pour respecter les exigences de
-confidentialité bancaire, LangGraph \cite{LangGraph} pour la persistance native de
-l'état, et la combinaison Trivy / Gitleaks / Semgrep / Checkov / OSV-Scanner pour
-couvrir l'ensemble du spectre des vulnérabilités visées. Les besoins fonctionnels
-et non fonctionnels recensés en fin de chapitre encadreront la conception détaillée
-présentée dans le chapitre suivant.
+Ce chapitre a posé les bases conceptuelles du projet. Nous avons revisité le DevOps,
+la CI/CD et leur extension DevSecOps qui intègre la sécurité à chaque étape du cycle ;
+puis le fonctionnement des grands modèles de langage et l'enjeu particulier de
+l'inférence locale dans un contexte bancaire ; enfin les principes d'orchestration de
+workflows IA et les cinq familles de risques couvertes par les outils SAST. L'étude
+comparative qui a suivi a fixé les choix technologiques retenus : Ollama \cite{Ollama}
+pour la confidentialité bancaire, LangGraph \cite{LangGraph} pour la persistance native
+de l'état, et l'assemblage Trivy / Gitleaks / Semgrep / Checkov / OSV-Scanner pour la
+couverture SAST. Les besoins fonctionnels et non fonctionnels recensés en fin de
+chapitre cadrent la conception détaillée du chapitre suivant.

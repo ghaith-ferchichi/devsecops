@@ -8,12 +8,12 @@
 Ce chapitre rend compte de la réalisation effective du projet sur le VPS de la BTE.
 Il s'ouvre sur la description de l'environnement matériel et logiciel sur lequel la
 plateforme a été déployée, puis enchaîne sur l'implémentation sprint par sprint
-selon la méthodologie Scrumban introduite au chapitre 1. Chaque sprint est présenté
-selon le même schéma — objectif inscrit au backlog, obstacles rencontrés en
-production, livrable effectif — afin de rendre lisible le caractère itératif du
-projet et de mettre en évidence le passage continu entre le plan prévu et le réel
-observé sur la plateforme. La dernière partie présente les résultats obtenus sur
-des \textit{Pull Requests} réelles ainsi que la validation complète de la plateforme.
+selon la méthodologie Scrumban introduite au chapitre 1. Chaque sprint suit le même
+gabarit — objectif inscrit au backlog, obstacles rencontrés en production, livrable
+effectif — choix de présentation qui laisse apparaître l'écart entre le plan prévu
+et ce que la production a effectivement renvoyé. La dernière partie présente les
+résultats obtenus sur des \textit{Pull Requests} réelles ainsi que la validation de
+bout en bout de la plateforme.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Environnement de travail}
@@ -147,7 +147,27 @@ des \textit{Pull Requests} réelles ainsi que la validation complète de la plat
 
         L'ajout de \texttt{proxy\_http\_version 1.1} et \texttt{proxy\_set\_header Connection ""}
         a résolu ce problème en forçant nginx à utiliser des connexions persistantes
-        HTTP/1.1 avec l'agent, éliminant le mangling des corps chunked.
+        HTTP/1.1 avec l'agent, éliminant le mangling des corps \textit{chunked}.
+
+        La figure \ref{fig:webhook_received_github} confirme la réception correcte
+        du webhook côté GitHub après ce correctif : l'événement \textit{pull
+        request} est livré avec succès à l'endpoint de l'agent, qui répond par un
+        code 202 \textit{Accepted} validant la prise en charge asynchrone de la
+        requête.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{webhook_received_github}}
+            \caption{Webhook GitHub correctement reçu par l'agent — vue de
+                     l'historique des livraisons côté GitHub avec réponse 202
+                     \textit{Accepted}.}
+            \label{fig:webhook_received_github}
+        \end{figure}
+
+        Cette confirmation côté GitHub complète le correctif nginx présenté
+        ci-dessus : nous disposons à la fois de la preuve que l'agent reçoit
+        correctement les événements GitHub et du détail technique du correctif
+        ayant rendu cette réception possible.
 
     \subsection{Sprint 2 — Pipeline de sécurité : scanners et LLM}
 
@@ -223,7 +243,7 @@ des \textit{Pull Requests} réelles ainsi que la validation complète de la plat
         \hline
         Appels LLM 14B par PR & 2 séquentiels & 1 combiné & -1 appel \\
         \hline
-        Durée totale analyse & 13–23 min & 6–11 min & -50\% \\
+        Durée totale analyse & 30–50 min & 15–25 min & -50\% \\
         \hline
         \texttt{num\_ctx} utilisé & 2 × 8 192 & 12 288 & +contexte \\
         \hline
@@ -232,15 +252,44 @@ des \textit{Pull Requests} réelles ainsi que la validation complète de la plat
         \label{tab:combined_perf}
         \end{table}
 
-        La figure \ref{fig:github_review} montre le résultat de la revue de sécurité
-        publiée directement sur la \textit{Pull Request} GitHub, avec le commentaire
-        global dans l'onglet Conversation.
+        Les figures \ref{fig:github_review_sec0}, \ref{fig:github_review_sec1},
+        \ref{fig:github_review_sec2} et \ref{fig:github_review_quality} montrent
+        le résultat de la revue automatisée publiée directement sur la
+        \textit{Pull Request} GitHub. La revue se compose de deux sections
+        distinctes apparaissant dans l'onglet \textit{Conversation} : la revue
+        de sécurité (trois sous-sections — résumé, findings inline et verdict)
+        et la revue de qualité de code (recommandations complémentaires).
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.92\columnwidth]{github_pr_review_comment}
-            \caption{Revue de sécurité publiée sur la PR GitHub — score HIGH, REQUEST\_CHANGES}
-            \label{fig:github_review}
+            \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_0}
+            \caption{Revue de sécurité publiée sur la PR GitHub — partie 1 :
+                     résumé et score de risque.}
+            \label{fig:github_review_sec0}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_1}
+            \caption{Revue de sécurité publiée sur la PR GitHub — partie 2 :
+                     détail des vulnérabilités identifiées par catégorie OWASP.}
+            \label{fig:github_review_sec1}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_2}
+            \caption{Revue de sécurité publiée sur la PR GitHub — partie 3 :
+                     verdict final, recommandations et statut du commit.}
+            \label{fig:github_review_sec2}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.92\columnwidth]{pr_comment-code_quality_review_0}
+            \caption{Revue de qualité de code publiée sur la PR GitHub —
+                     recommandations complémentaires à la revue de sécurité.}
+            \label{fig:github_review_quality}
         \end{figure}
 
         La figure \ref{fig:inline_suggestions} présente les commentaires inline avec
@@ -252,6 +301,38 @@ des \textit{Pull Requests} réelles ainsi que la validation complète de la plat
             \includegraphics[width=0.92\columnwidth]{github_inline_suggestions}
             \caption{Commentaires inline avec suggestions de correction (bouton Apply)}
             \label{fig:inline_suggestions}
+        \end{figure}
+
+        La figure \ref{fig:agent_logs_pr_complete} présente les journaux de
+        l'agent au moment où le nœud \texttt{report\_node} finalise le pipeline :
+        publication du commentaire global, dépôt des commentaires \textit{inline}
+        et mise à jour du statut du commit sur GitHub. Ce sont les opérations
+        finales avant que la \textit{Pull Request} ne devienne fusionnable ou
+        bloquée selon le verdict émis par le modèle 14B.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.92\columnwidth]{agent_logs_pr_complete}}
+            \caption{Journaux de l'agent lors de la finalisation du pipeline —
+                     publication du commentaire, dépôt des suggestions
+                     \textit{inline} et mise à jour du statut du commit.}
+            \label{fig:agent_logs_pr_complete}
+        \end{figure}
+
+        En complément de la publication sur GitHub, l'agent émet une
+        notification Slack récapitulant le résultat de la revue. Cette
+        notification, présentée dans la figure
+        \ref{fig:slack_notification_pr_result}, indique le dépôt analysé,
+        le numéro de la \textit{Pull Request}, le score de risque, le
+        verdict émis ainsi qu'un lien direct vers la PR pour consultation
+        immédiate par les destinataires.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.80\columnwidth]{slack_notification_pr_result}}
+            \caption{Notification Slack émise par l'agent à la fin du pipeline
+                     de revue — score de risque, verdict et lien vers la PR.}
+            \label{fig:slack_notification_pr_result}
         \end{figure}
 
     \subsection{Sprint 4 — Opérations autonomes et urgence disque}
@@ -541,6 +622,34 @@ des \textit{Pull Requests} réelles ainsi que la validation complète de la plat
             \label{fig:chat_ui}
         \end{figure}
 
+        Au-delà des questions d'état système, l'assistant de chat sait également
+        interroger la base de connaissances sécurité hébergée dans PostgreSQL
+        grâce à son outil \texttt{query\_database}. La figure \ref{fig:db_query_via_chat}
+        illustre une requête en langage naturel portant sur l'historique des
+        revues de \textit{Pull Requests} : le modèle décide d'invoquer l'outil,
+        construit la requête SQL appropriée, exécute la lecture sur la table
+        \texttt{pr\_reviews}, puis présente les résultats sous forme de tableau
+        markdown. Conformément au système anti-hallucination, chaque valeur
+        affichée provient verbatim de l'observation injectée après l'appel
+        d'outil — aucune donnée n'est inventée.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.92\columnwidth]{db_query_via_chat}}
+            \caption{Interrogation de la base de connaissances sécurité via le
+                     chat opérationnel — l'outil \texttt{query\_database}
+                     extrait l'historique des revues de PR et la réponse cite
+                     verbatim les valeurs issues de PostgreSQL.}
+            \label{fig:db_query_via_chat}
+        \end{figure}
+
+        Cette capacité d'interrogation conversationnelle de la base de
+        connaissances constitue l'un des leviers les plus appréciés par les
+        utilisateurs opérationnels : sans connaître la structure exacte des
+        tables ni le langage SQL, un membre du pôle Sécurité peut consulter
+        l'historique des revues, identifier les dépôts les plus exposés,
+        ou suivre l'évolution des scores de risque au fil du temps.
+
     \subsection{Sprint 8 — Robustesse du parser de revue PR}
 
         \begin{description}
@@ -656,14 +765,24 @@ else:
         En complément, le prompt combiné a été restructuré pour exiger la production
         du bloc JSON \textbf{en première position} dans la réponse du modèle, suivi
         du markdown de la revue. Cette inversion empêche le modèle de tronquer la
-        sortie avant d'avoir produit les métadonnées critiques. La figure
-        \ref{fig:prompt_restructured} présente le nouveau format STEP 1 / STEP 2.
+        sortie avant d'avoir produit les métadonnées critiques. Les figures
+        \ref{fig:prompt_restructured_step_1} et \ref{fig:prompt_restructured_step_2}
+        présentent respectivement les deux étapes du nouveau prompt STEP~1 / STEP~2.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{prompt_restructured}}
-            \caption{Prompt restructuré — JSON en première position, markdown en seconde position}
-            \label{fig:prompt_restructured}
+            \frame{\includegraphics[width=0.88\columnwidth]{prompt_restructured_step_1}}
+            \caption{Prompt restructuré — STEP 1 : production du bloc JSON en première
+                     position (risk\_score, verdict, commentaires inline).}
+            \label{fig:prompt_restructured_step_1}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{prompt_restructured_step_2}}
+            \caption{Prompt restructuré — STEP 2 : production du markdown de la revue
+                     globale après le JSON.}
+            \label{fig:prompt_restructured_step_2}
         \end{figure}
 
         \subsubsection{Vérification}
@@ -1380,7 +1499,7 @@ template:
         \hline
         \textbf{Vérification} & \textbf{Méthode} & \textbf{Statut} \\
         \hline
-        Pipeline PR end-to-end & PR réelle → commentaire < 7 min & \checkmark \\
+        Pipeline PR end-to-end & PR réelle → commentaire en 15–25 min & \checkmark \\
         \hline
         5 scanners exécutés & Artefacts dans ./artifacts/scans/ & \checkmark \\
         \hline
@@ -1492,5 +1611,5 @@ transformés en cartes prioritaires du sprint en cours, illustration concrète d
 \textit{pull system} Scrumban où chaque obstacle remonte au backlog au moment où
 il est observé plutôt qu'au prochain cycle de planification. La dernière section
 du chapitre a présenté les résultats obtenus sur des \textit{Pull Requests}
-réelles, avec des revues complètes produites en moins de sept minutes, commentaires
+réelles, avec des revues complètes produites en environ 15 à 25 minutes selon la complexité de la PR, commentaires
 inline et suggestions de correction publiés directement sur GitHub.

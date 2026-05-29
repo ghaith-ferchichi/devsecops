@@ -8,7 +8,7 @@ de départ était un VPS Ubuntu vide ; le point d'arrivée est une plateforme de
 production à onze conteneurs, complétée par une douzième sandbox LocalAI activable
 à la demande pour évaluer des moteurs d'inférence alternatifs. L'objectif posé au
 départ — automatiser la détection des vulnérabilités dans les \textit{Pull Requests}
-en moins de sept minutes, sans externaliser le code source et avec une couverture
+en environ 15 à 25 minutes selon la complexité de la \textit{Pull Request}, sans externaliser le code source et avec une couverture
 complète de l'OWASP Top 10 — a été atteint et vérifié sur des \textit{Pull Requests}
 réelles ouvertes pendant le stage.
 
@@ -17,7 +17,7 @@ modèle \texttt{qwen2.5-coder:14b} pour l'analyse de sécurité approfondie, tou
 exécutés localement via Ollama, a permis de respecter les exigences de confidentialité
 bancaire tout en produisant des revues de qualité. La fusion des deux appels LLM
 séquentiels en un seul appel combiné a divisé la durée du pipeline par deux, passant
-de treize à vingt-trois minutes à six à onze minutes. La réduction de 52\% des tokens
+de trente à cinquante minutes à quinze à vingt-cinq minutes selon la complexité de la PR. La réduction de 52\% des tokens
 SAST envoyés au LLM a optimisé l'utilisation de la fenêtre de contexte et amélioré
 la qualité des analyses. Le système anti-hallucination à six couches a éliminé la
 fabrication de métriques d'infrastructure dans l'assistant de chat.
@@ -39,30 +39,47 @@ espaces, \texttt{json.loads} strict, modèle omettant le JSON). Chacune de ces d
 est devenue la carte prioritaire du sprint suivant et a été transformée en amélioration
 concrète déployée en production avant la fin du sprint.
 
-Nous projetons de continuer à améliorer cette plateforme en nous concentrant sur plusieurs
-axes prioritaires. Sur le plan de la sécurité, la suppression des ports hôte non nécessaires
-(Redis, Prometheus, AlertManager, VictoriaMetrics, agent) et l'ajout d'un mot de passe Redis
-constitueront le durcissement de la surface d'exposition. La mise en place de HTTPS via
-Let's Encrypt chiffrera l'ensemble du trafic externe, répondant ainsi à une exigence
-fondamentale pour un environnement bancaire. Sur le plan de la résilience, un système de
-sauvegarde PostgreSQL quotidien protégera la base de connaissances sécurité et les
-checkpoints LangGraph. L'ajout de healthchecks Docker sur les six conteneurs actuellement
-sans surveillance permettra une détection automatique plus rapide des pannes. Sur le plan
-de l'intelligence, une évaluation post-Sprint 8 d'un second moteur d'inférence
-(LocalAI, servant le même modèle Qwen2.5-Coder 7B que la production) a fourni
-une preuve directe pour le choix initial d'Ollama : 5,49 contre 4,50 tokens par
-seconde sur le même matériel, soit 22\,\% de débit en plus. Le sprint 8.1 a prolongé ce travail en instrumentant les deux
-backends de chat avec une télémétrie A/B couvrant la latence du premier \textit{token},
-la durée totale et le débit en sortie par couple
-\texttt{backend}~$\times$~\texttt{model}, et a permis au passage de diagnostiquer et de
-corriger un bug latent du \textit{template} \texttt{ChatML-with-im\_sep} du modèle Phi-4
-qui retournait silencieusement zéro \textit{token} — un bug qui n'aurait pu être détecté
-sans la nouvelle instrumentation. La sandbox LocalAI ouvre par ailleurs l'accès à des modèles
-absents de la bibliothèque Ollama, comme Qwen3-Coder MoE 30B/3B-actifs.
-L'optimisation par \textit{fine-tuning} sur des CVE bancaires spécifiques reste
-à explorer pour gagner en précision sur les revues de sécurité. Enfin, l'objectif à long terme est d'étendre la plateforme à
-l'ensemble des dépôts de la BTE, avec un tableau de bord de risques consolidé permettant
-au RSSI de visualiser en temps réel la posture de sécurité de l'organisation.
+Plusieurs chantiers d'amélioration restent ouverts. Le premier touche au durcissement
+de la surface d'exposition : les ports hôte de Redis, Prometheus, AlertManager,
+VictoriaMetrics et de l'agent sont encore ouverts et doivent être refermés, Redis
+attend toujours son mot de passe, et la mise en place de HTTPS via Let's Encrypt
+reste un prérequis pour un usage bancaire. Vient ensuite la résilience opérationnelle :
+PostgreSQL n'a pas encore de sauvegarde quotidienne — alors qu'il héberge la base de
+connaissances sécurité et les checkpoints LangGraph — et six conteneurs tournent
+toujours sans \textit{healthcheck} Docker. Sur le volet inférence, l'évaluation menée
+en post-Sprint 8 d'un second moteur (LocalAI servant le même Qwen2.5-Coder 7B que
+la production) a tranché en faveur d'Ollama : 5,49 contre 4,50 tokens par seconde sur
+le même matériel, soit 22\,\% de débit en plus. Le sprint 8.1 a prolongé ce travail
+en instrumentant les deux backends de chat avec une télémétrie A/B sur la latence du
+premier \textit{token}, la durée totale et le débit en sortie par couple
+\texttt{backend}~$\times$~\texttt{model} ; ce dispositif a au passage permis de
+diagnostiquer et de corriger un bug latent du \textit{template}
+\texttt{ChatML-with-im\_sep} du modèle Phi-4, qui retournait silencieusement zéro
+\textit{token} et serait passé inaperçu sans la nouvelle instrumentation. La sandbox
+LocalAI donne par ailleurs accès à des modèles absents de la bibliothèque Ollama,
+comme Qwen3-Coder MoE 30B/3B-actifs ; un \textit{fine-tuning} sur des CVE bancaires
+reste à explorer.
+
+L'évolution la plus impactante pour la phase suivante est la \textbf{migration
+vers une inférence GPU}. La mesure empirique sur le matériel actuel
+(CPU Haswell 12 cœurs sans GPU) donne 15 à 25 minutes par revue de
+\textit{Pull Request} selon sa complexité, ce qui correspond à un débit
+d'environ 3 tokens/seconde pour le modèle \texttt{qwen2.5-coder:14B}. Avec
+un GPU haut de gamme (NVIDIA RTX 4090 ou A100), ce débit passerait à
+30 à 50 tokens/seconde, divisant la durée par un facteur de 5 à 10 ---
+soit environ 2 à 5 minutes par PR. L'investissement matériel
+(approximativement 3\,000~\texteuro{} pour une RTX 4090, ou
+500~\texteuro/mois pour du cloud GPU à la demande) reste compatible avec
+l'enveloppe DSI et représente le levier le plus direct pour passer à
+l'échelle de l'ensemble des dépôts BTE sans modifier l'architecture
+logicielle. Cette migration préserverait l'exigence de confidentialité
+bancaire de la BCT --- l'inférence resterait sur l'infrastructure BTE ---
+tout en rendant la revue de sécurité quasi-instantanée du point de vue
+du développeur.
+
+À plus long terme, le déploiement de l'agent sur l'ensemble des
+dépôts de la BTE et la consolidation d'un tableau de bord de risques à destination
+du RSSI sont l'horizon naturel de ce projet.
 
 Sur le plan personnel, ce stage a été l'occasion de pratiquer concrètement
 l'automatisation de la sécurité d'une chaîne CI/CD, le déploiement et l'exploitation
