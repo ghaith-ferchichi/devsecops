@@ -1,27 +1,27 @@
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode Introduction}{\reset@font\mtcSfont 41}{section*.38}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {1}Présentation de l'architecture logicielle}{\reset@font\mtcSfont 41}{section.3.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {1.1}Architecture en couches}{\reset@font\mtcSSfont 41}{subsection.3.1.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {1.2}Inventaire des conteneurs}{\reset@font\mtcSSfont 43}{subsection.3.1.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {1.3}Routage et point d'entrée}{\reset@font\mtcSSfont 44}{subsection.3.1.3}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {2}Description de la conception du logiciel}{\reset@font\mtcSfont 44}{section.3.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.1}Sous-système d'inférence LLM}{\reset@font\mtcSSfont 44}{subsection.3.2.1}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.1.1}Architecture logique}{\reset@font\mtcSSSfont 44}{subsubsection.3.2.1.1}}
-{\reset@font\mtcPfont\mtc@string\contentsline{paragraph}{\noexpand \leavevmode Contrainte matérielle et perspective d'évolution.}{\reset@font\mtcPfont 46}{paragraph*.43}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.1.2}Configuration des factories LLM}{\reset@font\mtcSSSfont 46}{subsubsection.3.2.1.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.2}Sous-système de revue de Pull Request}{\reset@font\mtcSSfont 46}{subsection.3.2.2}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.2.1}Architecture logique}{\reset@font\mtcSSSfont 46}{subsubsection.3.2.2.1}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.2.2}Diagramme d'interaction — Réception du webhook}{\reset@font\mtcSSSfont 49}{subsubsection.3.2.2.2}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.2.3}Diagramme d'interaction — Pipeline de revue}{\reset@font\mtcSSSfont 50}{subsubsection.3.2.2.3}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.3}Sous-système d'analyse du diff}{\reset@font\mtcSSfont 52}{subsection.3.2.3}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.3.1}Architecture logique}{\reset@font\mtcSSSfont 52}{subsubsection.3.2.3.1}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.3.2}Format du diff annoté}{\reset@font\mtcSSSfont 54}{subsubsection.3.2.3.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.4}Sous-système d'assistant de chat opérationnel}{\reset@font\mtcSSfont 55}{subsection.3.2.4}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.4.1}Architecture logique}{\reset@font\mtcSSSfont 55}{subsubsection.3.2.4.1}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.4.2}Diagramme d'interaction — Boucle ReAct}{\reset@font\mtcSSSfont 59}{subsubsection.3.2.4.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.5}Sous-système de persistance}{\reset@font\mtcSSfont 60}{subsection.3.2.5}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.5.1}Architecture logique}{\reset@font\mtcSSSfont 60}{subsubsection.3.2.5.1}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.5.2}Description des tables}{\reset@font\mtcSSSfont 61}{subsubsection.3.2.5.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.6}Sous-système d'observabilité}{\reset@font\mtcSSfont 62}{subsection.3.2.6}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.6.1}Architecture logique}{\reset@font\mtcSSSfont 62}{subsubsection.3.2.6.1}}
-{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.6.2}Justification du poller interne vs cAdvisor}{\reset@font\mtcSSSfont 63}{subsubsection.3.2.6.2}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode Conclusion}{\reset@font\mtcSfont 64}{subsubsection.3.2.6.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode Introduction}{\reset@font\mtcSfont 36}{section*.32}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {1}Présentation de l'architecture logicielle}{\reset@font\mtcSfont 36}{section.3.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {1.1}Architecture en couches}{\reset@font\mtcSSfont 36}{subsection.3.1.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {1.2}Inventaire des conteneurs}{\reset@font\mtcSSfont 38}{subsection.3.1.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {1.3}Routage et point d'entrée}{\reset@font\mtcSSfont 38}{subsection.3.1.3}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {2}Description de la conception du logiciel}{\reset@font\mtcSfont 39}{section.3.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.1}Sous-système d'inférence LLM}{\reset@font\mtcSSfont 39}{subsection.3.2.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.1.1}Architecture logique}{\reset@font\mtcSSSfont 39}{subsubsection.3.2.1.1}}
+{\reset@font\mtcPfont\mtc@string\contentsline{paragraph}{\noexpand \leavevmode Contrainte matérielle et perspective d'évolution.}{\reset@font\mtcPfont 41}{paragraph*.37}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.1.2}Configuration des factories LLM}{\reset@font\mtcSSSfont 41}{subsubsection.3.2.1.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.2}Sous-système de revue de Pull Request}{\reset@font\mtcSSfont 41}{subsection.3.2.2}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.2.1}Architecture logique}{\reset@font\mtcSSSfont 41}{subsubsection.3.2.2.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.2.2}Diagramme d'interaction — Réception du webhook}{\reset@font\mtcSSSfont 44}{subsubsection.3.2.2.2}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.2.3}Diagramme d'interaction — Pipeline de revue}{\reset@font\mtcSSSfont 44}{subsubsection.3.2.2.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.3}Sous-système d'analyse du diff}{\reset@font\mtcSSfont 46}{subsection.3.2.3}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.3.1}Architecture logique}{\reset@font\mtcSSSfont 46}{subsubsection.3.2.3.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.3.2}Format du diff annoté}{\reset@font\mtcSSSfont 48}{subsubsection.3.2.3.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.4}Sous-système d'assistant de chat opérationnel}{\reset@font\mtcSSfont 48}{subsection.3.2.4}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.4.1}Architecture logique}{\reset@font\mtcSSSfont 48}{subsubsection.3.2.4.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.4.2}Diagramme d'interaction — Boucle ReAct}{\reset@font\mtcSSSfont 52}{subsubsection.3.2.4.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.5}Sous-système de persistance}{\reset@font\mtcSSfont 52}{subsection.3.2.5}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.5.1}Architecture logique}{\reset@font\mtcSSSfont 52}{subsubsection.3.2.5.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.5.2}Description des tables}{\reset@font\mtcSSSfont 53}{subsubsection.3.2.5.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {2.6}Sous-système d'observabilité}{\reset@font\mtcSSfont 54}{subsection.3.2.6}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.6.1}Architecture logique}{\reset@font\mtcSSSfont 54}{subsubsection.3.2.6.1}}
+{\reset@font\mtcSSSfont\mtc@string\contentsline{subsubsection}{\noexpand \leavevmode \numberline {2.6.2}Justification du poller interne vs cAdvisor}{\reset@font\mtcSSSfont 55}{subsubsection.3.2.6.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode Conclusion}{\reset@font\mtcSfont 56}{subsubsection.3.2.6.2}}

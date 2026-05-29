@@ -5,7 +5,7 @@
 \select@language {french}
 \select@language {french}
 \select@language {french}
-\contentsline {chapter}{Liste des abréviations}{xiv}{chapter*.7}%
+\contentsline {chapter}{Liste des abréviations}{xiii}{chapter*.7}%
 \select@language {french}
 \contentsline {chapter}{Introduction générale}{1}{chapter*.8}%
 \select@language {french}
@@ -24,131 +24,132 @@
 \contentsline {subsection}{\numberline {3.2}Comparaison des frameworks Agile}{11}{subsection.1.3.2}%
 \contentsline {subsection}{\numberline {3.3}Adaptation de Scrumban au stage}{13}{subsection.1.3.3}%
 \contentsline {subsection}{\numberline {3.4}Structure du tableau et choix des colonnes}{14}{subsection.1.3.4}%
-\contentsline {paragraph}{Définition de terminé.}{16}{paragraph*.20}%
-\contentsline {subsection}{\numberline {3.5}Illustration d'un sprint sur l'agent}{17}{subsection.1.3.5}%
-\contentsline {subsection}{\numberline {3.6}Déroulement du projet}{18}{subsection.1.3.6}%
-\contentsline {section}{Conclusion}{19}{figure.caption.22}%
+\contentsline {paragraph}{Définition de terminé.}{15}{paragraph*.19}%
+\contentsline {subsection}{\numberline {3.5}Illustration du tableau Scrumban en pratique}{16}{subsection.1.3.5}%
+\contentsline {subsection}{\numberline {3.6}Déroulement du projet}{17}{subsection.1.3.6}%
+\contentsline {section}{Conclusion}{18}{figure.caption.21}%
 \select@language {french}
-\contentsline {chapter}{\numberline {\textLR {2}}\bgroup \beginL \latintext État de l'art et choix technologiques\endL \egroup }{20}{chapter.2}%
-\contentsline {section}{Introduction}{21}{section*.23}%
-\contentsline {section}{\numberline {1}DevOps, CI/CD et DevSecOps}{21}{section.2.1}%
-\contentsline {subsection}{\numberline {1.1}Le DevOps}{21}{subsection.2.1.1}%
-\contentsline {subsection}{\numberline {1.2}L'approche CI/CD}{22}{subsection.2.1.2}%
-\contentsline {subsubsection}{\numberline {1.2.1}Définition}{22}{subsubsection.2.1.2.1}%
-\contentsline {subsubsection}{\numberline {1.2.2}Intégration continue (CI)}{23}{subsubsection.2.1.2.2}%
-\contentsline {subsubsection}{\numberline {1.2.3}Déploiement continu (CD)}{24}{subsubsection.2.1.2.3}%
-\contentsline {subsection}{\numberline {1.3}Du DevOps au DevSecOps}{24}{subsection.2.1.3}%
-\contentsline {subsection}{\numberline {1.4}L'OWASP Top 10}{25}{subsection.2.1.4}%
-\contentsline {subsection}{\numberline {1.5}Webhooks GitHub et signature HMAC-SHA256}{26}{subsection.2.1.5}%
-\contentsline {section}{\numberline {2}Les grands modèles de langage (LLM)}{26}{section.2.2}%
-\contentsline {subsection}{\numberline {2.1}Fonctionnement général}{26}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2}Inférence locale et API cloud}{27}{subsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.3}Tool calling}{28}{subsection.2.2.3}%
-\contentsline {section}{\numberline {3}Orchestration de workflows IA}{28}{section.2.3}%
-\contentsline {section}{\numberline {4}Outils d'analyse de sécurité statique (SAST)}{29}{section.2.4}%
-\contentsline {subsection}{\numberline {4.1}Présentation générale}{29}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {4.2}Les cinq catégories de risques couvertes}{29}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {4.3}Réduction des tokens SAST}{30}{subsection.2.4.3}%
-\contentsline {section}{\numberline {5}Stack applicative et observabilité}{30}{section.2.5}%
-\contentsline {subsection}{\numberline {5.1}Framework API asynchrone}{30}{subsection.2.5.1}%
-\contentsline {subsection}{\numberline {5.2}Base de données relationnelle}{31}{subsection.2.5.2}%
-\contentsline {subsection}{\numberline {5.3}Cache et déduplication}{31}{subsection.2.5.3}%
-\contentsline {subsection}{\numberline {5.4}Observabilité}{31}{subsection.2.5.4}%
-\contentsline {section}{\numberline {6}Choix technologiques}{31}{section.2.6}%
-\contentsline {subsection}{\numberline {6.1}Choix du moteur d'inférence LLM}{31}{subsection.2.6.1}%
-\contentsline {subsection}{\numberline {6.2}Choix du modèle LLM}{32}{subsection.2.6.2}%
-\contentsline {subsection}{\numberline {6.3}Choix de l'orchestrateur}{33}{subsection.2.6.3}%
-\contentsline {subsection}{\numberline {6.4}Choix des outils SAST}{34}{subsection.2.6.4}%
-\contentsline {subsection}{\numberline {6.5}Choix de la stack applicative}{35}{subsection.2.6.5}%
-\contentsline {subsection}{\numberline {6.6}Choix de la stack d'observabilité}{36}{subsection.2.6.6}%
-\contentsline {subsection}{\numberline {6.7}Synthèse des choix technologiques}{36}{subsection.2.6.7}%
-\contentsline {section}{\numberline {7}Analyse et définition des besoins}{37}{section.2.7}%
-\contentsline {subsection}{\numberline {7.1}Besoins fonctionnels}{37}{subsection.2.7.1}%
-\contentsline {subsection}{\numberline {7.2}Besoins non fonctionnels}{38}{subsection.2.7.2}%
-\contentsline {section}{Conclusion}{38}{subsection.2.7.2}%
+\contentsline {chapter}{\numberline {\textLR {2}}\bgroup \beginL \latintext État de l'art et choix technologiques\endL \egroup }{19}{chapter.2}%
+\contentsline {section}{Introduction}{20}{section*.22}%
+\contentsline {section}{\numberline {1}DevOps, CI/CD et DevSecOps}{20}{section.2.1}%
+\contentsline {subsection}{\numberline {1.1}Le DevOps}{20}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {1.2}L'approche CI/CD}{20}{subsection.2.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}Définition}{20}{subsubsection.2.1.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2}Intégration continue (CI)}{20}{subsubsection.2.1.2.2}%
+\contentsline {subsubsection}{\numberline {1.2.3}Déploiement continu (CD)}{21}{subsubsection.2.1.2.3}%
+\contentsline {subsection}{\numberline {1.3}Du DevOps au DevSecOps}{21}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {1.4}L'OWASP Top 10}{22}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {1.5}Webhooks GitHub et signature HMAC-SHA256}{22}{subsection.2.1.5}%
+\contentsline {section}{\numberline {2}Les grands modèles de langage (LLM)}{23}{section.2.2}%
+\contentsline {subsection}{\numberline {2.1}Fonctionnement général}{23}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2}Inférence locale et API cloud}{23}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.3}Tool calling}{23}{subsection.2.2.3}%
+\contentsline {section}{\numberline {3}Orchestration de workflows IA}{24}{section.2.3}%
+\contentsline {section}{\numberline {4}Outils d'analyse de sécurité statique (SAST)}{24}{section.2.4}%
+\contentsline {subsection}{\numberline {4.1}Présentation générale}{24}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {4.2}Les cinq catégories de risques couvertes}{25}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {4.3}Réduction des tokens SAST}{25}{subsection.2.4.3}%
+\contentsline {section}{\numberline {5}Stack applicative et observabilité}{26}{section.2.5}%
+\contentsline {subsection}{\numberline {5.1}Framework API asynchrone}{26}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {5.2}Base de données relationnelle}{26}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {5.3}Cache et déduplication}{27}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {5.4}Observabilité}{27}{subsection.2.5.4}%
+\contentsline {section}{\numberline {6}Choix technologiques}{27}{section.2.6}%
+\contentsline {subsection}{\numberline {6.1}Choix du moteur d'inférence LLM}{27}{subsection.2.6.1}%
+\contentsline {subsection}{\numberline {6.2}Choix du modèle LLM}{28}{subsection.2.6.2}%
+\contentsline {subsection}{\numberline {6.3}Choix de l'orchestrateur}{29}{subsection.2.6.3}%
+\contentsline {subsection}{\numberline {6.4}Choix des outils SAST}{30}{subsection.2.6.4}%
+\contentsline {subsection}{\numberline {6.5}Choix de la stack applicative}{30}{subsection.2.6.5}%
+\contentsline {subsection}{\numberline {6.6}Choix de la stack d'observabilité}{31}{subsection.2.6.6}%
+\contentsline {subsection}{\numberline {6.7}Synthèse des choix technologiques}{31}{subsection.2.6.7}%
+\contentsline {section}{\numberline {7}Analyse et définition des besoins}{32}{section.2.7}%
+\contentsline {subsection}{\numberline {7.1}Besoins fonctionnels}{32}{subsection.2.7.1}%
+\contentsline {subsection}{\numberline {7.2}Besoins non fonctionnels}{33}{subsection.2.7.2}%
+\contentsline {section}{Conclusion}{33}{subsection.2.7.2}%
 \select@language {french}
-\contentsline {chapter}{\numberline {\textLR {3}}\bgroup \beginL \latintext Conception de la solution\endL \egroup }{40}{chapter.3}%
-\contentsline {section}{Introduction}{41}{section*.38}%
-\contentsline {section}{\numberline {1}Présentation de l'architecture logicielle}{41}{section.3.1}%
-\contentsline {subsection}{\numberline {1.1}Architecture en couches}{41}{subsection.3.1.1}%
-\contentsline {subsection}{\numberline {1.2}Inventaire des conteneurs}{43}{subsection.3.1.2}%
-\contentsline {subsection}{\numberline {1.3}Routage et point d'entrée}{44}{subsection.3.1.3}%
-\contentsline {section}{\numberline {2}Description de la conception du logiciel}{44}{section.3.2}%
-\contentsline {subsection}{\numberline {2.1}Sous-système d'inférence LLM}{44}{subsection.3.2.1}%
-\contentsline {subsubsection}{\numberline {2.1.1}Architecture logique}{44}{subsubsection.3.2.1.1}%
-\contentsline {paragraph}{Contrainte matérielle et perspective d'évolution.}{46}{paragraph*.43}%
-\contentsline {subsubsection}{\numberline {2.1.2}Configuration des factories LLM}{46}{subsubsection.3.2.1.2}%
-\contentsline {subsection}{\numberline {2.2}Sous-système de revue de Pull Request}{46}{subsection.3.2.2}%
-\contentsline {subsubsection}{\numberline {2.2.1}Architecture logique}{46}{subsubsection.3.2.2.1}%
-\contentsline {subsubsection}{\numberline {2.2.2}Diagramme d'interaction — Réception du webhook}{49}{subsubsection.3.2.2.2}%
-\contentsline {subsubsection}{\numberline {2.2.3}Diagramme d'interaction — Pipeline de revue}{50}{subsubsection.3.2.2.3}%
-\contentsline {subsection}{\numberline {2.3}Sous-système d'analyse du diff}{52}{subsection.3.2.3}%
-\contentsline {subsubsection}{\numberline {2.3.1}Architecture logique}{52}{subsubsection.3.2.3.1}%
-\contentsline {subsubsection}{\numberline {2.3.2}Format du diff annoté}{54}{subsubsection.3.2.3.2}%
-\contentsline {subsection}{\numberline {2.4}Sous-système d'assistant de chat opérationnel}{55}{subsection.3.2.4}%
-\contentsline {subsubsection}{\numberline {2.4.1}Architecture logique}{55}{subsubsection.3.2.4.1}%
-\contentsline {subsubsection}{\numberline {2.4.2}Diagramme d'interaction — Boucle ReAct}{59}{subsubsection.3.2.4.2}%
-\contentsline {subsection}{\numberline {2.5}Sous-système de persistance}{60}{subsection.3.2.5}%
-\contentsline {subsubsection}{\numberline {2.5.1}Architecture logique}{60}{subsubsection.3.2.5.1}%
-\contentsline {subsubsection}{\numberline {2.5.2}Description des tables}{61}{subsubsection.3.2.5.2}%
-\contentsline {subsection}{\numberline {2.6}Sous-système d'observabilité}{62}{subsection.3.2.6}%
-\contentsline {subsubsection}{\numberline {2.6.1}Architecture logique}{62}{subsubsection.3.2.6.1}%
-\contentsline {subsubsection}{\numberline {2.6.2}Justification du poller interne vs cAdvisor}{63}{subsubsection.3.2.6.2}%
-\contentsline {section}{Conclusion}{64}{subsubsection.3.2.6.2}%
+\contentsline {chapter}{\numberline {\textLR {3}}\bgroup \beginL \latintext Conception de la solution\endL \egroup }{35}{chapter.3}%
+\contentsline {section}{Introduction}{36}{section*.32}%
+\contentsline {section}{\numberline {1}Présentation de l'architecture logicielle}{36}{section.3.1}%
+\contentsline {subsection}{\numberline {1.1}Architecture en couches}{36}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {1.2}Inventaire des conteneurs}{38}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {1.3}Routage et point d'entrée}{38}{subsection.3.1.3}%
+\contentsline {section}{\numberline {2}Description de la conception du logiciel}{39}{section.3.2}%
+\contentsline {subsection}{\numberline {2.1}Sous-système d'inférence LLM}{39}{subsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}Architecture logique}{39}{subsubsection.3.2.1.1}%
+\contentsline {paragraph}{Contrainte matérielle et perspective d'évolution.}{41}{paragraph*.37}%
+\contentsline {subsubsection}{\numberline {2.1.2}Configuration des factories LLM}{41}{subsubsection.3.2.1.2}%
+\contentsline {subsection}{\numberline {2.2}Sous-système de revue de Pull Request}{41}{subsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Architecture logique}{41}{subsubsection.3.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Diagramme d'interaction — Réception du webhook}{44}{subsubsection.3.2.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.3}Diagramme d'interaction — Pipeline de revue}{44}{subsubsection.3.2.2.3}%
+\contentsline {subsection}{\numberline {2.3}Sous-système d'analyse du diff}{46}{subsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Architecture logique}{46}{subsubsection.3.2.3.1}%
+\contentsline {subsubsection}{\numberline {2.3.2}Format du diff annoté}{48}{subsubsection.3.2.3.2}%
+\contentsline {subsection}{\numberline {2.4}Sous-système d'assistant de chat opérationnel}{48}{subsection.3.2.4}%
+\contentsline {subsubsection}{\numberline {2.4.1}Architecture logique}{48}{subsubsection.3.2.4.1}%
+\contentsline {subsubsection}{\numberline {2.4.2}Diagramme d'interaction — Boucle ReAct}{52}{subsubsection.3.2.4.2}%
+\contentsline {subsection}{\numberline {2.5}Sous-système de persistance}{52}{subsection.3.2.5}%
+\contentsline {subsubsection}{\numberline {2.5.1}Architecture logique}{52}{subsubsection.3.2.5.1}%
+\contentsline {subsubsection}{\numberline {2.5.2}Description des tables}{53}{subsubsection.3.2.5.2}%
+\contentsline {subsection}{\numberline {2.6}Sous-système d'observabilité}{54}{subsection.3.2.6}%
+\contentsline {subsubsection}{\numberline {2.6.1}Architecture logique}{54}{subsubsection.3.2.6.1}%
+\contentsline {subsubsection}{\numberline {2.6.2}Justification du poller interne vs cAdvisor}{55}{subsubsection.3.2.6.2}%
+\contentsline {section}{Conclusion}{56}{subsubsection.3.2.6.2}%
 \select@language {french}
-\contentsline {chapter}{\numberline {\textLR {4}}\bgroup \beginL \latintext Réalisation et résultats\endL \egroup }{65}{chapter.4}%
-\contentsline {section}{Introduction}{66}{section*.57}%
-\contentsline {section}{\numberline {1}Environnement de travail}{66}{section.4.1}%
-\contentsline {subsection}{\numberline {1.1}Environnement matériel}{66}{subsection.4.1.1}%
-\contentsline {subsection}{\numberline {1.2}Environnement logiciel}{67}{subsection.4.1.2}%
-\contentsline {section}{\numberline {2}Implémentation par sprints Scrumban}{68}{section.4.2}%
-\contentsline {subsection}{\numberline {2.1}Sprint 1 — Fondations : VPS, Docker et webhook GitHub}{68}{subsection.4.2.1}%
-\contentsline {paragraph}{Configuration de l'intégration GitHub.}{70}{paragraph*.62}%
-\contentsline {subsection}{\numberline {2.2}Sprint 2 — Pipeline de sécurité : scanners et LLM}{74}{subsection.4.2.2}%
-\contentsline {subsection}{\numberline {2.3}Sprint 3 — Revue combinée et commentaires inline GitHub}{76}{subsection.4.2.3}%
-\contentsline {subsection}{\numberline {2.4}Sprint 4 — Opérations autonomes et urgence disque}{80}{subsection.4.2.4}%
-\contentsline {subsubsection}{\numberline {2.4.1}Urgence disque du 20 avril 2026}{80}{subsubsection.4.2.4.1}%
-\contentsline {subsubsection}{\numberline {2.4.2}Scheduler autonome et health digest}{82}{subsubsection.4.2.4.2}%
-\contentsline {subsection}{\numberline {2.5}Sprint 5 — Stack de monitoring Prometheus et Grafana}{85}{subsection.4.2.5}%
-\contentsline {subsubsection}{\numberline {2.5.1}Correction des métriques Prometheus}{85}{subsubsection.4.2.5.1}%
-\contentsline {subsubsection}{\numberline {2.5.2}Dashboards Grafana}{87}{subsubsection.4.2.5.2}%
-\contentsline {subsection}{\numberline {2.6}Sprint 6 — Monitoring host et optimisation du chat}{92}{subsection.4.2.6}%
-\contentsline {subsubsection}{\numberline {2.6.1}Déploiement de node-exporter}{92}{subsubsection.4.2.6.1}%
-\contentsline {subsubsection}{\numberline {2.6.2}Optimisation du chat agent}{92}{subsubsection.4.2.6.2}%
-\contentsline {subsection}{\numberline {2.7}Sprint 7 — Audit VPS et durcissement}{93}{subsection.4.2.7}%
-\contentsline {subsubsection}{\numberline {2.7.1}Audit VPS du 28 avril 2026}{93}{subsubsection.4.2.7.1}%
-\contentsline {subsubsection}{\numberline {2.7.2}Implémentation du système anti-hallucination}{94}{subsubsection.4.2.7.2}%
-\contentsline {subsection}{\numberline {2.8}Sprint 8 — Robustesse du parser de revue PR}{98}{subsection.4.2.8}%
-\contentsline {subsubsection}{\numberline {2.8.1}Investigation du bug}{99}{subsubsection.4.2.8.1}%
-\contentsline {subsubsection}{\numberline {2.8.2}Réécriture du parser et restructuration du prompt}{100}{subsubsection.4.2.8.2}%
-\contentsline {subsubsection}{\numberline {2.8.3}Vérification}{104}{subsubsection.4.2.8.3}%
-\contentsline {subsection}{\numberline {2.9}Post-Sprint 8 — Évaluation d'un second backend d'inférence}{105}{subsection.4.2.9}%
-\contentsline {subsubsection}{\numberline {2.9.1}Motivation et cadre du micro-sprint}{106}{subsubsection.4.2.9.1}%
-\contentsline {subsubsection}{\numberline {2.9.2}Mise en place de la sandbox LocalAI}{106}{subsubsection.4.2.9.2}%
-\contentsline {subsubsection}{\numberline {2.9.3}Architecture du routeur dual-backend}{107}{subsubsection.4.2.9.3}%
-\contentsline {subsubsection}{\numberline {2.9.4}Découverte et résolution d'un bug de \@FB@og cold-load \@FB@fg \xspace {}}{108}{subsubsection.4.2.9.4}%
-\contentsline {subsubsection}{\numberline {2.9.5}Benchmark croisé sur modèle identique}{109}{subsubsection.4.2.9.5}%
-\contentsline {subsubsection}{\numberline {2.9.6}Interprétation et décision}{110}{subsubsection.4.2.9.6}%
-\contentsline {subsection}{\numberline {2.10}Sprint 8.1 — Expansion de l'observabilité et correction du \textit {template} Phi-4}{111}{subsection.4.2.10}%
-\contentsline {subsubsection}{\numberline {2.10.1}Tentative de déploiement de cAdvisor et pivot architectural}{112}{subsubsection.4.2.10.1}%
-\contentsline {subsubsection}{\numberline {2.10.2}Instrumentation du routeur de chat pour la télémétrie A/B}{113}{subsubsection.4.2.10.2}%
-\contentsline {subsubsection}{\numberline {2.10.3}Cinq nouvelles \textit {rows} sur le dashboard Grafana}{115}{subsubsection.4.2.10.3}%
-\contentsline {subsubsection}{\numberline {2.10.4}Découverte et correction du bug du \textit {template} Phi-4}{115}{subsubsection.4.2.10.4}%
-\contentsline {subsubsection}{\numberline {2.10.5}Synthèse de la couverture observabilité}{116}{subsubsection.4.2.10.5}%
-\contentsline {section}{\numberline {3}Tests de validation}{117}{section.4.3}%
-\contentsline {subsection}{\numberline {3.1}Test de la validation HMAC-SHA256}{117}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {3.2}Test de la déduplication Redis}{118}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {3.3}Test du circuit breaker LLM}{118}{subsection.4.3.3}%
-\contentsline {subsection}{\numberline {3.4}Test du gardien disque}{119}{subsection.4.3.4}%
-\contentsline {section}{\numberline {4}Résultats}{120}{section.4.4}%
-\contentsline {subsection}{\numberline {4.1}Résultats des revues de Pull Requests réelles}{120}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.2}Résultats de l'analyse de conformité et observabilité}{122}{subsection.4.4.2}%
-\contentsline {subsection}{\numberline {4.3}Validation de la plateforme}{122}{subsection.4.4.3}%
-\contentsline {subsection}{\numberline {4.4}Limites identifiées et plan de durcissement}{123}{subsection.4.4.4}%
-\contentsline {section}{Conclusion}{125}{table.caption.110}%
+\contentsline {chapter}{\numberline {\textLR {4}}\bgroup \beginL \latintext Réalisation et résultats\endL \egroup }{57}{chapter.4}%
+\contentsline {section}{Introduction}{58}{section*.51}%
+\contentsline {section}{\numberline {1}Environnement de travail}{58}{section.4.1}%
+\contentsline {subsection}{\numberline {1.1}Environnement matériel}{58}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {1.2}Environnement logiciel}{58}{subsection.4.1.2}%
+\contentsline {section}{\numberline {2}Implémentation par sprints Scrumban}{59}{section.4.2}%
+\contentsline {subsection}{\numberline {2.1}Sprint 1 — Fondations : VPS, Docker et webhook GitHub}{59}{subsection.4.2.1}%
+\contentsline {paragraph}{Configuration de l'intégration GitHub.}{62}{paragraph*.56}%
+\contentsline {subsection}{\numberline {2.2}Sprint 2 — Pipeline de sécurité : scanners et LLM}{66}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {2.3}Sprint 3 — Revue combinée et commentaires inline GitHub}{68}{subsection.4.2.3}%
+\contentsline {subsection}{\numberline {2.4}Sprint 4 — Opérations autonomes et urgence disque}{72}{subsection.4.2.4}%
+\contentsline {subsubsection}{\numberline {2.4.1}Urgence disque du 20 avril 2026}{72}{subsubsection.4.2.4.1}%
+\contentsline {subsubsection}{\numberline {2.4.2}Scheduler autonome et health digest}{74}{subsubsection.4.2.4.2}%
+\contentsline {subsection}{\numberline {2.5}Sprint 5 — Stack de monitoring Prometheus et Grafana}{77}{subsection.4.2.5}%
+\contentsline {subsubsection}{\numberline {2.5.1}Correction des métriques Prometheus}{77}{subsubsection.4.2.5.1}%
+\contentsline {subsubsection}{\numberline {2.5.2}Dashboards Grafana}{79}{subsubsection.4.2.5.2}%
+\contentsline {subsection}{\numberline {2.6}Sprint 6 — Monitoring host et optimisation du chat}{84}{subsection.4.2.6}%
+\contentsline {subsubsection}{\numberline {2.6.1}Déploiement de node-exporter}{84}{subsubsection.4.2.6.1}%
+\contentsline {subsubsection}{\numberline {2.6.2}Optimisation du chat agent}{84}{subsubsection.4.2.6.2}%
+\contentsline {subsection}{\numberline {2.7}Sprint 7 — Audit VPS et durcissement}{85}{subsection.4.2.7}%
+\contentsline {subsubsection}{\numberline {2.7.1}Audit VPS du 28 avril 2026}{85}{subsubsection.4.2.7.1}%
+\contentsline {subsubsection}{\numberline {2.7.2}Implémentation du système anti-hallucination}{86}{subsubsection.4.2.7.2}%
+\contentsline {subsection}{\numberline {2.8}Sprint 8 — Robustesse du parser de revue PR}{90}{subsection.4.2.8}%
+\contentsline {subsubsection}{\numberline {2.8.1}Investigation du bug}{91}{subsubsection.4.2.8.1}%
+\contentsline {subsubsection}{\numberline {2.8.2}Réécriture du parser et restructuration du prompt}{92}{subsubsection.4.2.8.2}%
+\contentsline {subsubsection}{\numberline {2.8.3}Vérification}{96}{subsubsection.4.2.8.3}%
+\contentsline {subsection}{\numberline {2.9}Post-Sprint 8 — Évaluation d'un second backend d'inférence}{97}{subsection.4.2.9}%
+\contentsline {subsubsection}{\numberline {2.9.1}Motivation et cadre du micro-sprint}{98}{subsubsection.4.2.9.1}%
+\contentsline {subsubsection}{\numberline {2.9.2}Mise en place de la sandbox LocalAI}{98}{subsubsection.4.2.9.2}%
+\contentsline {subsubsection}{\numberline {2.9.3}Architecture du routeur dual-backend}{99}{subsubsection.4.2.9.3}%
+\contentsline {subsubsection}{\numberline {2.9.4}Découverte et résolution d'un bug de \@FB@og cold-load \@FB@fg \xspace {}}{100}{subsubsection.4.2.9.4}%
+\contentsline {subsubsection}{\numberline {2.9.5}Benchmark croisé sur modèle identique}{101}{subsubsection.4.2.9.5}%
+\contentsline {subsubsection}{\numberline {2.9.6}Interprétation et décision}{102}{subsubsection.4.2.9.6}%
+\contentsline {subsection}{\numberline {2.10}Sprint 8.1 — Expansion de l'observabilité et correction du \textit {template} Phi-4}{103}{subsection.4.2.10}%
+\contentsline {subsubsection}{\numberline {2.10.1}Tentative de déploiement de cAdvisor et pivot architectural}{104}{subsubsection.4.2.10.1}%
+\contentsline {subsubsection}{\numberline {2.10.2}Instrumentation du routeur de chat pour la télémétrie A/B}{105}{subsubsection.4.2.10.2}%
+\contentsline {subsubsection}{\numberline {2.10.3}Cinq nouvelles \textit {rows} sur le dashboard Grafana}{107}{subsubsection.4.2.10.3}%
+\contentsline {subsubsection}{\numberline {2.10.4}Découverte et correction du bug du \textit {template} Phi-4}{107}{subsubsection.4.2.10.4}%
+\contentsline {subsubsection}{\numberline {2.10.5}Synthèse de la couverture observabilité}{108}{subsubsection.4.2.10.5}%
+\contentsline {section}{\numberline {3}Tests de validation}{109}{section.4.3}%
+\contentsline {subsection}{\numberline {3.1}Test de la validation HMAC-SHA256}{109}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {3.2}Test de la déduplication Redis}{110}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {3.3}Test du circuit breaker LLM}{110}{subsection.4.3.3}%
+\contentsline {subsection}{\numberline {3.4}Test du gardien disque}{111}{subsection.4.3.4}%
+\contentsline {section}{\numberline {4}Résultats}{112}{section.4.4}%
+\contentsline {subsection}{\numberline {4.1}Résultats des revues de Pull Requests réelles}{112}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.2}Résultats de l'analyse de conformité et observabilité}{114}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.3}Validation de la plateforme}{114}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.4}Limites identifiées et plan de durcissement}{115}{subsection.4.4.4}%
+\contentsline {section}{Conclusion}{117}{table.caption.104}%
 \select@language {french}
-\contentsline {chapter}{Conclusion générale et Perspectives}{126}{chapter*.111}%
-\contentsline {chapter}{Webographie}{129}{chapter*.111}%
+\contentsline {chapter}{Conclusion générale et Perspectives}{118}{chapter*.105}%
+\select@language {french}
+\contentsline {chapter}{Webographie}{121}{chapter*.106}%
 \babel@toc {arabic}{}\relax 
 \babel@toc {french}{}\relax 
 \babel@toc {english}{}\relax 

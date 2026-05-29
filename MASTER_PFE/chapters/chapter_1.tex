@@ -1,7 +1,5 @@
 \chapter{Étude préalable du sujet}
 
-\minitoc
-
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
@@ -16,13 +14,6 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
 \section{Présentation de l'organisme d'accueil}
 
     \subsection{Présentation générale}
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.5\columnwidth]{bte_logo}}
-            \caption{Logo de la Banque de Tunisie et des Emirats}
-            \label{fig:bte_logo}
-        \end{figure}
 
         La Banque de Tunisie et des Emirats (BTE) \cite{BTE}, dont le logo est présenté
         dans la figure \ref{fig:bte_logo}, a été fondée le 10 août 1982 à la suite d'une
@@ -164,7 +155,7 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.78\textwidth]{asis_workflow}}
+            \frame{\includegraphics[width=\columnwidth,height=0.80\textheight,keepaspectratio]{asis_workflow}}
             \caption{Processus \textit{AS-IS} — revue manuelle de \textit{Pull
                      Request} telle qu'elle existe aujourd'hui à la BTE.}
             \label{fig:asis_workflow}
@@ -199,7 +190,7 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.78\textwidth]{tobe_workflow}}
+            \frame{\includegraphics[width=\columnwidth,height=0.85\textheight,keepaspectratio]{tobe_workflow}}
             \caption{Processus \textit{TO-BE} — revue automatisée par le BTE
                      Security AI Agent, déclenchée à chaque \textit{Pull Request}.}
             \label{fig:tobe_workflow}
@@ -379,163 +370,81 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
 
         \begin{table}[H]
         \centering
-        \begin{tabular}{|m{2.2cm}|m{3.4cm}|c|m{5.6cm}|}
+        \begin{tabular}{|m{2.2cm}|m{2.6cm}|c|m{6.4cm}|}
         \hline
         \textbf{Colonne} & \textbf{Statut Jira} & \textbf{WIP} & \textbf{Rôle} \\
         \hline
         Backlog & \texttt{To Do} & — &
-            Réservoir global de cartes non encore priorisées \\
+            Réservoir d'idées, de dette technique et de propositions, volontairement non limité \\
         \hline
         Ready & \texttt{Ready} & 5 &
-            Sprint backlog — cartes retenues pour les deux semaines en cours \\
+            Sprint backlog issu du \textit{sprint planning}, plafond indicatif contre le sur-engagement \\
         \hline
         In Progress & \texttt{In Progress} & \textbf{1} &
-            Carte en cours de développement actif \\
+            Carte en cours de développement actif --- limite WIP=1 structurante, empêche le multitâche silencieux \\
         \hline
         In Review & \texttt{In Review} & 2 &
-            Revue de code ou validation fonctionnelle avant fusion \\
+            Revue de code ou validation fonctionnelle avant fusion ; le plafond de 2 évite l'interruption du développement \\
         \hline
         Testing & \texttt{Testing} & 2 &
-            Vérification en production sur événement réel \\
+            Vérification en production sur événement réel (webhook PR, alerte Prometheus, requête chat) \\
         \hline
         Done & \texttt{Done} & — &
-            Carte satisfaisant la définition de terminé \\
+            Carte ayant satisfait les cinq conditions de la définition de terminé ; sinon retour en \textit{In Progress} ou \textit{Testing} \\
         \hline
         \end{tabular}
         \caption{Colonnes du tableau Scrumban et limites WIP appliquées}
         \label{tab:scrumban_columns}
         \end{table}
 
-        Le \textbf{Backlog} sert de réservoir : idées de fonctionnalités, dette technique
-        repérée au fil des sprints, propositions d'amélioration. Aucune limite n'y est
-        posée, c'est volontaire. Trop contraindre le backlog conduit en pratique à perdre
-        des idées qui ne sont pas mûres au moment où elles surgissent et qu'on n'a pas
-        envie de jeter pour autant.
-
-        La colonne \textbf{Ready} correspond au sprint backlog. Le \textit{sprint
-        planning} y dépose les cartes retenues pour les deux semaines à venir. Le plafond
-        de cinq cartes y est indicatif plus qu'absolu, mais il sert de garde-fou contre
-        le sur-engagement, ce piège classique de début de sprint quand l'optimisme prend
-        le pas sur la mesure réelle de la capacité.
-
-        \textbf{In Progress} est la colonne centrale. Sa limite WIP de 1 est la
-        règle structurante de tout le système. Une carte y entre quand le développement
-        commence et n'en sort que lorsque le code est livré et qu'une revue peut être
-        déclenchée. Tant qu'elle n'a pas avancé, aucune autre carte ne peut prendre sa
-        place. La tentation de démarrer la suivante « pendant qu'on attend » est revenue
-        souvent au cours du projet ; la règle l'a tenue à distance, et en retour le
-        tableau est resté lisible à tout instant.
-
-        \textbf{In Review} reçoit les cartes en relecture, qu'il s'agisse de revue de
-        code avant fusion ou de validation fonctionnelle d'une livraison. Le plafond de
-        2 reflète le fait qu'une relecture peut s'étaler sur quelques heures, et qu'il
-        est utile de pouvoir empiler deux cartes plutôt que d'interrompre le
-        développement en cours chaque fois qu'une revue commence.
-
-        \textbf{Testing} est dédiée à la validation en production. Une carte n'y reste
-        que le temps de déclencher un événement réel (webhook PR, alerte Prometheus,
-        requête chat) et de vérifier que le comportement de bout en bout correspond à
-        l'attendu. Le plafond de 2 suit la même logique que pour la revue.
-
-        \textbf{Done} clôt le flux. Une carte ne s'y arrête que si elle satisfait les
-        cinq conditions de la définition de terminé énoncée à la fin de cette
-        section ; sinon elle redescend en \textit{In Progress} ou en \textit{Testing}
-        selon le point qui a manqué.
-
-        Deux mécanismes transversaux complètent ce dispositif. D'abord les cartes
-        \textbf{bloquées}, identifiées par le drapeau rouge natif de Jira plutôt que par
-        une colonne dédiée : une carte en attente d'un élément externe (réponse d'un
-        encadrant, accès à un environnement) reste dans sa colonne et change simplement
-        de couleur. Le choix du drapeau évite l'effet « cimetière » des colonnes
-        \textit{Blocked} où s'accumulent les cartes qu'on finit par oublier. Ensuite les
-        \textbf{classes de service} : chaque carte porte une étiquette \textit{Standard},
-        \textit{Expedite}, \textit{Fixed Date} ou \textit{Intangible}. Les cartes
-        \textit{Expedite}, typiquement des incidents de production, sont autorisées à
-        franchir la limite WIP par exception explicite et documentée. C'est cette
-        mécanique qui a permis d'absorber les trois incidents cités plus haut sans
-        casser la planification du sprint.
-
-        Une dernière couche de catégorisation, orthogonale aux classes de service,
-        distingue la \textbf{nature} du travail à effectuer via les \textit{issue
-        types} natifs de Jira : \textit{Story} pour le développement applicatif,
-        \textit{Task} pour le travail d'infrastructure et d'exploitation,
-        \textit{Bug} pour les correctifs, et \textit{Spike} pour les investigations
-        de recherche-évaluation. Cette distinction est purement visuelle :
-        l'icône colorée portée par chaque carte permet de lire d'un coup d'œil si
-        le sprint en cours est à dominante développement, infrastructure ou
-        correction. Le flux et les limites WIP restent globaux : la règle WIP=1
-        vaut indistinctement pour une carte de développement et pour une carte
-        d'infrastructure, ce qui préserve la cohérence du système quel que soit
-        le type de travail en cours.
+        Une étiquette \textbf{Expedite}, portée par les cartes d'incident de production,
+        autorise une exception explicite à la limite WIP. Ce mécanisme a permis
+        d'absorber les trois incidents survenus pendant le projet --- urgence disque,
+        AlertManager silencieusement cassé et panne de VictoriaMetrics --- sans casser
+        la planification du sprint en cours.
 
         \paragraph{Définition de terminé.}
-        Pour qu'une carte franchisse la colonne \textit{Done}, une fonctionnalité
-        n'est considérée comme \textbf{terminée} que si elle remplit cinq conditions
-        simultanées : elle est effectivement déployée et en exécution sur le VPS de
-        production ; les logs de l'agent restent propres après le passage du nouveau
-        code, sans exception ni avertissement ; les métriques Prometheus reflètent
-        son comportement lorsque cela est applicable ; elle a été déclenchée par un
-        événement réel (webhook PR, alerte Prometheus ou requête chat) et a produit
-        le résultat attendu ; enfin, la section correspondante de la documentation
-        est à jour. Cette définition est volontairement stricte : elle évite que des
-        fonctionnalités à moitié intégrées ne s'accumulent dans le système.
+        Une carte ne rejoint la colonne \textit{Done} que lorsque les cinq conditions
+        suivantes sont simultanément satisfaites :
+        \begin{enumerate}[label=\arabic*., leftmargin=*, itemsep=2pt]
+            \item la fonctionnalité est déployée et en exécution sur le VPS de production ;
+            \item les logs de l'agent restent propres après le passage du nouveau code, sans exception ni avertissement ;
+            \item les métriques Prometheus reflètent son comportement lorsque cela est applicable ;
+            \item elle a été déclenchée par un événement réel (webhook PR, alerte Prometheus ou requête chat) et a produit le résultat attendu ;
+            \item la section correspondante de la documentation est à jour.
+        \end{enumerate}
+        Cette définition stricte évite que des fonctionnalités à moitié intégrées ne s'accumulent dans le système.
 
-    \subsection{Illustration d'un sprint sur l'agent}
+    \subsection{Illustration du tableau Scrumban en pratique}
 
-        L'outil Jira a servi de support à la gestion quotidienne du tableau
-        Scrumban tout au long du projet. Il a permis la création des cartes,
-        le suivi des transitions de colonne, l'application des limites WIP
-        et l'association aux jalons. Plutôt que d'énumérer ici la totalité
-        du backlog, nous détaillons un sprint représentatif du cœur du
-        travail : le sprint 3, consacré à l'assemblage du moteur de revue
-        de sécurité.
-
-        Ce sprint marque le moment où l'agent cesse d'être un assemblage
-        de briques techniques et devient réellement un \textit{Security
-        AI Agent} au sens où l'entend le sujet du projet. L'objectif fixé
-        en \textit{sprint planning} a été le suivant : produire, sur une
-        \textit{Pull Request} réelle, une revue de sécurité publiée
-        automatiquement sur GitHub, avec des commentaires \textit{inline}
-        positionnés sur les lignes concernées du diff.
-
-        Cinq cartes ont été tirées du backlog vers la colonne
-        \textit{Ready}. La première a installé le moteur d'inférence dédié
-        à l'analyse sécurité : le modèle \texttt{qwen2.5-coder:14b}, plus
-        lent que le 7B utilisé pour la classification mais nécessaire à
-        la qualité du raisonnement attendu. La deuxième a construit le
-        prompt sécurité combinant les \textit{findings} agrégés des cinq
-        scanners SAST et le \textit{diff} de la \textit{Pull Request} en
-        un appel unique au LLM 14B. La troisième a porté sur l'écriture
-        d'un parser de la réponse du modèle, attendue dans un format mixte
-        markdown plus JSON structuré. La quatrième a connecté ce parser
-        à l'API GitHub pour déposer chaque suggestion sous forme de
-        commentaire \textit{inline} cliquable. Enfin la cinquième carte,
-        étiquetée \textit{Fixed Date}, a clos le sprint par une
-        démonstration sur une \textit{Pull Request} réelle du projet à
-        l'encadrant. Cette démonstration constitue le jalon M2.
-
-        Sur ces deux semaines, la règle WIP=1 a été particulièrement
-        utile. Les cartes étaient fortement dépendantes les unes des
-        autres. Le parser ne pouvait être écrit avant que le format de
-        sortie soit stabilisé, et la publication GitHub supposait un
-        parser fonctionnel. La tentation d'attaquer plusieurs fronts en
-        parallèle aurait conduit à des intégrations bâclées. En tirant
-        une carte à la fois jusqu'à son déploiement effectif en
-        production, le sprint s'est terminé sans dette technique reportée
-        et le jalon a été tenu à la date prévue.
+        L'outil Jira a servi de support à la gestion quotidienne du tableau Scrumban
+        tout au long du projet : création des cartes, suivi des transitions de
+        colonne, application des limites WIP et association aux jalons. La figure
+        \ref{fig:jira_sprint} présente une capture du tableau en fin de Sprint 3,
+        retenu ici comme exemple représentatif de l'application concrète de la
+        méthodologie. Cette capture donne à voir trois éléments structurants : la
+        limite WIP=1 sur la colonne \textit{In Progress}, qui a contraint les cartes
+        à être traitées une à une malgré leurs dépendances mutuelles ; les six
+        colonnes du flux \textit{Backlog} $\rightarrow$ \textit{Ready}
+        $\rightarrow$ \textit{In Progress} $\rightarrow$ \textit{In Review}
+        $\rightarrow$ \textit{Testing} $\rightarrow$ \textit{Done} effectivement
+        utilisées ; et la matérialisation du jalon M2 par une carte étiquetée
+        \textit{Fixed Date}. Le détail technique du Sprint 3 lui-même --- objectif,
+        obstacles rencontrés et livrable --- est documenté au chapitre 4.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=\textwidth]{jira_sprint_s3}}
-            \caption{Tableau Jira en fin de sprint 3 — cinq cartes
-                     traitées une à une selon la règle WIP=1, jusqu'à la
-                     validation du jalon M2.}
+            \caption{Tableau Jira en fin de Sprint 3 --- application concrète
+                     des règles Scrumban : WIP=1 sur \textit{In Progress},
+                     flux à six colonnes et carte de jalon en classe de
+                     service \textit{Fixed Date}.}
             \label{fig:jira_sprint}
         \end{figure}
 
     \subsection{Déroulement du projet}
 
-        Le projet s'est déroulé sur cinq mois, du 1\up{er} février au 30 juin
+        Le projet s'est déroulé sur cinq mois, du 2 février au 30 juin
         2026, structurés en dix sprints de deux semaines : huit sprints
         majeurs (Sprint~1 à Sprint~8, du 2 février au 24 mai) suivis de deux
         micro-sprints d'extension (Post-Sprint~8 et Sprint~8.1, du 25 mai au
@@ -574,7 +483,7 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
             \centering
             \frame{\includegraphics[width=\textwidth]{gantt_chart}}
             \caption{Diagramme de Gantt du projet — dix sprints, six jalons
-                     et rédaction parallèle du rapport, du 1\up{er} février
+                     et rédaction parallèle du rapport, du 2 février
                      au 30 juin 2026.}
             \label{fig:gantt}
         \end{figure}

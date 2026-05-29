@@ -1,7 +1,5 @@
 \chapter{État de l'art et choix technologiques}
 
-\minitoc
-
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
@@ -27,33 +25,15 @@ fonctionnels et non fonctionnels du projet.
         production, qui permet de détecter rapidement les régressions et d'alimenter les
         itérations suivantes.
 
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.82\columnwidth]{devops_cycle}}
-            \caption{Cycle de vie DevOps — collaboration continue Dev et Ops. \\
-                     \footnotesize\textit{Source : Kharnagy, Wikimedia Commons, CC BY-SA 4.0.}}
-            \label{fig:devops_cycle}
-        \end{figure}
-
     \subsection{L'approche CI/CD}
 
         \subsubsection{Définition}
 
-        En automatisant les étapes du développement, l'approche CI/CD permet d'accroître
-        la fréquence de distribution des applications. L'intégration continue, la
-        distribution continue et le déploiement continu sont les principaux concepts clés
-        de cette approche. Elle résout les problèmes posés par l'intégration de nouveaux
-        segments de code pour les équipes de développement et d'exploitation, en
-        garantissant une automatisation et une surveillance tout au long du cycle de vie
-        des applications \cite{DevSecOps}.
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{cicd_pipeline}}
-            \caption{L'approche CI/CD — de l'intégration à la livraison continue. \\
-                     \footnotesize\textit{Source : Grégoire Détrez (d'après Jez Humble), Wikimedia Commons, CC BY-SA 4.0.}}
-            \label{fig:cicd_pipeline}
-        \end{figure}
+        L'approche CI/CD automatise les étapes de build, de test et de déploiement, ce
+        qui raccourcit le délai entre le développement et la mise en production tout en
+        réduisant les risques d'intégration \cite{DevSecOps}. Elle se décompose en deux
+        phases enchaînées : l'intégration continue côté code et le déploiement continu
+        côté production.
 
         \subsubsection{Intégration continue (CI)}
 
@@ -62,14 +42,6 @@ fonctionnels et non fonctionnels du projet.
         notre projet, chaque ouverture ou mise à jour d'une \textit{Pull Request} sur GitHub
         déclenche automatiquement le pipeline de sécurité de l'agent via le mécanisme de
         webhooks.
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{continuous_integration}}
-            \caption{L'intégration continue — déclenchement automatique sur chaque PR. \\
-                     \footnotesize\textit{Source : Grégoire Détrez, Wikimedia Commons, CC BY-SA 4.0.}}
-            \label{fig:ci}
-        \end{figure}
 
         \subsubsection{Déploiement continu (CD)}
 
@@ -110,22 +82,18 @@ fonctionnels et non fonctionnels du projet.
 
     \subsection{L'OWASP Top 10}
 
-        L'OWASP (Open Web Application Security Project) publie annuellement la liste des dix
-        risques de sécurité les plus critiques pour les applications web \cite{OWASP2021}.
-        Cette classification constitue la référence internationale pour les revues de sécurité et sert de grille
-        d'analyse pour le moteur LLM de notre solution. Parmi les risques les plus fréquemment
-        rencontrés figurent les injections (SQL, commandes OS), les failles d'authentification,
-        les expositions de données sensibles, et les misconfigurations de sécurité. Chaque
-        finding produit par l'agent est catégorisé selon cette taxonomie avec une référence
-        explicite (par exemple A01:2021 – Broken Access Control ou A03:2021 – Injection).
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.8\columnwidth]{owasp_top10}}
-            \caption{OWASP Top 10 — les dix risques de sécurité web les plus critiques. \\
-                     \footnotesize\textit{Source : Roman1024, Wikimedia Commons, CC BY-SA 3.0.}}
-            \label{fig:owasp}
-        \end{figure}
+        L'OWASP (Open Web Application Security Project) publie périodiquement la liste des dix
+        risques de sécurité les plus critiques pour les applications web \cite{OWASP2025}. La
+        version 2025 sert de référence internationale et de grille d'analyse pour le moteur LLM
+        de notre solution. Parmi les évolutions notables par rapport à la version 2021 figurent
+        l'apparition de la catégorie A03:2025 --- \textit{Software Supply Chain Failures}, qui
+        élargit l'ancien périmètre « composants vulnérables » à l'ensemble de la chaîne
+        d'approvisionnement logicielle (dépendances, registres, pipelines CI/CD), et la nouvelle
+        catégorie A10:2025 --- \textit{Mishandling of Exceptional Conditions} qui remplace SSRF.
+        La catégorie A03:2025 recouvre directement le domaine couvert par OSV-Scanner et Trivy
+        dans notre pipeline. Chaque finding produit par l'agent est catégorisé selon cette
+        taxonomie avec une référence explicite (par exemple A01:2025 --- Broken Access Control
+        ou A05:2025 --- Injection).
 
     \subsection{Webhooks GitHub et signature HMAC-SHA256}
 
@@ -164,14 +132,6 @@ fonctionnels et non fonctionnels du projet.
         hallucinations. Nous avons calibré ce paramètre à
         12 288 tokens pour l'analyse de \textit{Pull Request} et à 6 144 tokens pour
         l'assistant de chat.
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.82\columnwidth]{llm_context_window}}
-            \caption{Architecture interne d'un Transformer — encodeur-décodeur avec mécanisme d'attention multi-têtes. \\
-                     \footnotesize\textit{Source : dvgodoy, Wikimedia Commons, CC BY 4.0.}}
-            \label{fig:llm_ctx}
-        \end{figure}
 
     \subsection{Inférence locale et API cloud}
 
@@ -216,7 +176,7 @@ fonctionnels et non fonctionnels du projet.
     le \textbf{routage conditionnel}, qui permet à un nœud de décider du prochain en
     fonction de son résultat ; et l'\textbf{interruption humaine}, qui suspend le graphe
     en attente d'une validation externe avant de reprendre. Ces trois propriétés sont
-    indispensables à notre cas d'usage, où un pipeline de dix minutes doit survivre aux
+    indispensables à notre cas d'usage, où un pipeline de 15 à 25 minutes doit survivre aux
     redémarrages et où certaines décisions critiques peuvent requérir une revue manuelle.
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -302,7 +262,7 @@ fonctionnels et non fonctionnels du projet.
         l'ensemble des revues de \textit{Pull Requests}, des résultats de scanners et des
         profils de risque par dépôt. Cette base alimente ainsi les requêtes de tendances.
         D'autre part, elle assure la \textbf{persistance des checkpoints} de l'orchestrateur
-        de workflows. Un pipeline de dix minutes peut ainsi survivre à un redémarrage du
+        de workflows. Un pipeline de 15 à 25 minutes peut ainsi survivre à un redémarrage du
         conteneur.
 
     \subsection{Cache et déduplication}
@@ -432,7 +392,7 @@ fonctionnels et non fonctionnels du projet.
         Après l'évaluation présentée dans le tableau \ref{tab:langgraph_comp}, nous avons
         choisi LangGraph \cite{LangGraph}, bibliothèque Python construite sur LangChain
         \cite{LangChain}. Sa persistance d'état native sur PostgreSQL garantit qu'un
-        pipeline de dix minutes survit aux redémarrages du conteneur et reprend exactement
+        pipeline de 15 à 25 minutes survit aux redémarrages du conteneur et reprend exactement
         là où il s'était arrêté. Il s'agit d'une exigence fondamentale pour notre cas
         d'usage.
 
@@ -614,7 +574,8 @@ fonctionnels et non fonctionnels du projet.
         ne quitte l'infrastructure BTE. Il s'agit de la condition de conformité
         réglementaire imposée par le secteur bancaire. Vient ensuite la \textbf{performance} : le
         pipeline complet, de la réception du webhook à la publication de la revue, doit
-        tenir en moins de dix minutes pour ne pas peser sur les cycles de livraison. La
+        tenir en 15 à 25 minutes selon la complexité de la \textit{Pull Request} pour ne pas
+        peser sur les cycles de livraison. La
         \textbf{résilience} et la \textbf{fiabilité} sont deux exigences proches mais
         distinctes. La première impose que le système continue à fonctionner si un
         scanner ou le modèle LLM devient temporairement injoignable, ce que prennent en

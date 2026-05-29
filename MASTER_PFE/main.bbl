@@ -1,0 +1,944 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{none/global//global/global/global}
+  \entry{BTE}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=B}{%
+         family={{Banque de Tunisie et des Emirats}},
+         familyi={B\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{B1}
+    \strng{fullhash}{B1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://www.bte.com.tn}}
+    \field{note}{[Accès le 5-Mai-2026]}
+    \field{title}{{Site officiel de la BTE}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Agile}{misc}{}{}
+    \true{moreauthor}
+    \true{morelabelname}
+    \name{author}{1}{}{%
+      {{hash=BK}{%
+         family={Beck},
+         familyi={B\bibinitperiod},
+         given={Kent},
+         giveni={K\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{BK+1}
+    \strng{fullhash}{BK+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://agilemanifesto.org}}
+    \field{note}{[Accès le 8-Mai-2026]}
+    \field{title}{{Manifesto for Agile Software Development}}
+    \field{year}{2001}
+  \endentry
+
+  \entry{Ladas2009}{book}{}{}
+    \name{author}{1}{}{%
+      {{hash=LC}{%
+         family={Ladas},
+         familyi={L\bibinitperiod},
+         given={Corey},
+         giveni={C\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Modus Cooperandi Press}%
+    }
+    \strng{namehash}{LC1}
+    \strng{fullhash}{LC1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{isbn}{978-0-578-00214-9}
+    \field{title}{{Scrumban — Essays on Kanban Systems for Lean Software
+  Development}}
+    \list{location}{1}{%
+      {Seattle, WA}%
+    }
+    \field{year}{2009}
+  \endentry
+
+  \entry{Scrum}{misc}{}{}
+    \name{author}{2}{}{%
+      {{hash=SK}{%
+         family={Schwaber},
+         familyi={S\bibinitperiod},
+         given={Ken},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=SJ}{%
+         family={Sutherland},
+         familyi={S\bibinitperiod},
+         given={Jeff},
+         giveni={J\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{SKSJ1}
+    \strng{fullhash}{SKSJ1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://scrumguides.org/scrum-guide.html}}
+    \field{note}{[Accès le 8-Mai-2026]}
+    \field{title}{{The Scrum Guide — The Definitive Guide to Scrum}}
+    \field{year}{2020}
+  \endentry
+
+  \entry{Kanban}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=A}{%
+         family={{Atlassian}},
+         familyi={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{A5}
+    \strng{fullhash}{A5}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://www.atlassian.com/agile/kanban}}
+    \field{note}{[Accès le 8-Mai-2026]}
+    \field{title}{{Kanban — A brief introduction to the Kanban method}}
+    \field{year}{2023}
+  \endentry
+
+  \entry{DevSecOps}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=R}{%
+         family={{Red Hat}},
+         familyi={R\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{R1}
+    \strng{fullhash}{R1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+  \field{howpublished}{\url{https://www.redhat.com/en/topics/devops/what-is-devsecops}}
+    \field{note}{[Accès le 8-Mai-2026]}
+    \field{title}{{What is DevSecOps?}}
+    \field{year}{2023}
+  \endentry
+
+  \entry{NIST_DevSecOps}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=N}{%
+         family={{NIST}},
+         familyi={N\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{N1}
+    \strng{fullhash}{N1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+  \field{howpublished}{\url{https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-204C.pdf}}
+    \field{note}{[Accès le 8-Mai-2026]}
+    \field{title}{{NIST SP 800-204C — Implementation of DevSecOps for a
+  Microservices-based Application with Service Mesh}}
+    \field{year}{2022}
+  \endentry
+
+  \entry{OWASP2025}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=O}{%
+         family={{OWASP Foundation}},
+         familyi={O\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{O3}
+    \strng{fullhash}{O3}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://owasp.org/Top10/2025/}}
+    \field{note}{[Accès le 29-Mai-2026]}
+    \field{title}{{OWASP Top 10:2025 — The Ten Most Critical Web Application
+  Security Risks}}
+    \field{year}{2025}
+  \endentry
+
+  \entry{GitHubWebhooks}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=G}{%
+         family={{GitHub Inc.}},
+         familyi={G\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{G2}
+    \strng{fullhash}{G2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.github.com/en/webhooks}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{GitHub Webhooks Documentation}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{HMAC}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=I}{%
+         family={{IETF}},
+         familyi={I\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{I2}
+    \strng{fullhash}{I2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://www.rfc-editor.org/rfc/rfc2104}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{RFC 2104 — HMAC: Keyed-Hashing for Message
+  Authentication}}
+    \field{year}{1997}
+  \endentry
+
+  \entry{QwenCoder}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=A}{%
+         family={{Alibaba Cloud}},
+         familyi={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{A1}
+    \strng{fullhash}{A1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://qwenlm.github.io/blog/qwen2.5-coder/}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{Qwen2.5-Coder Technical Report}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Ollama}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=O}{%
+         family={{Ollama}},
+         familyi={O\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{O1}
+    \strng{fullhash}{O1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://ollama.com}}
+    \field{note}{[Accès le 15-Mai-2026]}
+    \field{title}{{Ollama — Run Large Language Models locally}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{LangGraph}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=L}{%
+         family={{LangChain Inc.}},
+         familyi={L\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{L1}
+    \strng{fullhash}{L1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://langchain-ai.github.io/langgraph/}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{LangGraph — Build stateful, multi-actor applications with
+  LLMs}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{LangChain}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=L}{%
+         family={{LangChain Inc.}},
+         familyi={L\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{L1}
+    \strng{fullhash}{L1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://python.langchain.com/docs/}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{LangChain Documentation}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Trivy}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=A}{%
+         family={{Aqua Security}},
+         familyi={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{A4}
+    \strng{fullhash}{A4}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://trivy.dev}}
+    \field{note}{[Accès le 20-Mai-2026]}
+    \field{title}{{Trivy — A comprehensive and versatile security scanner}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Gitleaks}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=RZ}{%
+         family={Rice},
+         familyi={R\bibinitperiod},
+         given={Zachary},
+         giveni={Z\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{RZ1}
+    \strng{fullhash}{RZ1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://gitleaks.io}}
+    \field{note}{[Accès le 20-Mai-2026]}
+    \field{title}{{Gitleaks — Protect and discover secrets using Gitleaks}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Semgrep}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=S}{%
+         family={{Semgrep Inc.}},
+         familyi={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{S1}
+    \strng{fullhash}{S1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://semgrep.dev}}
+    \field{note}{[Accès le 20-Mai-2026]}
+    \field{title}{{Semgrep — Lightweight static analysis for many languages}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Checkov}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=P}{%
+         family={{Palo Alto Networks}},
+         familyi={P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{P2}
+    \strng{fullhash}{P2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://www.checkov.io}}
+    \field{note}{[Accès le 20-Mai-2026]}
+    \field{title}{{Checkov — Static code analysis tool for infrastructure as
+  code}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{OSVScanner}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=G}{%
+         family={{Google LLC}},
+         familyi={G\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{G4}
+    \strng{fullhash}{G4}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://google.github.io/osv-scanner/}}
+    \field{note}{[Accès le 20-Mai-2026]}
+    \field{title}{{OSV-Scanner — Vulnerability scanner for open source
+  dependencies}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{FastAPI}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=RS}{%
+         family={Ramírez},
+         familyi={R\bibinitperiod},
+         given={Sebastián},
+         giveni={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{RS1}
+    \strng{fullhash}{RS1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://fastapi.tiangolo.com}}
+    \field{note}{[Accès le 15-Mai-2026]}
+    \field{title}{{FastAPI — Modern, fast web framework for building APIs
+  with Python}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{PostgreSQL}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=T}{%
+         family={{The PostgreSQL Global Development Group}},
+         familyi={T\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{T1}
+    \strng{fullhash}{T1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://www.postgresql.org/docs/16/}}
+    \field{note}{[Accès le 15-Mai-2026]}
+    \field{title}{{PostgreSQL 16 Documentation}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Redis}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=R}{%
+         family={{Redis Ltd.}},
+         familyi={R\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{R2}
+    \strng{fullhash}{R2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://redis.io/docs/}}
+    \field{note}{[Accès le 15-Mai-2026]}
+    \field{title}{{Redis Documentation}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Prometheus}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=P}{%
+         family={{Prometheus Authors}},
+         familyi={P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{P4}
+    \strng{fullhash}{P4}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+  \field{howpublished}{\url{https://prometheus.io/docs/introduction/overview/}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Prometheus — Monitoring system and time series database}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{VictoriaMetrics}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=V}{%
+         family={{VictoriaMetrics}},
+         familyi={V\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{V1}
+    \strng{fullhash}{V1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.victoriametrics.com}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{VictoriaMetrics — Fast, cost-effective and scalable
+  monitoring solution}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Grafana}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=G}{%
+         family={{Grafana Labs}},
+         familyi={G\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{G5}
+    \strng{fullhash}{G5}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://grafana.com/docs/grafana/latest/}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Grafana Documentation — The open observability platform}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{NodeExporter}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=P}{%
+         family={{Prometheus Authors}},
+         familyi={P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{P4}
+    \strng{fullhash}{P4}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://github.com/prometheus/node_exporter}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{node\_exporter — Prometheus exporter for hardware and OS
+  metrics}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{AlertManager}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=P}{%
+         family={{Prometheus Authors}},
+         familyi={P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{P4}
+    \strng{fullhash}{P4}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+  \field{howpublished}{\url{https://prometheus.io/docs/alerting/latest/alertmanager/}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Alertmanager — Handles alerts sent by Prometheus server}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{cAdvisor}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=G}{%
+         family={{Google}},
+         familyi={G\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{G3}
+    \strng{fullhash}{G3}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://github.com/google/cadvisor}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{cAdvisor — Container Advisor, analyzes resource usage and
+  performance of running containers}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{NGINX}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=F}{%
+         family={{F5 Networks}},
+         familyi={F\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{F1}
+    \strng{fullhash}{F1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://nginx.org/en/docs/}}
+    \field{note}{[Accès le 15-Mai-2026]}
+    \field{title}{{NGINX Documentation}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Docker}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=D}{%
+         family={{Docker Inc.}},
+         familyi={D\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{D2}
+    \strng{fullhash}{D2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.docker.com}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{Docker Documentation}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{LocalAI}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=L}{%
+         family={{LocalAI Community}},
+         familyi={L\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{L2}
+    \strng{fullhash}{L2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://localai.io}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{LocalAI — Open Source, OpenAI-compatible inference
+  server}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{GGUF}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=G}{%
+         family={{Georgi Gerganov and contributors}},
+         familyi={G\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{G1}
+    \strng{fullhash}{G1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+  \field{howpublished}{\url{https://github.com/ggerganov/ggml/blob/master/docs/gguf.md}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{GGUF — File format for quantised language models}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{HuggingFaceHub}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=H}{%
+         family={{Hugging Face}},
+         familyi={H\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{H1}
+    \strng{fullhash}{H1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://huggingface.co}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{The Hugging Face Hub — Models, Datasets and Spaces}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{OpenAI}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=O}{%
+         family={{OpenAI}},
+         familyi={O\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{O2}
+    \strng{fullhash}{O2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://platform.openai.com/docs/api-reference}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{OpenAI Platform — API Reference}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Anthropic}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=A}{%
+         family={{Anthropic}},
+         familyi={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{A3}
+    \strng{fullhash}{A3}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.anthropic.com}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Anthropic Claude API Documentation}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{MistralAI}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=M}{%
+         family={{Mistral AI}},
+         familyi={M\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{M2}
+    \strng{fullhash}{M2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.mistral.ai}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Mistral AI Platform Documentation}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{vLLM}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=v}{%
+         family={{vLLM Project}},
+         familyi={v\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{v1}
+    \strng{fullhash}{v1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.vllm.ai}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{vLLM — Easy, fast, and cheap LLM serving with
+  PagedAttention}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Llama3}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=M}{%
+         family={{Meta AI}},
+         familyi={M\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{M1}
+    \strng{fullhash}{M1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+  \field{howpublished}{\url{https://ai.meta.com/blog/llama-3-2-connect-2024-vision-edge-mobile-devices/}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Llama 3.2 — Multimodal and lightweight models}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Granite3}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=I}{%
+         family={{IBM Research}},
+         familyi={I\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{I1}
+    \strng{fullhash}{I1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://www.ibm.com/granite}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{IBM Granite 3.1 — Dense and Mixture-of-Experts foundation
+  models}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Prefect}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=P}{%
+         family={{Prefect Technologies}},
+         familyi={P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{P3}
+    \strng{fullhash}{P3}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.prefect.io}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Prefect — Modern dataflow orchestration platform}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Celery}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=S}{%
+         family={{Solem, Ask and contributors}},
+         familyi={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{S3}
+    \strng{fullhash}{S3}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.celeryq.dev}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Celery — Distributed task queue}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{OWASPSAST}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=O}{%
+         family={{OWASP Foundation}},
+         familyi={O\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{O3}
+    \strng{fullhash}{O3}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+  \field{howpublished}{\url{https://owasp.org/www-community/Source_Code_Analysis_Tools}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{OWASP Source Code Analysis Tools — SAST Tools Comparison}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{CNCFLandscape}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=C}{%
+         family={{Cloud Native Computing Foundation}},
+         familyi={C\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{C2}
+    \strng{fullhash}{C2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://landscape.cncf.io}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{CNCF Cloud Native Landscape — Observability and Security
+  categories}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Grype}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=A}{%
+         family={{Anchore}},
+         familyi={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{A2}
+    \strng{fullhash}{A2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://github.com/anchore/grype}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Grype — A vulnerability scanner for container images and
+  filesystems}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{TruffleHog}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=T}{%
+         family={{Truffle Security}},
+         familyi={T\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{T2}
+    \strng{fullhash}{T2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://github.com/trufflesecurity/trufflehog}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{TruffleHog — Find credentials all over the place}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{SonarQube}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=S}{%
+         family={{SonarSource}},
+         familyi={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{S4}
+    \strng{fullhash}{S4}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.sonarsource.com/sonarqube}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{SonarQube — Continuous code quality and security}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{KICS}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=C}{%
+         family={{Checkmarx}},
+         familyi={C\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{C1}
+    \strng{fullhash}{C1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.kics.io}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{KICS — Keeping Infrastructure as Code Secure}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Snyk}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=S}{%
+         family={{Snyk}},
+         familyi={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{S2}
+    \strng{fullhash}{S2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.snyk.io}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Snyk — Developer security platform}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{DataDog}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=D}{%
+         family={{Datadog}},
+         familyi={D\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{D1}
+    \strng{fullhash}{D1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.datadoghq.com}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Datadog — Cloud monitoring as a service}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{InfluxDB}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=I}{%
+         family={{InfluxData}},
+         familyi={I\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{I3}
+    \strng{fullhash}{I3}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.influxdata.com/influxdb/}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{InfluxDB — Time series data platform}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{Kibana}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=E}{%
+         family={{Elastic}},
+         familyi={E\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{E1}
+    \strng{fullhash}{E1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://www.elastic.co/guide/en/kibana/}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Kibana — Visualization and management tool for
+  Elasticsearch}}
+    \field{year}{2024}
+  \endentry
+
+  \entry{PagerDuty}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=P}{%
+         family={{PagerDuty}},
+         familyi={P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{P1}
+    \strng{fullhash}{P1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://developer.pagerduty.com}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{PagerDuty — Digital operations management platform}}
+    \field{year}{2024}
+  \endentry
+\enddatalist
+\endinput
