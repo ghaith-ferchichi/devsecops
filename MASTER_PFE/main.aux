@@ -398,8 +398,13 @@
 \@writefile{toc}{\contentsline {paragraph}{Configuration de l'intégration GitHub.}{62}{paragraph*.56}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {3.4}\else \textLR {4.3}\fi }{\ignorespaces Création du Personal Access Token GitHub avec les scopes \texttt  {repo} et \texttt  {write:discussion} nécessaires à la publication des commentaires et du statut du commit. Le token complet est masqué pour des raisons de sécurité.}}{63}{figure.caption.57}\protected@file@percent }
 \newlabel{fig:github_token_creation}{{\if@rl \I {3.4}\else \textLR {4.3}\fi }{63}{Création du Personal Access Token GitHub avec les scopes \texttt {repo} et \texttt {write:discussion} nécessaires à la publication des commentaires et du statut du commit. Le token complet est masqué pour des raisons de sécurité}{figure.caption.57}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {4.4}\else \textLR {4.4}\fi }{\ignorespaces Configuration du \textit  {webhook} GitHub sur le dépôt cible — URL de l'endpoint, secret HMAC partagé et content type JSON. Le secret est masqué pour des raisons de sécurité.}}{65}{figure.caption.58}\protected@file@percent }
-\newlabel{fig:github_webhook_config}{{\if@rl \I {4.4}\else \textLR {4.4}\fi }{65}{Configuration du \textit {webhook} GitHub sur le dépôt cible — URL de l'endpoint, secret HMAC partagé et content type JSON. Le secret est masqué pour des raisons de sécurité}{figure.caption.58}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {4.4}\else \textLR {4.4}\fi }{\ignorespaces Configuration du \textit  {webhook} GitHub sur le dépôt cible — URL de l'endpoint, secret HMAC partagé et content type JSON. Le secret est masqué pour des raisons de sécurité.}}{64}{figure.caption.58}\protected@file@percent }
+\newlabel{fig:github_webhook_config}{{\if@rl \I {4.4}\else \textLR {4.4}\fi }{64}{Configuration du \textit {webhook} GitHub sur le dépôt cible — URL de l'endpoint, secret HMAC partagé et content type JSON. Le secret est masqué pour des raisons de sécurité}{figure.caption.58}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {5.4}\else \textLR {4.5}\fi }{\ignorespaces Webhook GitHub correctement reçu par l'agent — vue de l'historique des livraisons côté GitHub avec réponse 202 \textit  {Accepted}.}}{64}{figure.caption.59}\protected@file@percent }
+\newlabel{fig:webhook_received_github}{{\if@rl \I {5.4}\else \textLR {4.5}\fi }{64}{Webhook GitHub correctement reçu par l'agent — vue de l'historique des livraisons côté GitHub avec réponse 202 \textit {Accepted}}{figure.caption.59}{}}
+\@writefile{toc}{\contentsline {paragraph}{Traitement applicatif de l'événement.}{64}{paragraph*.60}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {6.4}\else \textLR {4.6}\fi }{\ignorespaces Handler FastAPI de réception des webhooks GitHub --- validation HMAC-SHA256, filtrage des événements \textit  {pull\_request} et dispatch asynchrone vers le moteur de workflow.}}{65}{figure.caption.61}\protected@file@percent }
+\newlabel{fig:github_webhook_handler}{{\if@rl \I {6.4}\else \textLR {4.6}\fi }{65}{Handler FastAPI de réception des webhooks GitHub --- validation HMAC-SHA256, filtrage des événements \textit {pull\_request} et dispatch asynchrone vers le moteur de workflow}{figure.caption.61}{}}
 \citation{Trivy}
 \abx@aux@cite{0}{Trivy}
 \abx@aux@segm{0}{0}{Trivy}
@@ -418,105 +423,99 @@
 \citation{LangGraph}
 \abx@aux@cite{0}{LangGraph}
 \abx@aux@segm{0}{0}{LangGraph}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {5.4}\else \textLR {4.5}\fi }{\ignorespaces Webhook GitHub correctement reçu par l'agent — vue de l'historique des livraisons côté GitHub avec réponse 202 \textit  {Accepted}.}}{66}{figure.caption.59}\protected@file@percent }
-\newlabel{fig:webhook_received_github}{{\if@rl \I {5.4}\else \textLR {4.5}\fi }{66}{Webhook GitHub correctement reçu par l'agent — vue de l'historique des livraisons côté GitHub avec réponse 202 \textit {Accepted}}{figure.caption.59}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Sprint 2 — Pipeline de sécurité : scanners et LLM}{66}{subsection.4.2.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {6.4}\else \textLR {4.6}\fi }{\ignorespaces Comparaison diff API GitHub (-U3) vs diff local (-U15) — contexte SQL injection}}{67}{figure.caption.60}\protected@file@percent }
-\newlabel{fig:diff_comparison}{{\if@rl \I {6.4}\else \textLR {4.6}\fi }{67}{Comparaison diff API GitHub (-U3) vs diff local (-U15) — contexte SQL injection}{figure.caption.60}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {7.4}\else \textLR {4.7}\fi }{\ignorespaces Exécution parallèle des cinq scanners — résultats et mise en cache Redis}}{68}{figure.caption.61}\protected@file@percent }
-\newlabel{fig:scan_parallel}{{\if@rl \I {7.4}\else \textLR {4.7}\fi }{68}{Exécution parallèle des cinq scanners — résultats et mise en cache Redis}{figure.caption.61}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {7.4}\else \textLR {4.7}\fi }{\ignorespaces Comparaison diff API GitHub (-U3) vs diff local (-U15) — contexte SQL injection}}{67}{figure.caption.62}\protected@file@percent }
+\newlabel{fig:diff_comparison}{{\if@rl \I {7.4}\else \textLR {4.7}\fi }{67}{Comparaison diff API GitHub (-U3) vs diff local (-U15) — contexte SQL injection}{figure.caption.62}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {8.4}\else \textLR {4.8}\fi }{\ignorespaces PR~\#18 — exécution parallèle des cinq scanners, résultats et mise en cache Redis}}{68}{figure.caption.63}\protected@file@percent }
+\newlabel{fig:scan_parallel}{{\if@rl \I {8.4}\else \textLR {4.8}\fi }{68}{PR~\#18 — exécution parallèle des cinq scanners, résultats et mise en cache Redis}{figure.caption.63}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Sprint 3 — Revue combinée et commentaires inline GitHub}{68}{subsection.4.2.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {3.4}\else \textLR {4.3}\fi }{\ignorespaces Impact de la fusion des appels LLM sur la performance du pipeline}}{68}{table.caption.62}\protected@file@percent }
-\newlabel{tab:combined_perf}{{\if@rl \I {3.4}\else \textLR {4.3}\fi }{68}{Impact de la fusion des appels LLM sur la performance du pipeline}{table.caption.62}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {8.4}\else \textLR {4.8}\fi }{\ignorespaces Revue de sécurité publiée sur la PR GitHub — partie 1 : résumé et score de risque.}}{69}{figure.caption.63}\protected@file@percent }
-\newlabel{fig:github_review_sec0}{{\if@rl \I {8.4}\else \textLR {4.8}\fi }{69}{Revue de sécurité publiée sur la PR GitHub — partie 1 : résumé et score de risque}{figure.caption.63}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {9.4}\else \textLR {4.9}\fi }{\ignorespaces Revue de sécurité publiée sur la PR GitHub — partie 2 : détail des vulnérabilités identifiées par catégorie OWASP.}}{69}{figure.caption.64}\protected@file@percent }
-\newlabel{fig:github_review_sec1}{{\if@rl \I {9.4}\else \textLR {4.9}\fi }{69}{Revue de sécurité publiée sur la PR GitHub — partie 2 : détail des vulnérabilités identifiées par catégorie OWASP}{figure.caption.64}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {10.4}\else \textLR {4.10}\fi }{\ignorespaces Revue de sécurité publiée sur la PR GitHub — partie 3 : verdict final, recommandations et statut du commit.}}{70}{figure.caption.65}\protected@file@percent }
-\newlabel{fig:github_review_sec2}{{\if@rl \I {10.4}\else \textLR {4.10}\fi }{70}{Revue de sécurité publiée sur la PR GitHub — partie 3 : verdict final, recommandations et statut du commit}{figure.caption.65}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {11.4}\else \textLR {4.11}\fi }{\ignorespaces Revue de qualité de code publiée sur la PR GitHub — recommandations complémentaires à la revue de sécurité.}}{70}{figure.caption.66}\protected@file@percent }
-\newlabel{fig:github_review_quality}{{\if@rl \I {11.4}\else \textLR {4.11}\fi }{70}{Revue de qualité de code publiée sur la PR GitHub — recommandations complémentaires à la revue de sécurité}{figure.caption.66}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {12.4}\else \textLR {4.12}\fi }{\ignorespaces Commentaires inline avec suggestions de correction (bouton Apply)}}{71}{figure.caption.67}\protected@file@percent }
-\newlabel{fig:inline_suggestions}{{\if@rl \I {12.4}\else \textLR {4.12}\fi }{71}{Commentaires inline avec suggestions de correction (bouton Apply)}{figure.caption.67}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {13.4}\else \textLR {4.13}\fi }{\ignorespaces Journaux de l'agent lors de la finalisation du pipeline — publication du commentaire, dépôt des suggestions \textit  {inline} et mise à jour du statut du commit.}}{71}{figure.caption.68}\protected@file@percent }
-\newlabel{fig:agent_logs_pr_complete}{{\if@rl \I {13.4}\else \textLR {4.13}\fi }{71}{Journaux de l'agent lors de la finalisation du pipeline — publication du commentaire, dépôt des suggestions \textit {inline} et mise à jour du statut du commit}{figure.caption.68}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {14.4}\else \textLR {4.14}\fi }{\ignorespaces Notification Slack émise par l'agent à la fin du pipeline de revue — score de risque, verdict et lien vers la PR.}}{72}{figure.caption.69}\protected@file@percent }
-\newlabel{fig:slack_notification_pr_result}{{\if@rl \I {14.4}\else \textLR {4.14}\fi }{72}{Notification Slack émise par l'agent à la fin du pipeline de revue — score de risque, verdict et lien vers la PR}{figure.caption.69}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {3.4}\else \textLR {4.3}\fi }{\ignorespaces Impact de la fusion des appels LLM sur la performance du pipeline}}{68}{table.caption.64}\protected@file@percent }
+\newlabel{tab:combined_perf}{{\if@rl \I {3.4}\else \textLR {4.3}\fi }{68}{Impact de la fusion des appels LLM sur la performance du pipeline}{table.caption.64}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {9.4}\else \textLR {4.9}\fi }{\ignorespaces PR~\#18 — revue de sécurité, partie~1 : résumé et score de risque (\texttt  {HIGH}, verdict \texttt  {BLOCK}).}}{69}{figure.caption.65}\protected@file@percent }
+\newlabel{fig:github_review_sec0}{{\if@rl \I {9.4}\else \textLR {4.9}\fi }{69}{PR~\#18 — revue de sécurité, partie~1 : résumé et score de risque (\texttt {HIGH}, verdict \texttt {BLOCK})}{figure.caption.65}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {10.4}\else \textLR {4.10}\fi }{\ignorespaces PR~\#18 — revue de sécurité, partie~2 : détail des vulnérabilités et résultats SAST.}}{69}{figure.caption.66}\protected@file@percent }
+\newlabel{fig:github_review_sec1}{{\if@rl \I {10.4}\else \textLR {4.10}\fi }{69}{PR~\#18 — revue de sécurité, partie~2 : détail des vulnérabilités et résultats SAST}{figure.caption.66}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {11.4}\else \textLR {4.11}\fi }{\ignorespaces PR~\#18 — revue de sécurité, partie~3 : recommandations, échec du check \texttt  {security-ai-agent} et statut du commit.}}{70}{figure.caption.67}\protected@file@percent }
+\newlabel{fig:github_review_sec2}{{\if@rl \I {11.4}\else \textLR {4.11}\fi }{70}{PR~\#18 — revue de sécurité, partie~3 : recommandations, échec du check \texttt {security-ai-agent} et statut du commit}{figure.caption.67}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {12.4}\else \textLR {4.12}\fi }{\ignorespaces PR~\#18 — revue de qualité de code publiée dans l'onglet \textit  {Conversation}.}}{70}{figure.caption.68}\protected@file@percent }
+\newlabel{fig:github_review_quality}{{\if@rl \I {12.4}\else \textLR {4.12}\fi }{70}{PR~\#18 — revue de qualité de code publiée dans l'onglet \textit {Conversation}}{figure.caption.68}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {13.4}\else \textLR {4.13}\fi }{\ignorespaces PR~\#18 — suggestion \textit  {inline} sur l'injection SQL (\texttt  {banking\_demo\_final.php}, bouton \textit  {Apply}).}}{71}{figure.caption.69}\protected@file@percent }
+\newlabel{fig:inline_suggestions}{{\if@rl \I {13.4}\else \textLR {4.13}\fi }{71}{PR~\#18 — suggestion \textit {inline} sur l'injection SQL (\texttt {banking\_demo\_final.php}, bouton \textit {Apply})}{figure.caption.69}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {14.4}\else \textLR {4.14}\fi }{\ignorespaces PR~\#18 — journaux agent lors de la finalisation (\texttt  {pr=18}, cinq \textit  {inline}, statut commit \texttt  {error}).}}{71}{figure.caption.70}\protected@file@percent }
+\newlabel{fig:agent_logs_pr_complete}{{\if@rl \I {14.4}\else \textLR {4.14}\fi }{71}{PR~\#18 — journaux agent lors de la finalisation (\texttt {pr=18}, cinq \textit {inline}, statut commit \texttt {error})}{figure.caption.70}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {15.4}\else \textLR {4.15}\fi }{\ignorespaces PR~\#18 — notification Slack de fin de revue (\texttt  {HIGH}, \texttt  {BLOCK}).}}{72}{figure.caption.71}\protected@file@percent }
+\newlabel{fig:slack_notification_pr_result}{{\if@rl \I {15.4}\else \textLR {4.15}\fi }{72}{PR~\#18 — notification Slack de fin de revue (\texttt {HIGH}, \texttt {BLOCK})}{figure.caption.71}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Sprint 4 — Opérations autonomes et urgence disque}{72}{subsection.4.2.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.1}Urgence disque du 20 avril 2026}{72}{subsubsection.4.2.4.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {15.4}\else \textLR {4.15}\fi }{\ignorespaces Résolution de l'urgence disque — 233 Go libérés, aucun service interrompu}}{73}{figure.caption.70}\protected@file@percent }
-\newlabel{fig:disk_emergency}{{\if@rl \I {15.4}\else \textLR {4.15}\fi }{73}{Résolution de l'urgence disque — 233 Go libérés, aucun service interrompu}{figure.caption.70}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.2}Scheduler autonome et health digest}{74}{subsubsection.4.2.4.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {16.4}\else \textLR {4.16}\fi }{\ignorespaces Scheduler autonome — gardien disque et health digest quotidien}}{74}{figure.caption.71}\protected@file@percent }
-\newlabel{fig:scheduler}{{\if@rl \I {16.4}\else \textLR {4.16}\fi }{74}{Scheduler autonome — gardien disque et health digest quotidien}{figure.caption.71}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {17.4}\else \textLR {4.17}\fi }{\ignorespaces Configuration du \textit  {bot} Slack avec les permissions \texttt  {chat:write} et \texttt  {channels:read}. Le \textit  {bot token} est masqué pour des raisons de sécurité.}}{76}{figure.caption.72}\protected@file@percent }
-\newlabel{fig:slack_bot_config}{{\if@rl \I {17.4}\else \textLR {4.17}\fi }{76}{Configuration du \textit {bot} Slack avec les permissions \texttt {chat:write} et \texttt {channels:read}. Le \textit {bot token} est masqué pour des raisons de sécurité}{figure.caption.72}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.4.2}Scheduler autonome et health digest}{73}{subsubsection.4.2.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {16.4}\else \textLR {4.16}\fi }{\ignorespaces Scheduler autonome — gardien disque et health digest quotidien}}{73}{figure.caption.72}\protected@file@percent }
+\newlabel{fig:scheduler}{{\if@rl \I {16.4}\else \textLR {4.16}\fi }{73}{Scheduler autonome — gardien disque et health digest quotidien}{figure.caption.72}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {17.4}\else \textLR {4.17}\fi }{\ignorespaces Configuration OAuth du \textit  {bot} Slack — portées \texttt  {channels:read}, \texttt  {chat:write} et \texttt  {chat:write.public}.}}{74}{figure.caption.73}\protected@file@percent }
+\newlabel{fig:slack_bot_config}{{\if@rl \I {17.4}\else \textLR {4.17}\fi }{74}{Configuration OAuth du \textit {bot} Slack — portées \texttt {channels:read}, \texttt {chat:write} et \texttt {chat:write.public}}{figure.caption.73}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {18.4}\else \textLR {4.18}\fi }{\ignorespaces Health digest quotidien Slack — état complet de la plateforme BTE}}{74}{figure.caption.74}\protected@file@percent }
+\newlabel{fig:slack_digest}{{\if@rl \I {18.4}\else \textLR {4.18}\fi }{74}{Health digest quotidien Slack — état complet de la plateforme BTE}{figure.caption.74}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Sprint 5 — Stack de monitoring Prometheus et Grafana}{74}{subsection.4.2.5}\protected@file@percent }
 \citation{Prometheus}
 \abx@aux@cite{0}{Prometheus}
 \abx@aux@segm{0}{0}{Prometheus}
 \citation{AlertManager}
 \abx@aux@cite{0}{AlertManager}
 \abx@aux@segm{0}{0}{AlertManager}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {18.4}\else \textLR {4.18}\fi }{\ignorespaces Health digest quotidien Slack — état complet de la plateforme BTE}}{77}{figure.caption.73}\protected@file@percent }
-\newlabel{fig:slack_digest}{{\if@rl \I {18.4}\else \textLR {4.18}\fi }{77}{Health digest quotidien Slack — état complet de la plateforme BTE}{figure.caption.73}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Sprint 5 — Stack de monitoring Prometheus et Grafana}{77}{subsection.4.2.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.5.1}Correction des métriques Prometheus}{77}{subsubsection.4.2.5.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {19.4}\else \textLR {4.19}\fi }{\ignorespaces Cibles Prometheus en état down — avant correction des metrics\_path}}{78}{figure.caption.74}\protected@file@percent }
-\newlabel{fig:prom_targets_before}{{\if@rl \I {19.4}\else \textLR {4.19}\fi }{78}{Cibles Prometheus en état down — avant correction des metrics\_path}{figure.caption.74}{}}
 \citation{Grafana}
 \abx@aux@cite{0}{Grafana}
 \abx@aux@segm{0}{0}{Grafana}
 \citation{NodeExporter}
 \abx@aux@cite{0}{NodeExporter}
 \abx@aux@segm{0}{0}{NodeExporter}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {20.4}\else \textLR {4.20}\fi }{\ignorespaces Cibles Prometheus — 4 cibles vertes après correction des chemins}}{79}{figure.caption.75}\protected@file@percent }
-\newlabel{fig:prom_targets_after}{{\if@rl \I {20.4}\else \textLR {4.20}\fi }{79}{Cibles Prometheus — 4 cibles vertes après correction des chemins}{figure.caption.75}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.5.2}Dashboards Grafana}{79}{subsubsection.4.2.5.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {21.4}\else \textLR {4.21}\fi }{\ignorespaces Dashboard Grafana VPS Host Monitoring — 13 panneaux node-exporter}}{79}{figure.caption.76}\protected@file@percent }
-\newlabel{fig:grafana_vps}{{\if@rl \I {21.4}\else \textLR {4.21}\fi }{79}{Dashboard Grafana VPS Host Monitoring — 13 panneaux node-exporter}{figure.caption.76}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {22.4}\else \textLR {4.22}\fi }{\ignorespaces Dashboard Grafana DevSecOps AI Agent — 33 panneaux sur 5 lignes}}{81}{figure.caption.77}\protected@file@percent }
-\newlabel{fig:grafana_agent}{{\if@rl \I {22.4}\else \textLR {4.22}\fi }{81}{Dashboard Grafana DevSecOps AI Agent — 33 panneaux sur 5 lignes}{figure.caption.77}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {23.4}\else \textLR {4.23}\fi }{\ignorespaces Dashboard Grafana PR Security Reviews — données PostgreSQL}}{83}{figure.caption.78}\protected@file@percent }
-\newlabel{fig:grafana_pr}{{\if@rl \I {23.4}\else \textLR {4.23}\fi }{83}{Dashboard Grafana PR Security Reviews — données PostgreSQL}{figure.caption.78}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.5.1}Correction des métriques Prometheus}{75}{subsubsection.4.2.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {19.4}\else \textLR {4.19}\fi }{\ignorespaces Cibles Prometheus — 4 cibles vertes après correction des chemins}}{75}{figure.caption.75}\protected@file@percent }
+\newlabel{fig:prom_targets_after}{{\if@rl \I {19.4}\else \textLR {4.19}\fi }{75}{Cibles Prometheus — 4 cibles vertes après correction des chemins}{figure.caption.75}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.5.2}Dashboards Grafana}{75}{subsubsection.4.2.5.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {20.4}\else \textLR {4.20}\fi }{\ignorespaces Dashboard Grafana VPS Host Monitoring — 13 panneaux node-exporter}}{76}{figure.caption.76}\protected@file@percent }
+\newlabel{fig:grafana_vps}{{\if@rl \I {20.4}\else \textLR {4.20}\fi }{76}{Dashboard Grafana VPS Host Monitoring — 13 panneaux node-exporter}{figure.caption.76}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {21.4}\else \textLR {4.21}\fi }{\ignorespaces Dashboard Grafana DevSecOps AI Agent — version Sprint~5 (33 panneaux, cinq lignes)}}{76}{figure.caption.77}\protected@file@percent }
+\newlabel{fig:grafana_agent}{{\if@rl \I {21.4}\else \textLR {4.21}\fi }{76}{Dashboard Grafana DevSecOps AI Agent — version Sprint~5 (33 panneaux, cinq lignes)}{figure.caption.77}{}}
 \citation{NodeExporter}
 \abx@aux@cite{0}{NodeExporter}
 \abx@aux@segm{0}{0}{NodeExporter}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Sprint 6 — Monitoring host et optimisation du chat}{84}{subsection.4.2.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.1}Déploiement de node-exporter}{84}{subsubsection.4.2.6.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {24.4}\else \textLR {4.24}\fi }{\ignorespaces Configuration node-exporter — pid:host et network\_mode:host}}{84}{figure.caption.79}\protected@file@percent }
-\newlabel{fig:node_exporter}{{\if@rl \I {24.4}\else \textLR {4.24}\fi }{84}{Configuration node-exporter — pid:host et network\_mode:host}{figure.caption.79}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.2}Optimisation du chat agent}{84}{subsubsection.4.2.6.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {4.4}\else \textLR {4.4}\fi }{\ignorespaces Résultats du benchmark — décision finale par modèle}}{85}{table.caption.80}\protected@file@percent }
-\newlabel{tab:benchmark_result}{{\if@rl \I {4.4}\else \textLR {4.4}\fi }{85}{Résultats du benchmark — décision finale par modèle}{table.caption.80}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Sprint 7 — Audit VPS et durcissement}{85}{subsection.4.2.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.7.1}Audit VPS du 28 avril 2026}{85}{subsubsection.4.2.7.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {5.4}\else \textLR {4.5}\fi }{\ignorespaces Découvertes et corrections de l'audit VPS du 28 avril 2026}}{86}{table.caption.81}\protected@file@percent }
-\newlabel{tab:audit}{{\if@rl \I {5.4}\else \textLR {4.5}\fi }{86}{Découvertes et corrections de l'audit VPS du 28 avril 2026}{table.caption.81}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {25.4}\else \textLR {4.25}\fi }{\ignorespaces Correction AlertManager — ajout du path\_prefix dans prometheus.yml}}{86}{figure.caption.82}\protected@file@percent }
-\newlabel{fig:alertmanager_fix}{{\if@rl \I {25.4}\else \textLR {4.25}\fi }{86}{Correction AlertManager — ajout du path\_prefix dans prometheus.yml}{figure.caption.82}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.7.2}Implémentation du système anti-hallucination}{86}{subsubsection.4.2.7.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {26.4}\else \textLR {4.26}\fi }{\ignorespaces Comportement du chat agent — avant hallucination vs après correction}}{88}{figure.caption.83}\protected@file@percent }
-\newlabel{fig:hallucination_comparison}{{\if@rl \I {26.4}\else \textLR {4.26}\fi }{88}{Comportement du chat agent — avant hallucination vs après correction}{figure.caption.83}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {27.4}\else \textLR {4.27}\fi }{\ignorespaces Interface BTE Security AI Agent — chat opérationnel avec raisonnement visible}}{89}{figure.caption.84}\protected@file@percent }
-\newlabel{fig:chat_ui}{{\if@rl \I {27.4}\else \textLR {4.27}\fi }{89}{Interface BTE Security AI Agent — chat opérationnel avec raisonnement visible}{figure.caption.84}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {28.4}\else \textLR {4.28}\fi }{\ignorespaces Interrogation de la base de connaissances sécurité via le chat opérationnel — l'outil \texttt  {query\_database} extrait l'historique des revues de PR et la réponse cite verbatim les valeurs issues de PostgreSQL.}}{90}{figure.caption.85}\protected@file@percent }
-\newlabel{fig:db_query_via_chat}{{\if@rl \I {28.4}\else \textLR {4.28}\fi }{90}{Interrogation de la base de connaissances sécurité via le chat opérationnel — l'outil \texttt {query\_database} extrait l'historique des revues de PR et la réponse cite verbatim les valeurs issues de PostgreSQL}{figure.caption.85}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.8}Sprint 8 — Robustesse du parser de revue PR}{90}{subsection.4.2.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.1}Investigation du bug}{91}{subsubsection.4.2.8.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {29.4}\else \textLR {4.29}\fi }{\ignorespaces Analyse des trois bugs cumulatifs du parser PR review (Sprint 8)}}{91}{figure.caption.86}\protected@file@percent }
-\newlabel{fig:parser_bug_analysis}{{\if@rl \I {29.4}\else \textLR {4.29}\fi }{91}{Analyse des trois bugs cumulatifs du parser PR review (Sprint 8)}{figure.caption.86}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {6.4}\else \textLR {4.6}\fi }{\ignorespaces Les trois bugs cumulatifs identifiés sur PR \#14 et PR \#15}}{92}{table.caption.87}\protected@file@percent }
-\newlabel{tab:parser_bugs}{{\if@rl \I {6.4}\else \textLR {4.6}\fi }{92}{Les trois bugs cumulatifs identifiés sur PR \#14 et PR \#15}{table.caption.87}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.2}Réécriture du parser et restructuration du prompt}{92}{subsubsection.4.2.8.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {30.4}\else \textLR {4.30}\fi }{\ignorespaces Architecture du parser réécrit — trois stratégies imbriquées}}{93}{figure.caption.88}\protected@file@percent }
-\newlabel{fig:parser_rewrite}{{\if@rl \I {30.4}\else \textLR {4.30}\fi }{93}{Architecture du parser réécrit — trois stratégies imbriquées}{figure.caption.88}{}}
-\newlabel{lst:parser_rewrite}{{\textLR {4}.1}{93}{Parser PR review réécrit — regex tolérant + walker brace-depth + fallback markdown}{lstlisting.4.1}{}}
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.1}{\ignorespaces Parser PR review réécrit — regex tolérant + walker brace-depth + fallback markdown}}{93}{lstlisting.4.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {31.4}\else \textLR {4.31}\fi }{\ignorespaces Prompt restructuré — STEP 1 : production du bloc JSON en première position (risk\_score, verdict, commentaires inline).}}{95}{figure.caption.89}\protected@file@percent }
-\newlabel{fig:prompt_restructured_step_1}{{\if@rl \I {31.4}\else \textLR {4.31}\fi }{95}{Prompt restructuré — STEP 1 : production du bloc JSON en première position (risk\_score, verdict, commentaires inline)}{figure.caption.89}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {32.4}\else \textLR {4.32}\fi }{\ignorespaces Prompt restructuré — STEP 2 : production du markdown de la revue globale après le JSON.}}{96}{figure.caption.90}\protected@file@percent }
-\newlabel{fig:prompt_restructured_step_2}{{\if@rl \I {32.4}\else \textLR {4.32}\fi }{96}{Prompt restructuré — STEP 2 : production du markdown de la revue globale après le JSON}{figure.caption.90}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.3}Vérification}{96}{subsubsection.4.2.8.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {22.4}\else \textLR {4.22}\fi }{\ignorespaces Dashboard Grafana PR Security Reviews — données PostgreSQL}}{77}{figure.caption.78}\protected@file@percent }
+\newlabel{fig:grafana_pr}{{\if@rl \I {22.4}\else \textLR {4.22}\fi }{77}{Dashboard Grafana PR Security Reviews — données PostgreSQL}{figure.caption.78}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Sprint 6 — Monitoring host et optimisation du chat}{77}{subsection.4.2.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.1}Déploiement de node-exporter}{77}{subsubsection.4.2.6.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {23.4}\else \textLR {4.23}\fi }{\ignorespaces Configuration node-exporter — pid:host et network\_mode:host}}{78}{figure.caption.79}\protected@file@percent }
+\newlabel{fig:node_exporter}{{\if@rl \I {23.4}\else \textLR {4.23}\fi }{78}{Configuration node-exporter — pid:host et network\_mode:host}{figure.caption.79}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.6.2}Optimisation du chat agent}{78}{subsubsection.4.2.6.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {4.4}\else \textLR {4.4}\fi }{\ignorespaces Résultats du benchmark — décision finale par modèle}}{78}{table.caption.80}\protected@file@percent }
+\newlabel{tab:benchmark_result}{{\if@rl \I {4.4}\else \textLR {4.4}\fi }{78}{Résultats du benchmark — décision finale par modèle}{table.caption.80}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Sprint 7 — Audit VPS et durcissement}{78}{subsection.4.2.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.7.1}Audit VPS du 28 avril 2026}{79}{subsubsection.4.2.7.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {5.4}\else \textLR {4.5}\fi }{\ignorespaces Découvertes et corrections de l'audit VPS du 28 avril 2026}}{79}{table.caption.81}\protected@file@percent }
+\newlabel{tab:audit}{{\if@rl \I {5.4}\else \textLR {4.5}\fi }{79}{Découvertes et corrections de l'audit VPS du 28 avril 2026}{table.caption.81}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {24.4}\else \textLR {4.24}\fi }{\ignorespaces Correction AlertManager — ajout du path\_prefix dans prometheus.yml}}{80}{figure.caption.82}\protected@file@percent }
+\newlabel{fig:alertmanager_fix}{{\if@rl \I {24.4}\else \textLR {4.24}\fi }{80}{Correction AlertManager — ajout du path\_prefix dans prometheus.yml}{figure.caption.82}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.7.2}Implémentation du système anti-hallucination}{80}{subsubsection.4.2.7.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {25.4}\else \textLR {4.25}\fi }{\ignorespaces Comportement du chat agent — avant hallucination vs après correction}}{81}{figure.caption.83}\protected@file@percent }
+\newlabel{fig:hallucination_comparison}{{\if@rl \I {25.4}\else \textLR {4.25}\fi }{81}{Comportement du chat agent — avant hallucination vs après correction}{figure.caption.83}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {26.4}\else \textLR {4.26}\fi }{\ignorespaces Interface BTE Security AI Agent — chat opérationnel avec raisonnement visible}}{82}{figure.caption.84}\protected@file@percent }
+\newlabel{fig:chat_ui}{{\if@rl \I {26.4}\else \textLR {4.26}\fi }{82}{Interface BTE Security AI Agent — chat opérationnel avec raisonnement visible}{figure.caption.84}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {27.4}\else \textLR {4.27}\fi }{\ignorespaces Interrogation de la base de connaissances sécurité via le chat opérationnel — l'outil \texttt  {query\_database} extrait l'historique des revues de PR et la réponse cite verbatim les valeurs issues de PostgreSQL.}}{83}{figure.caption.85}\protected@file@percent }
+\newlabel{fig:db_query_via_chat}{{\if@rl \I {27.4}\else \textLR {4.27}\fi }{83}{Interrogation de la base de connaissances sécurité via le chat opérationnel — l'outil \texttt {query\_database} extrait l'historique des revues de PR et la réponse cite verbatim les valeurs issues de PostgreSQL}{figure.caption.85}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.8}Sprint 8 — Robustesse du parser de revue PR}{83}{subsection.4.2.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.1}Investigation du bug}{84}{subsubsection.4.2.8.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {28.4}\else \textLR {4.28}\fi }{\ignorespaces Analyse des trois bugs cumulatifs du parser PR review (Sprint 8)}}{84}{figure.caption.86}\protected@file@percent }
+\newlabel{fig:parser_bug_analysis}{{\if@rl \I {28.4}\else \textLR {4.28}\fi }{84}{Analyse des trois bugs cumulatifs du parser PR review (Sprint 8)}{figure.caption.86}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {6.4}\else \textLR {4.6}\fi }{\ignorespaces Les trois bugs cumulatifs identifiés sur PR \#14 et PR \#15}}{85}{table.caption.87}\protected@file@percent }
+\newlabel{tab:parser_bugs}{{\if@rl \I {6.4}\else \textLR {4.6}\fi }{85}{Les trois bugs cumulatifs identifiés sur PR \#14 et PR \#15}{table.caption.87}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.2}Réécriture du parser et restructuration du prompt}{85}{subsubsection.4.2.8.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {29.4}\else \textLR {4.29}\fi }{\ignorespaces Architecture du parser réécrit — trois stratégies imbriquées}}{86}{figure.caption.88}\protected@file@percent }
+\newlabel{fig:parser_rewrite}{{\if@rl \I {29.4}\else \textLR {4.29}\fi }{86}{Architecture du parser réécrit — trois stratégies imbriquées}{figure.caption.88}{}}
+\newlabel{lst:parser_rewrite}{{\textLR {4}.1}{86}{Parser PR review réécrit — regex tolérant + walker brace-depth + fallback markdown}{lstlisting.4.1}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.1}{\ignorespaces Parser PR review réécrit — regex tolérant + walker brace-depth + fallback markdown}}{86}{lstlisting.4.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {30.4}\else \textLR {4.30}\fi }{\ignorespaces Prompt restructuré — STEP 1 : production du bloc JSON en première position (risk\_score, verdict, commentaires inline).}}{88}{figure.caption.89}\protected@file@percent }
+\newlabel{fig:prompt_restructured_step_1}{{\if@rl \I {30.4}\else \textLR {4.30}\fi }{88}{Prompt restructuré — STEP 1 : production du bloc JSON en première position (risk\_score, verdict, commentaires inline)}{figure.caption.89}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {31.4}\else \textLR {4.31}\fi }{\ignorespaces Prompt restructuré — STEP 2 : production du markdown de la revue globale après le JSON.}}{89}{figure.caption.90}\protected@file@percent }
+\newlabel{fig:prompt_restructured_step_2}{{\if@rl \I {31.4}\else \textLR {4.31}\fi }{89}{Prompt restructuré — STEP 2 : production du markdown de la revue globale après le JSON}{figure.caption.90}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.8.3}Vérification}{89}{subsubsection.4.2.8.3}\protected@file@percent }
 \citation{Ollama}
 \abx@aux@cite{0}{Ollama}
 \abx@aux@segm{0}{0}{Ollama}
@@ -529,78 +528,78 @@
 \citation{HuggingFaceHub}
 \abx@aux@cite{0}{HuggingFaceHub}
 \abx@aux@segm{0}{0}{HuggingFaceHub}
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {7.4}\else \textLR {4.7}\fi }{\ignorespaces Vérifications post-réécriture du parser PR review}}{97}{table.caption.91}\protected@file@percent }
-\newlabel{tab:parser_verification}{{\if@rl \I {7.4}\else \textLR {4.7}\fi }{97}{Vérifications post-réécriture du parser PR review}{table.caption.91}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.9}Post-Sprint 8 — Évaluation d'un second backend d'inférence}{97}{subsection.4.2.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.1}Motivation et cadre du micro-sprint}{98}{subsubsection.4.2.9.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.2}Mise en place de la sandbox LocalAI}{98}{subsubsection.4.2.9.2}\protected@file@percent }
-\newlabel{lst:localai_qwen_yaml}{{\textLR {4}.2}{98}{Configuration LocalAI du modèle Qwen2.5-Coder 7B, identique à celui servi par Ollama}{lstlisting.4.2}{}}
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.2}{\ignorespaces Configuration LocalAI du modèle Qwen2.5-Coder 7B, identique à celui servi par Ollama}}{98}{lstlisting.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.3}Architecture du routeur dual-backend}{99}{subsubsection.4.2.9.3}\protected@file@percent }
-\newlabel{lst:backend_split}{{\textLR {4}.3}{99}{Bifurcation du routeur selon le backend cible}{lstlisting.4.3}{}}
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.3}{\ignorespaces Bifurcation du routeur selon le backend cible}}{99}{lstlisting.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.4}Découverte et résolution d'un bug de \@FB@og  cold-load \@FB@fg  \xspace  {}}{100}{subsubsection.4.2.9.4}\protected@file@percent }
-\newlabel{lst:localai_prime}{{\textLR {4}.4}{100}{Aide-mémoire de \og pre-warm \fg {} pour le backend LocalAI}{lstlisting.4.4}{}}
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.4}{\ignorespaces Aide-mémoire de \@FB@og  pre-warm \@FB@fg  \xspace  {} pour le backend LocalAI}}{100}{lstlisting.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.5}Benchmark croisé sur modèle identique}{101}{subsubsection.4.2.9.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {8.4}\else \textLR {4.8}\fi }{\ignorespaces Benchmark croisé Ollama vs LocalAI sur modèle identique (Qwen2.5-Coder 7B, quantification Q4\_K\_M, prompt OWASP Top 10, douze cœurs Haswell, sans GPU)}}{102}{table.caption.92}\protected@file@percent }
-\newlabel{tab:benchmark_backends}{{\if@rl \I {8.4}\else \textLR {4.8}\fi }{102}{Benchmark croisé Ollama vs LocalAI sur modèle identique (Qwen2.5-Coder 7B, quantification Q4\_K\_M, prompt OWASP Top 10, douze cœurs Haswell, sans GPU)}{table.caption.92}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.6}Interprétation et décision}{102}{subsubsection.4.2.9.6}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {9.4}\else \textLR {4.9}\fi }{\ignorespaces Fichiers modifiés ou créés lors du Post-Sprint~8}}{103}{table.caption.93}\protected@file@percent }
-\newlabel{tab:phase9_files}{{\if@rl \I {9.4}\else \textLR {4.9}\fi }{103}{Fichiers modifiés ou créés lors du Post-Sprint~8}{table.caption.93}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.10}Sprint 8.1 — Expansion de l'observabilité et correction du \textit  {template} Phi-4}{103}{subsection.4.2.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.10.1}Tentative de déploiement de cAdvisor et pivot architectural}{104}{subsubsection.4.2.10.1}\protected@file@percent }
-\newlabel{lst:docker_stats_poller}{{\textLR {4}.5}{104}{Cœur du \textit {poller} docker-stats — calcul CPU\% relatif à un cœur}{lstlisting.4.5}{}}
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.5}{\ignorespaces Cœur du \textit  {poller} docker-stats — calcul CPU\% relatif à un cœur}}{104}{lstlisting.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.10.2}Instrumentation du routeur de chat pour la télémétrie A/B}{105}{subsubsection.4.2.10.2}\protected@file@percent }
-\newlabel{lst:chat_ab_telemetry}{{\textLR {4}.6}{106}{Instrumentation A/B du \textit {stream} de chat — observation pure}{lstlisting.4.6}{}}
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.6}{\ignorespaces Instrumentation A/B du \textit  {stream} de chat — observation pure}}{106}{lstlisting.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.10.3}Cinq nouvelles \textit  {rows} sur le dashboard Grafana}{107}{subsubsection.4.2.10.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {10.4}\else \textLR {4.10}\fi }{\ignorespaces Organisation des cinq nouvelles \textit  {rows} ajoutées au \textit  {dashboard} Grafana lors du sprint 8.1}}{107}{table.caption.94}\protected@file@percent }
-\newlabel{tab:grafana_rows_8_1}{{\if@rl \I {10.4}\else \textLR {4.10}\fi }{107}{Organisation des cinq nouvelles \textit {rows} ajoutées au \textit {dashboard} Grafana lors du sprint 8.1}{table.caption.94}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.10.4}Découverte et correction du bug du \textit  {template} Phi-4}{107}{subsubsection.4.2.10.4}\protected@file@percent }
-\newlabel{lst:phi4_fix}{{\textLR {4}.7}{108}{Correction du \textit {template} ChatML-with-im\_sep de Phi-4}{lstlisting.4.7}{}}
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.7}{\ignorespaces Correction du \textit  {template} ChatML-with-im\_sep de Phi-4}}{108}{lstlisting.4.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.10.5}Synthèse de la couverture observabilité}{108}{subsubsection.4.2.10.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {11.4}\else \textLR {4.11}\fi }{\ignorespaces Inventaire consolidé des métriques Prometheus à l'issue du sprint 8.1}}{109}{table.caption.95}\protected@file@percent }
-\newlabel{tab:metrics_8_1_summary}{{\if@rl \I {11.4}\else \textLR {4.11}\fi }{109}{Inventaire consolidé des métriques Prometheus à l'issue du sprint 8.1}{table.caption.95}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Tests de validation}{109}{section.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Test de la validation HMAC-SHA256}{109}{subsection.4.3.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {33.4}\else \textLR {4.33}\fi }{\ignorespaces Test HMAC — rejet 403 sur signature invalide, acceptation 202 sur signature correcte}}{110}{figure.caption.96}\protected@file@percent }
-\newlabel{fig:test_hmac}{{\if@rl \I {33.4}\else \textLR {4.33}\fi }{110}{Test HMAC — rejet 403 sur signature invalide, acceptation 202 sur signature correcte}{figure.caption.96}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Test de la déduplication Redis}{110}{subsection.4.3.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {34.4}\else \textLR {4.34}\fi }{\ignorespaces Test déduplication Redis — second webhook ignoré, pipeline unique exécuté}}{110}{figure.caption.97}\protected@file@percent }
-\newlabel{fig:test_dedup}{{\if@rl \I {34.4}\else \textLR {4.34}\fi }{110}{Test déduplication Redis — second webhook ignoré, pipeline unique exécuté}{figure.caption.97}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Test du circuit breaker LLM}{110}{subsection.4.3.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {35.4}\else \textLR {4.35}\fi }{\ignorespaces Test circuit breaker — fallback regex activé quand Ollama est indisponible}}{111}{figure.caption.98}\protected@file@percent }
-\newlabel{fig:test_circuit}{{\if@rl \I {35.4}\else \textLR {4.35}\fi }{111}{Test circuit breaker — fallback regex activé quand Ollama est indisponible}{figure.caption.98}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Test du gardien disque}{111}{subsection.4.3.4}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {36.4}\else \textLR {4.36}\fi }{\ignorespaces Test gardien disque — nettoyage automatique déclenché et notifié sur Slack}}{112}{figure.caption.99}\protected@file@percent }
-\newlabel{fig:test_disk_guard}{{\if@rl \I {36.4}\else \textLR {4.36}\fi }{112}{Test gardien disque — nettoyage automatique déclenché et notifié sur Slack}{figure.caption.99}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Résultats}{112}{section.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Résultats des revues de Pull Requests réelles}{112}{subsection.4.4.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {37.4}\else \textLR {4.37}\fi }{\ignorespaces PR \#11 — revue de sécurité complète publiée sur GitHub (HIGH, REQUEST\_CHANGES)}}{113}{figure.caption.100}\protected@file@percent }
-\newlabel{fig:pr_full_result}{{\if@rl \I {37.4}\else \textLR {4.37}\fi }{113}{PR \#11 — revue de sécurité complète publiée sur GitHub (HIGH, REQUEST\_CHANGES)}{figure.caption.100}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {12.4}\else \textLR {4.12}\fi }{\ignorespaces Résultats des revues PR réelles — dépôt GhaiethFerchichi/Vunl-application}}{114}{table.caption.101}\protected@file@percent }
-\newlabel{tab:pr_results}{{\if@rl \I {12.4}\else \textLR {4.12}\fi }{114}{Résultats des revues PR réelles — dépôt GhaiethFerchichi/Vunl-application}{table.caption.101}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Résultats de l'analyse de conformité et observabilité}{114}{subsection.4.4.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {38.4}\else \textLR {4.38}\fi }{\ignorespaces Prometheus — 15 règles d'alerte inactives, aucun incident en production}}{114}{figure.caption.102}\protected@file@percent }
-\newlabel{fig:prom_alerts_ok}{{\if@rl \I {38.4}\else \textLR {4.38}\fi }{114}{Prometheus — 15 règles d'alerte inactives, aucun incident en production}{figure.caption.102}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Validation de la plateforme}{114}{subsection.4.4.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {13.4}\else \textLR {4.13}\fi }{\ignorespaces Checklist de validation complète de la plateforme}}{115}{table.caption.103}\protected@file@percent }
-\newlabel{tab:validation}{{\if@rl \I {13.4}\else \textLR {4.13}\fi }{115}{Checklist de validation complète de la plateforme}{table.caption.103}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Limites identifiées et plan de durcissement}{115}{subsection.4.4.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {14.4}\else \textLR {4.14}\fi }{\ignorespaces Écarts de durcissement identifiés sur la configuration de production}}{116}{table.caption.104}\protected@file@percent }
-\newlabel{tab:hardening_gaps}{{\if@rl \I {14.4}\else \textLR {4.14}\fi }{116}{Écarts de durcissement identifiés sur la configuration de production}{table.caption.104}{}}
-\@writefile{toc}{\contentsline {section}{Conclusion}{117}{table.caption.104}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {7.4}\else \textLR {4.7}\fi }{\ignorespaces Vérifications post-réécriture du parser PR review}}{90}{table.caption.91}\protected@file@percent }
+\newlabel{tab:parser_verification}{{\if@rl \I {7.4}\else \textLR {4.7}\fi }{90}{Vérifications post-réécriture du parser PR review}{table.caption.91}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.9}Post-Sprint 8 — Évaluation d'un second backend d'inférence}{90}{subsection.4.2.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.1}Motivation et cadre du micro-sprint}{91}{subsubsection.4.2.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.2}Mise en place de la sandbox LocalAI}{91}{subsubsection.4.2.9.2}\protected@file@percent }
+\newlabel{lst:localai_qwen_yaml}{{\textLR {4}.2}{91}{Configuration LocalAI du modèle Qwen2.5-Coder 7B, identique à celui servi par Ollama}{lstlisting.4.2}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.2}{\ignorespaces Configuration LocalAI du modèle Qwen2.5-Coder 7B, identique à celui servi par Ollama}}{91}{lstlisting.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.3}Architecture du routeur dual-backend}{92}{subsubsection.4.2.9.3}\protected@file@percent }
+\newlabel{lst:backend_split}{{\textLR {4}.3}{92}{Bifurcation du routeur selon le backend cible}{lstlisting.4.3}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.3}{\ignorespaces Bifurcation du routeur selon le backend cible}}{92}{lstlisting.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.4}Découverte et résolution d'un bug de \@FB@og  cold-load \@FB@fg  \xspace  {}}{93}{subsubsection.4.2.9.4}\protected@file@percent }
+\newlabel{lst:localai_prime}{{\textLR {4}.4}{93}{Aide-mémoire de \og pre-warm \fg {} pour le backend LocalAI}{lstlisting.4.4}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.4}{\ignorespaces Aide-mémoire de \@FB@og  pre-warm \@FB@fg  \xspace  {} pour le backend LocalAI}}{93}{lstlisting.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.5}Benchmark croisé sur modèle identique}{94}{subsubsection.4.2.9.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {8.4}\else \textLR {4.8}\fi }{\ignorespaces Benchmark croisé Ollama vs LocalAI sur modèle identique (Qwen2.5-Coder 7B, quantification Q4\_K\_M, prompt OWASP Top 10, douze cœurs Haswell, sans GPU)}}{95}{table.caption.92}\protected@file@percent }
+\newlabel{tab:benchmark_backends}{{\if@rl \I {8.4}\else \textLR {4.8}\fi }{95}{Benchmark croisé Ollama vs LocalAI sur modèle identique (Qwen2.5-Coder 7B, quantification Q4\_K\_M, prompt OWASP Top 10, douze cœurs Haswell, sans GPU)}{table.caption.92}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.9.6}Interprétation et décision}{95}{subsubsection.4.2.9.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {9.4}\else \textLR {4.9}\fi }{\ignorespaces Fichiers modifiés ou créés lors du Post-Sprint~8}}{96}{table.caption.93}\protected@file@percent }
+\newlabel{tab:phase9_files}{{\if@rl \I {9.4}\else \textLR {4.9}\fi }{96}{Fichiers modifiés ou créés lors du Post-Sprint~8}{table.caption.93}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.10}Sprint 8.1 — Expansion de l'observabilité et correction du \textit  {template} Phi-4}{96}{subsection.4.2.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.10.1}Tentative de déploiement de cAdvisor et pivot architectural}{97}{subsubsection.4.2.10.1}\protected@file@percent }
+\newlabel{lst:docker_stats_poller}{{\textLR {4}.5}{97}{Cœur du \textit {poller} docker-stats — calcul CPU\% relatif à un cœur}{lstlisting.4.5}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.5}{\ignorespaces Cœur du \textit  {poller} docker-stats — calcul CPU\% relatif à un cœur}}{97}{lstlisting.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.10.2}Instrumentation du routeur de chat pour la télémétrie A/B}{98}{subsubsection.4.2.10.2}\protected@file@percent }
+\newlabel{lst:chat_ab_telemetry}{{\textLR {4}.6}{99}{Instrumentation A/B du \textit {stream} de chat — observation pure}{lstlisting.4.6}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.6}{\ignorespaces Instrumentation A/B du \textit  {stream} de chat — observation pure}}{99}{lstlisting.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.10.3}Cinq nouvelles \textit  {rows} sur le dashboard Grafana}{100}{subsubsection.4.2.10.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {10.4}\else \textLR {4.10}\fi }{\ignorespaces Organisation des cinq nouvelles \textit  {rows} ajoutées au \textit  {dashboard} Grafana lors du sprint 8.1}}{100}{table.caption.94}\protected@file@percent }
+\newlabel{tab:grafana_rows_8_1}{{\if@rl \I {10.4}\else \textLR {4.10}\fi }{100}{Organisation des cinq nouvelles \textit {rows} ajoutées au \textit {dashboard} Grafana lors du sprint 8.1}{table.caption.94}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.10.4}Découverte et correction du bug du \textit  {template} Phi-4}{100}{subsubsection.4.2.10.4}\protected@file@percent }
+\newlabel{lst:phi4_fix}{{\textLR {4}.7}{101}{Correction du \textit {template} ChatML-with-im\_sep de Phi-4}{lstlisting.4.7}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {\textLR {4}.7}{\ignorespaces Correction du \textit  {template} ChatML-with-im\_sep de Phi-4}}{101}{lstlisting.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.10.5}Synthèse de la couverture observabilité}{102}{subsubsection.4.2.10.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {11.4}\else \textLR {4.11}\fi }{\ignorespaces Inventaire consolidé des métriques Prometheus à l'issue du sprint 8.1}}{102}{table.caption.95}\protected@file@percent }
+\newlabel{tab:metrics_8_1_summary}{{\if@rl \I {11.4}\else \textLR {4.11}\fi }{102}{Inventaire consolidé des métriques Prometheus à l'issue du sprint 8.1}{table.caption.95}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Tests de validation}{102}{section.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Test de la validation HMAC-SHA256}{102}{subsection.4.3.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {32.4}\else \textLR {4.32}\fi }{\ignorespaces Test HMAC — rejet 403 sur signature invalide, acceptation 202 sur signature correcte}}{103}{figure.caption.96}\protected@file@percent }
+\newlabel{fig:test_hmac}{{\if@rl \I {32.4}\else \textLR {4.32}\fi }{103}{Test HMAC — rejet 403 sur signature invalide, acceptation 202 sur signature correcte}{figure.caption.96}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Test de la déduplication Redis}{103}{subsection.4.3.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {33.4}\else \textLR {4.33}\fi }{\ignorespaces Test déduplication Redis — second webhook ignoré, pipeline unique exécuté}}{103}{figure.caption.97}\protected@file@percent }
+\newlabel{fig:test_dedup}{{\if@rl \I {33.4}\else \textLR {4.33}\fi }{103}{Test déduplication Redis — second webhook ignoré, pipeline unique exécuté}{figure.caption.97}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Test du circuit breaker LLM}{103}{subsection.4.3.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {34.4}\else \textLR {4.34}\fi }{\ignorespaces Test circuit breaker — fallback regex activé quand Ollama est indisponible}}{104}{figure.caption.98}\protected@file@percent }
+\newlabel{fig:test_circuit}{{\if@rl \I {34.4}\else \textLR {4.34}\fi }{104}{Test circuit breaker — fallback regex activé quand Ollama est indisponible}{figure.caption.98}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Test du gardien disque}{104}{subsection.4.3.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {35.4}\else \textLR {4.35}\fi }{\ignorespaces Test gardien disque — nettoyage automatique déclenché et notifié sur Slack}}{105}{figure.caption.99}\protected@file@percent }
+\newlabel{fig:test_disk_guard}{{\if@rl \I {35.4}\else \textLR {4.35}\fi }{105}{Test gardien disque — nettoyage automatique déclenché et notifié sur Slack}{figure.caption.99}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Résultats}{105}{section.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Résultat de la revue sur une Pull Request de démonstration}{105}{subsection.4.4.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {36.4}\else \textLR {4.36}\fi }{\ignorespaces PR~\#18 — vue d'ensemble de la revue publiée sur GitHub (\texttt  {HIGH}, \texttt  {BLOCK}, cinq suggestions \textit  {inline}).}}{106}{figure.caption.100}\protected@file@percent }
+\newlabel{fig:pr_full_result}{{\if@rl \I {36.4}\else \textLR {4.36}\fi }{106}{PR~\#18 — vue d'ensemble de la revue publiée sur GitHub (\texttt {HIGH}, \texttt {BLOCK}, cinq suggestions \textit {inline})}{figure.caption.100}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {12.4}\else \textLR {4.12}\fi }{\ignorespaces Résultat de la revue PR de démonstration — dépôt GhaiethFerchichi/Vuln-application}}{107}{table.caption.101}\protected@file@percent }
+\newlabel{tab:pr_results}{{\if@rl \I {12.4}\else \textLR {4.12}\fi }{107}{Résultat de la revue PR de démonstration — dépôt GhaiethFerchichi/Vuln-application}{table.caption.101}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Résultats de l'analyse de conformité et observabilité}{107}{subsection.4.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {\if@rl \I {37.4}\else \textLR {4.37}\fi }{\ignorespaces Prometheus — 15 règles d'alerte inactives, aucun incident en production}}{107}{figure.caption.102}\protected@file@percent }
+\newlabel{fig:prom_alerts_ok}{{\if@rl \I {37.4}\else \textLR {4.37}\fi }{107}{Prometheus — 15 règles d'alerte inactives, aucun incident en production}{figure.caption.102}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Validation de la plateforme}{107}{subsection.4.4.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {13.4}\else \textLR {4.13}\fi }{\ignorespaces Checklist de validation complète de la plateforme}}{108}{table.caption.103}\protected@file@percent }
+\newlabel{tab:validation}{{\if@rl \I {13.4}\else \textLR {4.13}\fi }{108}{Checklist de validation complète de la plateforme}{table.caption.103}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Limites identifiées et plan de durcissement}{108}{subsection.4.4.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {\if@rl \I {14.4}\else \textLR {4.14}\fi }{\ignorespaces Écarts de durcissement identifiés sur la configuration de production}}{109}{table.caption.104}\protected@file@percent }
+\newlabel{tab:hardening_gaps}{{\if@rl \I {14.4}\else \textLR {4.14}\fi }{109}{Écarts de durcissement identifiés sur la configuration de production}{table.caption.104}{}}
+\@writefile{toc}{\contentsline {section}{Conclusion}{110}{table.caption.104}\protected@file@percent }
 \@writefile{@@@}{\chapterbegin }
 \@writefile{toc}{\select@language{french}}
-\@writefile{toc}{\contentsline {chapter}{Conclusion générale et Perspectives}{118}{chapter*.105}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{Conclusion générale et Perspectives}{111}{chapter*.105}\protected@file@percent }
 \abx@aux@nociteall
 \citation{*}
 \@writefile{@@@}{\chapterbegin }
 \@writefile{toc}{\select@language{french}}
-\@writefile{toc}{\contentsline {chapter}{Webographie}{121}{chapter*.106}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{Webographie}{114}{chapter*.106}\protected@file@percent }
 \babel@aux{arabic}{}
 \babel@aux{french}{}
 \babel@aux{english}{}
@@ -713,4 +712,4 @@
 \abx@aux@defaultlabelprefix{0}{InfluxDB}{}
 \abx@aux@defaultlabelprefix{0}{Kibana}{}
 \abx@aux@defaultlabelprefix{0}{PagerDuty}{}
-\gdef \@abspage@last{144}
+\gdef \@abspage@last{137}

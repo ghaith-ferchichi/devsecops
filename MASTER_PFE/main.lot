@@ -25,18 +25,18 @@
 \contentsline {xchapter}{Réalisation et résultats}{58}{chapter.4}%
 \contentsline {table}{\numberline {\if@rl \I {1.4}\else \textLR {4.1}\fi }{\ignorespaces Environnement matériel — VPS de production BTE}}{58}{table.caption.52}%
 \contentsline {table}{\numberline {\if@rl \I {2.4}\else \textLR {4.2}\fi }{\ignorespaces Environnement logiciel — versions des composants clés}}{59}{table.caption.53}%
-\contentsline {table}{\numberline {\if@rl \I {3.4}\else \textLR {4.3}\fi }{\ignorespaces Impact de la fusion des appels LLM sur la performance du pipeline}}{68}{table.caption.62}%
-\contentsline {table}{\numberline {\if@rl \I {4.4}\else \textLR {4.4}\fi }{\ignorespaces Résultats du benchmark — décision finale par modèle}}{85}{table.caption.80}%
-\contentsline {table}{\numberline {\if@rl \I {5.4}\else \textLR {4.5}\fi }{\ignorespaces Découvertes et corrections de l'audit VPS du 28 avril 2026}}{86}{table.caption.81}%
-\contentsline {table}{\numberline {\if@rl \I {6.4}\else \textLR {4.6}\fi }{\ignorespaces Les trois bugs cumulatifs identifiés sur PR \#14 et PR \#15}}{92}{table.caption.87}%
-\contentsline {table}{\numberline {\if@rl \I {7.4}\else \textLR {4.7}\fi }{\ignorespaces Vérifications post-réécriture du parser PR review}}{97}{table.caption.91}%
-\contentsline {table}{\numberline {\if@rl \I {8.4}\else \textLR {4.8}\fi }{\ignorespaces Benchmark croisé Ollama vs LocalAI sur modèle identique (Qwen2.5-Coder 7B, quantification Q4\_K\_M, prompt OWASP Top 10, douze cœurs Haswell, sans GPU)}}{102}{table.caption.92}%
-\contentsline {table}{\numberline {\if@rl \I {9.4}\else \textLR {4.9}\fi }{\ignorespaces Fichiers modifiés ou créés lors du Post-Sprint~8}}{103}{table.caption.93}%
-\contentsline {table}{\numberline {\if@rl \I {10.4}\else \textLR {4.10}\fi }{\ignorespaces Organisation des cinq nouvelles \textit {rows} ajoutées au \textit {dashboard} Grafana lors du sprint 8.1}}{107}{table.caption.94}%
-\contentsline {table}{\numberline {\if@rl \I {11.4}\else \textLR {4.11}\fi }{\ignorespaces Inventaire consolidé des métriques Prometheus à l'issue du sprint 8.1}}{109}{table.caption.95}%
-\contentsline {table}{\numberline {\if@rl \I {12.4}\else \textLR {4.12}\fi }{\ignorespaces Résultats des revues PR réelles — dépôt GhaiethFerchichi/Vunl-application}}{114}{table.caption.101}%
-\contentsline {table}{\numberline {\if@rl \I {13.4}\else \textLR {4.13}\fi }{\ignorespaces Checklist de validation complète de la plateforme}}{115}{table.caption.103}%
-\contentsline {table}{\numberline {\if@rl \I {14.4}\else \textLR {4.14}\fi }{\ignorespaces Écarts de durcissement identifiés sur la configuration de production}}{116}{table.caption.104}%
+\contentsline {table}{\numberline {\if@rl \I {3.4}\else \textLR {4.3}\fi }{\ignorespaces Impact de la fusion des appels LLM sur la performance du pipeline}}{68}{table.caption.64}%
+\contentsline {table}{\numberline {\if@rl \I {4.4}\else \textLR {4.4}\fi }{\ignorespaces Résultats du benchmark — décision finale par modèle}}{78}{table.caption.80}%
+\contentsline {table}{\numberline {\if@rl \I {5.4}\else \textLR {4.5}\fi }{\ignorespaces Découvertes et corrections de l'audit VPS du 28 avril 2026}}{79}{table.caption.81}%
+\contentsline {table}{\numberline {\if@rl \I {6.4}\else \textLR {4.6}\fi }{\ignorespaces Les trois bugs cumulatifs identifiés sur PR \#14 et PR \#15}}{85}{table.caption.87}%
+\contentsline {table}{\numberline {\if@rl \I {7.4}\else \textLR {4.7}\fi }{\ignorespaces Vérifications post-réécriture du parser PR review}}{90}{table.caption.91}%
+\contentsline {table}{\numberline {\if@rl \I {8.4}\else \textLR {4.8}\fi }{\ignorespaces Benchmark croisé Ollama vs LocalAI sur modèle identique (Qwen2.5-Coder 7B, quantification Q4\_K\_M, prompt OWASP Top 10, douze cœurs Haswell, sans GPU)}}{95}{table.caption.92}%
+\contentsline {table}{\numberline {\if@rl \I {9.4}\else \textLR {4.9}\fi }{\ignorespaces Fichiers modifiés ou créés lors du Post-Sprint~8}}{96}{table.caption.93}%
+\contentsline {table}{\numberline {\if@rl \I {10.4}\else \textLR {4.10}\fi }{\ignorespaces Organisation des cinq nouvelles \textit {rows} ajoutées au \textit {dashboard} Grafana lors du sprint 8.1}}{100}{table.caption.94}%
+\contentsline {table}{\numberline {\if@rl \I {11.4}\else \textLR {4.11}\fi }{\ignorespaces Inventaire consolidé des métriques Prometheus à l'issue du sprint 8.1}}{102}{table.caption.95}%
+\contentsline {table}{\numberline {\if@rl \I {12.4}\else \textLR {4.12}\fi }{\ignorespaces Résultat de la revue PR de démonstration — dépôt GhaiethFerchichi/Vuln-application}}{107}{table.caption.101}%
+\contentsline {table}{\numberline {\if@rl \I {13.4}\else \textLR {4.13}\fi }{\ignorespaces Checklist de validation complète de la plateforme}}{108}{table.caption.103}%
+\contentsline {table}{\numberline {\if@rl \I {14.4}\else \textLR {4.14}\fi }{\ignorespaces Écarts de durcissement identifiés sur la configuration de production}}{109}{table.caption.104}%
 \babel@toc {arabic}{}\relax 
 \babel@toc {french}{}\relax 
 \babel@toc {english}{}\relax 

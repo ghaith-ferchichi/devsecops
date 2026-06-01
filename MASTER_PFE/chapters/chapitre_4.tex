@@ -102,7 +102,7 @@ bout en bout de la plateforme.
             \item[Obstacles rencontrés :] Nginx, configuré en HTTP/1.0 par défaut,
                 manglait les corps \textit{chunked} des requêtes GitHub, provoquant
                 systématiquement des erreurs 500 en réception.
-            \item[Livrable :] Douze conteneurs déployés et opérationnels, premier
+            \item[Livrable :] Onze conteneurs déployés et opérationnels, premier
                 webhook GitHub reçu et validé par signature HMAC-SHA256, configuration
                 Ollama tunée pour CPU Haswell AVX2.
         \end{description}
@@ -214,10 +214,45 @@ bout en bout de la plateforme.
             \label{fig:webhook_received_github}
         \end{figure}
 
-        Cette confirmation côté GitHub complète le correctif nginx présenté
-        ci-dessus : nous disposons à la fois de la preuve que l'agent reçoit
-        correctement les événements GitHub et du détail technique du correctif
-        ayant rendu cette réception possible.
+        \paragraph{Traitement applicatif de l'événement.}
+        La livraison côté GitHub ne suffit pas : il faut aussi décrire ce que
+        l'agent fait une fois la requête reçue. La figure
+        \ref{fig:github_webhook_handler} présente le handler implémenté dans
+        \texttt{app/routers/webhooks.py}. L'endpoint
+        \texttt{POST /webhooks/github} répond en 202 et confie le reste à une
+        tâche de fond, afin de rester dans les délais de réponse imposés par
+        GitHub.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.92\columnwidth]{github_webhook_handler_code}}
+            \caption{Handler FastAPI de réception des webhooks GitHub ---
+                     validation HMAC-SHA256, filtrage des événements
+                     \textit{pull\_request} et dispatch asynchrone vers le
+                     moteur de workflow.}
+            \label{fig:github_webhook_handler}
+        \end{figure}
+
+        Le traitement commence par la vérification de la signature
+        HMAC-SHA256 : le corps brut de la requête est comparé à l'en-tête
+        \texttt{X-Hub-Signature-256}. Une signature absente ou incorrecte
+        entraîne un rejet immédiat en 403, avant tout décodage JSON. Le corps
+        est ensuite interprété selon le \textit{content type} reçu. GitHub
+        peut transmettre la charge utile en JSON direct, ou l'encapsuler dans
+        un champ \texttt{payload} au format
+        \texttt{application/x-www-form-urlencoded}. Cette seconde branche a
+        été ajoutée après les premiers tests d'intégration, lorsque certaines
+        livraisons ne correspondaient pas au format JSON initialement prévu.
+
+        Seuls les événements \texttt{pull\_request} dont l'action vaut
+        \texttt{opened} ou \texttt{synchronize} sont conservés. Les autres
+        retournent une réponse HTTP 200 avec un message d'ignorance, sans
+        lancer de pipeline. Pour un événement accepté, un identifiant de
+        tâche est généré et la fonction \texttt{dispatch\_event} est
+        enregistrée via \texttt{BackgroundTasks} de FastAPI. L'appel HTTP se
+        termine sans attendre la fin de l'analyse ; la déduplication Redis et
+        le lancement du graphe LangGraph sont pris en charge par le
+        dispatcher, déjà présenté au chapitre~3.
 
     \subsection{Sprint 2 — Pipeline de sécurité : scanners et LLM}
 
@@ -255,12 +290,14 @@ bout en bout de la plateforme.
         clé des performances du pipeline. Chaque scanner s'exécute dans sa propre coroutine
         avec isolation des erreurs, et son résultat est mis en cache dans Redis. La figure
         \ref{fig:scan_parallel} montre le résultat de cette exécution parallèle avec les
-        sorties des cinq scanners.
+        sorties des cinq scanners, ici sur la PR~\#18 du dépôt
+        \texttt{GhaiethFerchichi/Vuln-application}.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{scanners_parallel_output}}
-            \caption{Exécution parallèle des cinq scanners — résultats et mise en cache Redis}
+            \caption{PR~\#18 — exécution parallèle des cinq scanners, résultats et mise
+                     en cache Redis}
             \label{fig:scan_parallel}
         \end{figure}
 
@@ -277,23 +314,26 @@ bout en bout de la plateforme.
                 avec la fluidité d'un pipeline CI/CD.
             \item[Livrable :] Fusion des deux appels 14B en un seul appel combiné
                 dans le nœud \texttt{analyze\_review\_node}, durée totale du pipeline
-                ramenée à 6--11 minutes (gain de 50\,\%), commentaires inline
-                opérationnels avec bouton \textit{Apply}.
+                ramenée à quinze à vingt-cinq minutes (gain d'environ 50\,\% par rapport
+                aux deux appels séquentiels), commentaires inline opérationnels avec
+                bouton \textit{Apply}.
         \end{description}
 
         Le troisième sprint a introduit l'optimisation principale du pipeline : la fusion
-        des deux appels 14B séquentiels en un seul appel combiné. Le tableau
-        \ref{tab:combined_perf} présente l'impact de cette optimisation sur les performances.
+        des deux appels 14B séquentiels en un seul appel combiné. Le gain porte sur la
+        durée totale (scanners, classification 7B et publication GitHub comprises), et
+        non sur la seule phase d'inférence du modèle 14B. Le tableau
+        \ref{tab:combined_perf} résume cet impact.
 
         \begin{table}[H]
         \centering
         \begin{tabular}{|m{5cm}|m{3cm}|m{3cm}|m{2cm}|}
         \hline
-        \textbf{Configuration} & \textbf{Avant Sprint 5} & \textbf{Après Sprint 5} & \textbf{Gain} \\
+        \textbf{Configuration} & \textbf{Avant fusion (Sprint 3)} & \textbf{Après fusion (Sprint 3)} & \textbf{Gain} \\
         \hline
         Appels LLM 14B par PR & 2 séquentiels & 1 combiné & -1 appel \\
         \hline
-        Durée totale analyse & 30–50 min & 15–25 min & -50\% \\
+        Durée totale du pipeline & 30–50 min & 15–25 min & $\sim$50\,\% \\
         \hline
         \texttt{num\_ctx} utilisé & 2 × 8 192 & 12 288 & +contexte \\
         \hline
@@ -302,86 +342,81 @@ bout en bout de la plateforme.
         \label{tab:combined_perf}
         \end{table}
 
-        Les figures \ref{fig:github_review_sec0}, \ref{fig:github_review_sec1},
-        \ref{fig:github_review_sec2} et \ref{fig:github_review_quality} montrent
-        le résultat de la revue automatisée publiée directement sur la
-        \textit{Pull Request} GitHub. La revue se compose de deux sections
-        distinctes apparaissant dans l'onglet \textit{Conversation} : la revue
-        de sécurité (trois sous-sections — résumé, findings inline et verdict)
-        et la revue de qualité de code (recommandations complémentaires).
+        La PR~\#18 sert de fil rouge pour valider ce sprint. Le fichier
+        \texttt{banking\_demo\_final.php} y regroupe cinq failles types :
+        injection SQL, secrets en dur, path traversal, injection de commande
+        et hachage faible. Les figures~\ref{fig:github_review_sec0}
+        à~\ref{fig:slack_notification_pr_result} retracent la revue de bout
+        en bout, depuis l'onglet \textit{Conversation} de GitHub jusqu'à la
+        notification Slack.
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_0}
-            \caption{Revue de sécurité publiée sur la PR GitHub — partie 1 :
-                     résumé et score de risque.}
+            \caption{PR~\#18 — revue de sécurité, partie~1 : résumé et score
+                     de risque (\texttt{HIGH}, verdict \texttt{BLOCK}).}
             \label{fig:github_review_sec0}
         \end{figure}
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_1}
-            \caption{Revue de sécurité publiée sur la PR GitHub — partie 2 :
-                     détail des vulnérabilités identifiées par catégorie OWASP.}
+            \caption{PR~\#18 — revue de sécurité, partie~2 : détail des
+                     vulnérabilités et résultats SAST.}
             \label{fig:github_review_sec1}
         \end{figure}
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_2}
-            \caption{Revue de sécurité publiée sur la PR GitHub — partie 3 :
-                     verdict final, recommandations et statut du commit.}
+            \caption{PR~\#18 — revue de sécurité, partie~3 : recommandations,
+                     échec du check \texttt{security-ai-agent} et statut du commit.}
             \label{fig:github_review_sec2}
         \end{figure}
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{pr_comment-code_quality_review_0}
-            \caption{Revue de qualité de code publiée sur la PR GitHub —
-                     recommandations complémentaires à la revue de sécurité.}
+            \caption{PR~\#18 — revue de qualité de code publiée dans
+                     l'onglet \textit{Conversation}.}
             \label{fig:github_review_quality}
         \end{figure}
 
-        La figure \ref{fig:inline_suggestions} présente les commentaires inline avec
-        suggestions de correction visibles dans l'onglet Files Changed, comportant le
-        bouton Apply permettant d'appliquer directement la correction proposée.
+        La figure~\ref{fig:inline_suggestions} reprend la même PR dans
+        l'onglet \textit{Files changed} : cinq commentaires \textit{inline}
+        avec suggestion de correction et bouton \textit{Apply}.
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{github_inline_suggestions}
-            \caption{Commentaires inline avec suggestions de correction (bouton Apply)}
+            \caption{PR~\#18 — suggestion \textit{inline} sur l'injection SQL
+                     (\texttt{banking\_demo\_final.php}, bouton \textit{Apply}).}
             \label{fig:inline_suggestions}
         \end{figure}
 
-        La figure \ref{fig:agent_logs_pr_complete} présente les journaux de
-        l'agent au moment où le nœud \texttt{report\_node} finalise le pipeline :
-        publication du commentaire global, dépôt des commentaires \textit{inline}
-        et mise à jour du statut du commit sur GitHub. Ce sont les opérations
-        finales avant que la \textit{Pull Request} ne devienne fusionnable ou
-        bloquée selon le verdict émis par le modèle 14B.
+        Côté serveur, la figure~\ref{fig:agent_logs_pr_complete} montre le
+        nœud \texttt{report\_node} au travail : revue postée, cinq suggestions
+        \textit{inline}, statut commit passé à \texttt{error}, notification
+        Slack envoyée. Durée totale : environ quinze minutes pour cette PR.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.92\columnwidth]{agent_logs_pr_complete}}
-            \caption{Journaux de l'agent lors de la finalisation du pipeline —
-                     publication du commentaire, dépôt des suggestions
-                     \textit{inline} et mise à jour du statut du commit.}
+            \caption{PR~\#18 — journaux agent lors de la finalisation
+                     (\texttt{pr=18}, cinq \textit{inline}, statut commit
+                     \texttt{error}).}
             \label{fig:agent_logs_pr_complete}
         \end{figure}
 
-        En complément de la publication sur GitHub, l'agent émet une
-        notification Slack récapitulant le résultat de la revue. Cette
-        notification, présentée dans la figure
-        \ref{fig:slack_notification_pr_result}, indique le dépôt analysé,
-        le numéro de la \textit{Pull Request}, le score de risque, le
-        verdict émis ainsi qu'un lien direct vers la PR pour consultation
-        immédiate par les destinataires.
+        La figure~\ref{fig:slack_notification_pr_result} reprend le même
+        résultat dans le canal \texttt{\#bte-security-ai-agent} :
+        dépôt, numéro de PR, risque \texttt{HIGH}, verdict \texttt{BLOCK}.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.80\columnwidth]{slack_notification_pr_result}}
-            \caption{Notification Slack émise par l'agent à la fin du pipeline
-                     de revue — score de risque, verdict et lien vers la PR.}
+            \caption{PR~\#18 — notification Slack de fin de revue
+                     (\texttt{HIGH}, \texttt{BLOCK}).}
             \label{fig:slack_notification_pr_result}
         \end{figure}
 
@@ -404,24 +439,18 @@ bout en bout de la plateforme.
 
         \subsubsection{Urgence disque du 20 avril 2026}
 
-        Au cours du sprint trois, un incident critique s'est produit. Un téléchargement
-        partiel du modèle \texttt{qwen2.5-coder:32b}, interrompu sans nettoyage, a laissé
-        un blob de 242 Go sur le disque sans manifeste associé, le rendant inutilisable
-        mais occupant l'espace. Combiné au cache Docker build et au modèle
-        \texttt{llama3.2:3b} non utilisé, le disque a atteint 92\% d'utilisation. La
-        figure \ref{fig:disk_emergency} présente la résolution de cet incident.
+        L'incident date du sprint trois ; nous le racontons ici parce que c'est
+        lui qui a poussé à coder le gardien disque de ce sprint. Un téléchargement
+        interrompu du modèle \texttt{qwen2.5-coder:32b} avait laissé un blob de
+        242~Go sans manifeste. Avec le cache Docker et le modèle
+        \texttt{llama3.2:3b} toujours présent, le disque est monté à 92\,\%.
+        Nous n'avons pas gardé de capture d'écran de la session de dépannage ;
+        les journaux du VPS et une carte Jira en classe \textit{Expedite} suffisent
+        à la retrouver. Environ 233~Go ont été libérés sans arrêter les conteneurs.
 
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{disk_emergency_resolution}}
-            \caption{Résolution de l'urgence disque — 233 Go libérés, aucun service interrompu}
-            \label{fig:disk_emergency}
-        \end{figure}
-
-        Cet incident a directement motivé l'implémentation du gardien disque autonome,
-        qui surveille l'utilisation du disque toutes les trente minutes, met à jour les
-        jauges Prometheus et déclenche automatiquement \texttt{docker builder prune -f}
-        lorsque le seuil de 90\% est atteint.
+        Le gardien disque décrit à la figure~\ref{fig:scheduler} est la réponse
+        directe à cet épisode. L'état stable du disque après reprise apparaît
+        dans le digest Slack de la figure~\ref{fig:slack_digest}.
 
         \subsubsection{Scheduler autonome et health digest}
 
@@ -436,22 +465,19 @@ bout en bout de la plateforme.
         \end{figure}
 
         Pour permettre à l'agent d'émettre des notifications sur Slack, un
-        \textit{bot} Slack a été créé dans l'espace de travail
-        \texttt{team-devsecops} avec les permissions \texttt{chat:write} et
-        \texttt{channels:read}, comme présenté sur la figure
-        \ref{fig:slack_bot_config}. Son \textit{bot token} est injecté dans
-        l'agent via la variable \texttt{SLACK\_BOT\_TOKEN}, et l'identifiant
-        du canal cible (\texttt{C0XXXXXXXXX}) via \texttt{SLACK\_CHANNEL\_ID}.
-        Le scheduler asyncio peut ainsi publier le \textit{health digest}
-        quotidien sans intervention manuelle.
+        \textit{bot} a été créé dans l'espace \texttt{team-devsecops} avec les
+        portées \texttt{channels:read}, \texttt{chat:write} et
+        \texttt{chat:write.public}, comme le montre la
+        figure~\ref{fig:slack_bot_config}. Son \textit{bot token} est injecté
+        via \texttt{SLACK\_BOT\_TOKEN}, l'identifiant du canal via
+        \texttt{SLACK\_CHANNEL\_ID}.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{slack_bot_config}}
-            \caption{Configuration du \textit{bot} Slack avec les permissions
-                     \texttt{chat:write} et \texttt{channels:read}.
-                     Le \textit{bot token} est masqué pour des raisons de
-                     sécurité.}
+            \caption{Configuration OAuth du \textit{bot} Slack — portées
+                     \texttt{channels:read}, \texttt{chat:write} et
+                     \texttt{chat:write.public}.}
             \label{fig:slack_bot_config}
         \end{figure}
 
@@ -485,22 +511,16 @@ bout en bout de la plateforme.
 
         \subsubsection{Correction des métriques Prometheus}
 
-        Lors du premier démarrage de la stack de monitoring Prometheus \cite{Prometheus},
-        les trois cibles configurées affichaient toutes l'état \texttt{down}. Le diagnostic
-        a révélé que Prometheus et AlertManager \cite{AlertManager} s'exécutent avec
-        l'option \texttt{--web.route-prefix},
-        qui préfixe l'ensemble de leurs chemins HTTP, y compris \texttt{/metrics}. Les
-        chemins de scrape par défaut étaient donc incorrects. La figure
-        \ref{fig:prom_targets_before} montre l'état des cibles avant correction.
+        Lors du premier démarrage de la stack Prometheus \cite{Prometheus},
+        les trois cibles configurées affichaient l'état \texttt{down}. Prometheus
+        et AlertManager \cite{AlertManager} tournent avec
+        \texttt{--web.route-prefix}, ce qui déplace le chemin \texttt{/metrics}
+        par rapport à ce que le scrape attend par défaut. Nous n'avons pas
+        archivé la page \textit{Targets} dans cet état initial ; le diagnostic
+        repose sur les journaux de scrape et la lecture de
+        \texttt{prometheus.yml}.
 
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{prometheus_targets_down}}
-            \caption{Cibles Prometheus en état down — avant correction des metrics\_path}
-            \label{fig:prom_targets_before}
-        \end{figure}
-
-        Après l'ajout des paramètres \texttt{metrics\_path} explicites (\texttt{/prometheus/metrics}
+        Après ajout des \texttt{metrics\_path} explicites (\texttt{/prometheus/metrics}
         pour Prometheus et \texttt{/alertmanager/metrics} pour AlertManager), ainsi que
         l'ajout de la cible node-exporter, les quatre cibles sont passées à l'état
         \texttt{up}, comme le montre la figure \ref{fig:prom_targets_after}.
@@ -525,14 +545,18 @@ bout en bout de la plateforme.
             \label{fig:grafana_vps}
         \end{figure}
 
-        La figure \ref{fig:grafana_agent} présente le dashboard DevSecOps AI Agent,
-        comportant trente-trois panneaux organisés en cinq lignes couvrant la santé
-        VPS, le pipeline PR, le chat opérationnel, les LLM Ollama et les I/O réseau.
+        La figure \ref{fig:grafana_agent} présente le dashboard DevSecOps AI Agent
+        dans sa première version opérationnelle (Sprint~5) : trente-trois panneaux
+        répartis en cinq lignes couvrant la santé VPS, le pipeline PR, le chat
+        opérationnel, les LLM Ollama et les I/O réseau. Des panneaux ont été ajoutés
+        aux sprints suivants ; le dashboard comptait quarante-cinq panneaux avant
+        l'extension du Sprint~8.1 décrite plus bas.
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{grafana_agent_dashboard}
-            \caption{Dashboard Grafana DevSecOps AI Agent — 33 panneaux sur 5 lignes}
+            \caption{Dashboard Grafana DevSecOps AI Agent — version Sprint~5
+                     (33 panneaux, cinq lignes)}
             \label{fig:grafana_agent}
         \end{figure}
 
@@ -1315,8 +1339,10 @@ async def _stream_react(req: ChatRequest):
 
         \subsubsection{Cinq nouvelles \textit{rows} sur le dashboard Grafana}
 
-        Le \textit{dashboard} de l'agent est passé de quarante-cinq à soixante-six
-        \textit{panels} répartis sur cinq nouvelles \textit{rows}, sans aucune
+        Entre le Sprint~5 (trente-trois panneaux, cf. figure~\ref{fig:grafana_agent})
+        et ce micro-sprint, le dashboard avait déjà été enrichi jusqu'à quarante-cinq
+        panneaux. Le Sprint~8.1 y ajoute cinq \textit{rows} supplémentaires : le total
+        passe de quarante-cinq à soixante-six \textit{panels}, sans aucune
         collision d'identifiant (vérification programmatique via l'API REST de
         Grafana). Un indicateur \og LocalAI \fg{} UP/DOWN a également été ajouté à
         la bande d'en-tête, juste à côté de l'indicateur Ollama existant. Le tableau
@@ -1515,20 +1541,24 @@ template:
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Résultats}
 
-    \subsection{Résultats des revues de Pull Requests réelles}
+    \subsection{Résultat de la revue sur une Pull Request de démonstration}
 
-        Le pipeline a été validé sur deux \textit{Pull Requests} réelles sur le dépôt
-        \texttt{GhaiethFerchichi/Vunl-application}. La figure \ref{fig:pr_full_result}
-        montre la revue complète publiée sur la PR \#11.
+        Le pipeline a été validé de bout en bout sur la PR~\#18 du dépôt
+        \texttt{GhaiethFerchichi/Vuln-application}, ouverte le 28~mai~2026 pour
+        un module bancaire de démonstration contenant cinq vulnérabilités types.
+        La figure~\ref{fig:pr_full_result} en donne la vue d'ensemble : commentaires
+        de revue, suggestions \textit{inline}, verdict \texttt{BLOCK} et échec
+        du check \texttt{security-ai-agent}.
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{pr_review_full_result}
-            \caption{PR \#11 — revue de sécurité complète publiée sur GitHub (HIGH, REQUEST\_CHANGES)}
+            \caption{PR~\#18 — vue d'ensemble de la revue publiée sur GitHub
+                     (\texttt{HIGH}, \texttt{BLOCK}, cinq suggestions \textit{inline}).}
             \label{fig:pr_full_result}
         \end{figure}
 
-        Le tableau \ref{tab:pr_results} récapitule les résultats des deux revues effectuées.
+        Le tableau~\ref{tab:pr_results} synthétise le résultat de cette revue.
 
         \begin{table}[H]
         \centering
@@ -1536,12 +1566,10 @@ template:
         \hline
         \textbf{PR} & \textbf{Risque} & \textbf{Verdict} & \textbf{Classification} & \textbf{Durée} & \textbf{Commentaires} \\
         \hline
-        \#11 & HIGH & REQUEST\_CHANGES & infrastructure & \textasciitilde18 min & 4 inline \\
-        \hline
-        \#12 & HIGH & REQUEST\_CHANGES & infrastructure & \textasciitilde15 min & 3 inline \\
+        \#18 & HIGH & BLOCK & feature & \textasciitilde15 min & 5 inline \\
         \hline
         \end{tabular}
-        \caption{Résultats des revues PR réelles — dépôt GhaiethFerchichi/Vunl-application}
+        \caption{Résultat de la revue PR de démonstration — dépôt GhaiethFerchichi/Vuln-application}
         \label{tab:pr_results}
         \end{table}
 
@@ -1595,7 +1623,7 @@ template:
         \hline
         nginx Basic Auth /ui protégé & Accès refusé sans credentials & \checkmark \\
         \hline
-        Base de données PR reviews & SELECT pr\_reviews — 2 enregistrements & \checkmark \\
+        Base de données PR reviews & SELECT pr\_reviews — 1 enregistrement (PR~\#18) & \checkmark \\
         \hline
         \end{tabular}
         \caption{Checklist de validation complète de la plateforme}
@@ -1681,6 +1709,7 @@ n'apparaissait dans le plan initial ; tous ont été détectés en production pu
 transformés en cartes prioritaires du sprint en cours, illustration concrète du
 \textit{pull system} Scrumban où chaque obstacle remonte au backlog au moment où
 il est observé plutôt qu'au prochain cycle de planification. La dernière section
-du chapitre a présenté les résultats obtenus sur des \textit{Pull Requests}
-réelles, avec des revues complètes produites en environ 15 à 25 minutes selon la complexité de la PR, commentaires
-inline et suggestions de correction publiés directement sur GitHub.
+du chapitre a présenté le résultat de la validation sur la PR de démonstration~\#18,
+avec une revue complète produite en environ quinze minutes, des commentaires
+\textit{inline} et des suggestions de correction publiés directement sur GitHub ; la
+fourchette de quinze à vingt-cinq minutes reste la cible retenue pour des PR plus volumineuses.

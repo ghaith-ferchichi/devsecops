@@ -104,52 +104,53 @@
 \contentsline {section}{\numberline {2}Implémentation par sprints Scrumban}{59}{section.4.2}%
 \contentsline {subsection}{\numberline {2.1}Sprint 1 — Fondations : VPS, Docker et webhook GitHub}{59}{subsection.4.2.1}%
 \contentsline {paragraph}{Configuration de l'intégration GitHub.}{62}{paragraph*.56}%
+\contentsline {paragraph}{Traitement applicatif de l'événement.}{64}{paragraph*.60}%
 \contentsline {subsection}{\numberline {2.2}Sprint 2 — Pipeline de sécurité : scanners et LLM}{66}{subsection.4.2.2}%
 \contentsline {subsection}{\numberline {2.3}Sprint 3 — Revue combinée et commentaires inline GitHub}{68}{subsection.4.2.3}%
 \contentsline {subsection}{\numberline {2.4}Sprint 4 — Opérations autonomes et urgence disque}{72}{subsection.4.2.4}%
 \contentsline {subsubsection}{\numberline {2.4.1}Urgence disque du 20 avril 2026}{72}{subsubsection.4.2.4.1}%
-\contentsline {subsubsection}{\numberline {2.4.2}Scheduler autonome et health digest}{74}{subsubsection.4.2.4.2}%
-\contentsline {subsection}{\numberline {2.5}Sprint 5 — Stack de monitoring Prometheus et Grafana}{77}{subsection.4.2.5}%
-\contentsline {subsubsection}{\numberline {2.5.1}Correction des métriques Prometheus}{77}{subsubsection.4.2.5.1}%
-\contentsline {subsubsection}{\numberline {2.5.2}Dashboards Grafana}{79}{subsubsection.4.2.5.2}%
-\contentsline {subsection}{\numberline {2.6}Sprint 6 — Monitoring host et optimisation du chat}{84}{subsection.4.2.6}%
-\contentsline {subsubsection}{\numberline {2.6.1}Déploiement de node-exporter}{84}{subsubsection.4.2.6.1}%
-\contentsline {subsubsection}{\numberline {2.6.2}Optimisation du chat agent}{84}{subsubsection.4.2.6.2}%
-\contentsline {subsection}{\numberline {2.7}Sprint 7 — Audit VPS et durcissement}{85}{subsection.4.2.7}%
-\contentsline {subsubsection}{\numberline {2.7.1}Audit VPS du 28 avril 2026}{85}{subsubsection.4.2.7.1}%
-\contentsline {subsubsection}{\numberline {2.7.2}Implémentation du système anti-hallucination}{86}{subsubsection.4.2.7.2}%
-\contentsline {subsection}{\numberline {2.8}Sprint 8 — Robustesse du parser de revue PR}{90}{subsection.4.2.8}%
-\contentsline {subsubsection}{\numberline {2.8.1}Investigation du bug}{91}{subsubsection.4.2.8.1}%
-\contentsline {subsubsection}{\numberline {2.8.2}Réécriture du parser et restructuration du prompt}{92}{subsubsection.4.2.8.2}%
-\contentsline {subsubsection}{\numberline {2.8.3}Vérification}{96}{subsubsection.4.2.8.3}%
-\contentsline {subsection}{\numberline {2.9}Post-Sprint 8 — Évaluation d'un second backend d'inférence}{97}{subsection.4.2.9}%
-\contentsline {subsubsection}{\numberline {2.9.1}Motivation et cadre du micro-sprint}{98}{subsubsection.4.2.9.1}%
-\contentsline {subsubsection}{\numberline {2.9.2}Mise en place de la sandbox LocalAI}{98}{subsubsection.4.2.9.2}%
-\contentsline {subsubsection}{\numberline {2.9.3}Architecture du routeur dual-backend}{99}{subsubsection.4.2.9.3}%
-\contentsline {subsubsection}{\numberline {2.9.4}Découverte et résolution d'un bug de \@FB@og cold-load \@FB@fg \xspace {}}{100}{subsubsection.4.2.9.4}%
-\contentsline {subsubsection}{\numberline {2.9.5}Benchmark croisé sur modèle identique}{101}{subsubsection.4.2.9.5}%
-\contentsline {subsubsection}{\numberline {2.9.6}Interprétation et décision}{102}{subsubsection.4.2.9.6}%
-\contentsline {subsection}{\numberline {2.10}Sprint 8.1 — Expansion de l'observabilité et correction du \textit {template} Phi-4}{103}{subsection.4.2.10}%
-\contentsline {subsubsection}{\numberline {2.10.1}Tentative de déploiement de cAdvisor et pivot architectural}{104}{subsubsection.4.2.10.1}%
-\contentsline {subsubsection}{\numberline {2.10.2}Instrumentation du routeur de chat pour la télémétrie A/B}{105}{subsubsection.4.2.10.2}%
-\contentsline {subsubsection}{\numberline {2.10.3}Cinq nouvelles \textit {rows} sur le dashboard Grafana}{107}{subsubsection.4.2.10.3}%
-\contentsline {subsubsection}{\numberline {2.10.4}Découverte et correction du bug du \textit {template} Phi-4}{107}{subsubsection.4.2.10.4}%
-\contentsline {subsubsection}{\numberline {2.10.5}Synthèse de la couverture observabilité}{108}{subsubsection.4.2.10.5}%
-\contentsline {section}{\numberline {3}Tests de validation}{109}{section.4.3}%
-\contentsline {subsection}{\numberline {3.1}Test de la validation HMAC-SHA256}{109}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {3.2}Test de la déduplication Redis}{110}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {3.3}Test du circuit breaker LLM}{110}{subsection.4.3.3}%
-\contentsline {subsection}{\numberline {3.4}Test du gardien disque}{111}{subsection.4.3.4}%
-\contentsline {section}{\numberline {4}Résultats}{112}{section.4.4}%
-\contentsline {subsection}{\numberline {4.1}Résultats des revues de Pull Requests réelles}{112}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.2}Résultats de l'analyse de conformité et observabilité}{114}{subsection.4.4.2}%
-\contentsline {subsection}{\numberline {4.3}Validation de la plateforme}{114}{subsection.4.4.3}%
-\contentsline {subsection}{\numberline {4.4}Limites identifiées et plan de durcissement}{115}{subsection.4.4.4}%
-\contentsline {section}{Conclusion}{117}{table.caption.104}%
+\contentsline {subsubsection}{\numberline {2.4.2}Scheduler autonome et health digest}{73}{subsubsection.4.2.4.2}%
+\contentsline {subsection}{\numberline {2.5}Sprint 5 — Stack de monitoring Prometheus et Grafana}{74}{subsection.4.2.5}%
+\contentsline {subsubsection}{\numberline {2.5.1}Correction des métriques Prometheus}{75}{subsubsection.4.2.5.1}%
+\contentsline {subsubsection}{\numberline {2.5.2}Dashboards Grafana}{75}{subsubsection.4.2.5.2}%
+\contentsline {subsection}{\numberline {2.6}Sprint 6 — Monitoring host et optimisation du chat}{77}{subsection.4.2.6}%
+\contentsline {subsubsection}{\numberline {2.6.1}Déploiement de node-exporter}{77}{subsubsection.4.2.6.1}%
+\contentsline {subsubsection}{\numberline {2.6.2}Optimisation du chat agent}{78}{subsubsection.4.2.6.2}%
+\contentsline {subsection}{\numberline {2.7}Sprint 7 — Audit VPS et durcissement}{78}{subsection.4.2.7}%
+\contentsline {subsubsection}{\numberline {2.7.1}Audit VPS du 28 avril 2026}{79}{subsubsection.4.2.7.1}%
+\contentsline {subsubsection}{\numberline {2.7.2}Implémentation du système anti-hallucination}{80}{subsubsection.4.2.7.2}%
+\contentsline {subsection}{\numberline {2.8}Sprint 8 — Robustesse du parser de revue PR}{83}{subsection.4.2.8}%
+\contentsline {subsubsection}{\numberline {2.8.1}Investigation du bug}{84}{subsubsection.4.2.8.1}%
+\contentsline {subsubsection}{\numberline {2.8.2}Réécriture du parser et restructuration du prompt}{85}{subsubsection.4.2.8.2}%
+\contentsline {subsubsection}{\numberline {2.8.3}Vérification}{89}{subsubsection.4.2.8.3}%
+\contentsline {subsection}{\numberline {2.9}Post-Sprint 8 — Évaluation d'un second backend d'inférence}{90}{subsection.4.2.9}%
+\contentsline {subsubsection}{\numberline {2.9.1}Motivation et cadre du micro-sprint}{91}{subsubsection.4.2.9.1}%
+\contentsline {subsubsection}{\numberline {2.9.2}Mise en place de la sandbox LocalAI}{91}{subsubsection.4.2.9.2}%
+\contentsline {subsubsection}{\numberline {2.9.3}Architecture du routeur dual-backend}{92}{subsubsection.4.2.9.3}%
+\contentsline {subsubsection}{\numberline {2.9.4}Découverte et résolution d'un bug de \@FB@og cold-load \@FB@fg \xspace {}}{93}{subsubsection.4.2.9.4}%
+\contentsline {subsubsection}{\numberline {2.9.5}Benchmark croisé sur modèle identique}{94}{subsubsection.4.2.9.5}%
+\contentsline {subsubsection}{\numberline {2.9.6}Interprétation et décision}{95}{subsubsection.4.2.9.6}%
+\contentsline {subsection}{\numberline {2.10}Sprint 8.1 — Expansion de l'observabilité et correction du \textit {template} Phi-4}{96}{subsection.4.2.10}%
+\contentsline {subsubsection}{\numberline {2.10.1}Tentative de déploiement de cAdvisor et pivot architectural}{97}{subsubsection.4.2.10.1}%
+\contentsline {subsubsection}{\numberline {2.10.2}Instrumentation du routeur de chat pour la télémétrie A/B}{98}{subsubsection.4.2.10.2}%
+\contentsline {subsubsection}{\numberline {2.10.3}Cinq nouvelles \textit {rows} sur le dashboard Grafana}{100}{subsubsection.4.2.10.3}%
+\contentsline {subsubsection}{\numberline {2.10.4}Découverte et correction du bug du \textit {template} Phi-4}{100}{subsubsection.4.2.10.4}%
+\contentsline {subsubsection}{\numberline {2.10.5}Synthèse de la couverture observabilité}{102}{subsubsection.4.2.10.5}%
+\contentsline {section}{\numberline {3}Tests de validation}{102}{section.4.3}%
+\contentsline {subsection}{\numberline {3.1}Test de la validation HMAC-SHA256}{102}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {3.2}Test de la déduplication Redis}{103}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {3.3}Test du circuit breaker LLM}{103}{subsection.4.3.3}%
+\contentsline {subsection}{\numberline {3.4}Test du gardien disque}{104}{subsection.4.3.4}%
+\contentsline {section}{\numberline {4}Résultats}{105}{section.4.4}%
+\contentsline {subsection}{\numberline {4.1}Résultat de la revue sur une Pull Request de démonstration}{105}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.2}Résultats de l'analyse de conformité et observabilité}{107}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.3}Validation de la plateforme}{107}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.4}Limites identifiées et plan de durcissement}{108}{subsection.4.4.4}%
+\contentsline {section}{Conclusion}{110}{table.caption.104}%
 \select@language {french}
-\contentsline {chapter}{Conclusion générale et Perspectives}{118}{chapter*.105}%
+\contentsline {chapter}{Conclusion générale et Perspectives}{111}{chapter*.105}%
 \select@language {french}
-\contentsline {chapter}{Webographie}{121}{chapter*.106}%
+\contentsline {chapter}{Webographie}{114}{chapter*.106}%
 \babel@toc {arabic}{}\relax 
 \babel@toc {french}{}\relax 
 \babel@toc {english}{}\relax 
