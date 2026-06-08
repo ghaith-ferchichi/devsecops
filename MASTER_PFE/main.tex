@@ -87,6 +87,14 @@
 
 \usepackage{titlesec}
 \input{./tpl/new_commands}
+
+% Re-enable hyphenation: the class loads hyphenat[none], which sets
+% \hyphenpenalty=\exhyphenpenalty=10000 and forbids word breaks, causing
+% loose justification. Restore the LaTeX defaults so babel-french hyphenation
+% applies and inter-word spacing stays even.
+\hyphenpenalty=50
+\exhyphenpenalty=50
+
 \makeindex
 
 \begin{document}
@@ -116,7 +124,6 @@
 
         \input{acronymes}
         \thispagestyle{frontmatter}
-        \adjustmtc
 
     \mainmatter
         \input{chapters/introduction}

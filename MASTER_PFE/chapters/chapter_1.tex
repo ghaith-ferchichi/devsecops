@@ -85,7 +85,7 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.85\columnwidth]{organigramme_dsi}}
-            \caption{Organigramme de la Direction des Systèmes d'Information — BTE}
+            \caption{Organigramme de la Direction des Systèmes d'Information}
             \label{fig:organigramme}
         \end{figure}
 
@@ -155,8 +155,7 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=\columnwidth,height=0.80\textheight,keepaspectratio]{asis_workflow}}
-            \caption{Processus \textit{AS-IS} — revue manuelle de \textit{Pull
-                     Request} telle qu'elle existe aujourd'hui à la BTE.}
+            \caption{Processus \textit{AS-IS}}
             \label{fig:asis_workflow}
         \end{figure}
 
@@ -190,8 +189,7 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=\columnwidth,height=0.85\textheight,keepaspectratio]{tobe_workflow}}
-            \caption{Processus \textit{TO-BE} — revue automatisée par le BTE
-                     Security AI Agent, déclenchée à chaque \textit{Pull Request}.}
+            \caption{Processus \textit{TO-BE}}
             \label{fig:tobe_workflow}
         \end{figure}
 % ─────────────────────────────────────────────────────────────────────────────
@@ -331,8 +329,7 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.82\columnwidth]{agile_scrum_cycle}}
-            \caption{Cycle Scrumban adapté — sprints de deux semaines avec jalons et flux Kanban interne. \\
-                     \footnotesize\textit{Source : Wikimedia Commons, CC0.}}
+            \caption{Cycle Scrumban adapté}
             \label{fig:agile_scrum}
         \end{figure}
 
@@ -345,8 +342,7 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{kanban_board}}
-            \caption{Tableau Kanban — visualisation du flux avec limites WIP par colonne. \\
-                     \footnotesize\textit{Source : Jennifer Falco, Wikimedia Commons, CC BY 4.0.}}
+            \caption{Tableau Kanban}
             \label{fig:kanban_board}
         \end{figure}
 
@@ -402,18 +398,6 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
         AlertManager silencieusement cassé et panne de VictoriaMetrics --- sans casser
         la planification du sprint en cours.
 
-        \paragraph{Définition de terminé.}
-        Une carte ne rejoint la colonne \textit{Done} que lorsque les cinq conditions
-        suivantes sont simultanément satisfaites :
-        \begin{enumerate}[label=\arabic*., leftmargin=*, itemsep=2pt]
-            \item la fonctionnalité est déployée et en exécution sur le VPS de production ;
-            \item les logs de l'agent restent propres après le passage du nouveau code, sans exception ni avertissement ;
-            \item les métriques Prometheus reflètent son comportement lorsque cela est applicable ;
-            \item elle a été déclenchée par un événement réel (webhook PR, alerte Prometheus ou requête chat) et a produit le résultat attendu ;
-            \item la section correspondante de la documentation est à jour.
-        \end{enumerate}
-        Cette définition stricte évite que des fonctionnalités à moitié intégrées ne s'accumulent dans le système.
-
     \subsection{Illustration du tableau Scrumban en pratique}
 
         L'outil Jira a servi de support à la gestion quotidienne du tableau Scrumban
@@ -434,10 +418,7 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=\textwidth]{jira_sprint_s3}}
-            \caption{Tableau Jira en fin de Sprint 3 --- application concrète
-                     des règles Scrumban : WIP=1 sur \textit{In Progress},
-                     flux à six colonnes et carte de jalon en classe de
-                     service \textit{Fixed Date}.}
+            \caption{Tableau Jira en fin de Sprint 3}
             \label{fig:jira_sprint}
         \end{figure}
 
@@ -481,9 +462,7 @@ adoptée, du choix du framework Agile au déroulement effectif du projet sur cin
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=\textwidth]{gantt_chart}}
-            \caption{Diagramme de Gantt du projet — dix sprints, six jalons
-                     et rédaction parallèle du rapport, du 2 février
-                     au 30 juin 2026.}
+            \caption{Diagramme de Gantt du projet}
             \label{fig:gantt}
         \end{figure}
 

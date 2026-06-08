@@ -33,11 +33,11 @@
 
 %%% AR
 \arabicAbstract{%
-يصف هذا التقرير تصميم ونشر BTE Security AI Agent، وهو أداة DevSecOps تتولى مراجعة أمان طلبات الدمج (Pull Requests) على GitHub تلقائياً. عند وصول حدث webhook موثق بـ HMAC-SHA256، يتم تشغيل خمسة ماسحات (Trivy وGitleaks وSemgrep وCheckov وOSV-Scanner) بالتوازي، ثم يتولى نموذجا qwen2.5-coder بحجمَي 7B و14B المشغّلان محلياً عبر Ollama دمج النتائج. يتم نشر مراجعة OWASP Top 10 مع درجة المخاطر وقرار المراجعة (موافقة أو طلب تعديلات أو حظر) على طلب الدمج خلال 15 إلى 25 دقيقة حسب درجة التعقيد. لا تغادر الشيفرة المصدرية البنية التحتية للبنك. تعتمد المنصة على أحد عشر حاوية Docker في الإنتاج، وبيئة اختبار LocalAI، ومساعد دردشة مزود بتسعة عشر أداة تشغيلية، وطبقة رصد تتكون من Prometheus وGrafana وAlertManager وVictoriaMetrics وnode-exporter مع خمس عشرة قاعدة تنبيه.%
+يصف هذا التقرير تصميم ونشر الوكيل الذكي للأمن السيبراني (\textLR{BTE Security AI Agent})، وهو أداة تعتمد منهجية \textLR{DevSecOps} لأتمتة مراجعة الأمان الخاصة بطلبات الدمج (\textLR{\textit{Pull Requests}}) على منصة \textLR{GitHub}. عند استقبال حدث خطّاف ويب (\textLR{Webhook}) والتحقق من صحته باستخدام \textLR{HMAC-SHA256}، يتم تشغيل خمس أدوات للفحص الساكن للشيفرة المصدرية بالتوازي (\textLR{Trivy} و\textLR{Gitleaks} و\textLR{Semgrep} و\textLR{Checkov} و\textLR{OSV-Scanner})، ثم تُدمج نتائجها بواسطة النموذجين \textLR{\texttt{qwen2.5-coder:7b}} و\textLR{\texttt{qwen2.5-coder:14b}} المُشغَّلين محليًا عبر \textLR{Ollama}. تُنشَر مراجعة أمنية تستند إلى معايير \textLR{OWASP Top 10}، مرفقة بدرجة للمخاطر وحكم نهائي (\textLR{\texttt{APPROVE}} أو \textLR{\texttt{REQUEST\_CHANGES}} أو \textLR{\texttt{BLOCK}}) على طلب الدمج خلال مدة تتراوح بين 15 و25 دقيقة تبعًا لدرجة تعقيده. ولا تغادر الشيفرة المصدرية البنية التحتية لبنك \textLR{BTE} في أي مرحلة من مراحل المعالجة. وتعتمد المنصة على أحد عشر حاوية \textLR{Docker} في بيئة الإنتاج، وبيئة \textLR{LocalAI} معزولة قابلة للتشغيل عند الطلب، ومساعد محادثة مزود بتسعة عشر أداة تشغيلية، إضافةً إلى طبقة متكاملة للرصد والمراقبة تعتمد على \textLR{Prometheus} و\textLR{Grafana} و\textLR{AlertManager} و\textLR{VictoriaMetrics} و\textLR{node-exporter} وتضم خمسة عشر قاعدة للتنبيه.%
 }
 
 \arabicAbstractKeywords{%
-DevSecOps، ذكاء اصطناعي، نموذج لغة محلي، Ollama، LangGraph، FastAPI، Trivy، Gitleaks، Semgrep، Checkov، OSV-Scanner، Prometheus، Grafana، Docker، GitHub Webhooks%
+\textLR{DevSecOps}، الذكاء الاصطناعي، النماذج اللغوية المحلية، \textLR{Ollama}، \textLR{LangGraph}، \textLR{FastAPI}، \textLR{Trivy}، \textLR{Gitleaks}، \textLR{Semgrep}، \textLR{Checkov}، \textLR{OSV-Scanner}، \textLR{Prometheus}، \textLR{Grafana}، \textLR{Docker}، \textLR{GitHub Webhooks}، \textLR{OWASP}، \textLR{PostgreSQL}، \textLR{Redis}%
 }
 
 %%% FR

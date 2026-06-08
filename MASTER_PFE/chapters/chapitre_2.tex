@@ -66,8 +66,7 @@ fonctionnels et non fonctionnels du projet.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.82\columnwidth]{devsecops_lifecycle}}
-            \caption{Cycle de vie DevSecOps — intégration de la sécurité à chaque étape. \\
-                     \footnotesize\textit{Source : Rezadlt, Wikimedia Commons, CC BY-SA 4.0.}}
+            \caption{Cycle de vie DevSecOps}
             \label{fig:devsecops}
         \end{figure}
 
@@ -193,7 +192,7 @@ fonctionnels et non fonctionnels du projet.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.85\columnwidth]{sast_tools_overview}}
-            \caption{Les cinq outils SAST intégrés — couverture complémentaire des risques}
+            \caption{Les cinq outils SAST intégrés}
             \label{fig:sast_overview}
         \end{figure}
 
@@ -210,7 +209,7 @@ fonctionnels et non fonctionnels du projet.
         désigne les erreurs de configuration dans les Dockerfile, fichiers Terraform et
         manifestes Kubernetes. Enfin, les \textbf{dépendances vulnérables} concernent les
         bibliothèques tierces déclarées dans les fichiers de dépendances
-        (\texttt{requirements.txt}, \texttt{package.json}, \texttt{go.mod}, etc.) dont une
+        (\texttt{requirements.\allowbreak{}txt}, \texttt{package.\allowbreak{}json}, \texttt{go.mod}, etc.) dont une
         version connue présente une faille publiée.
 
     \subsection{Réduction des tokens SAST}
@@ -338,13 +337,13 @@ fonctionnels et non fonctionnels du projet.
         \hline
         \textbf{Modèle} & \textbf{Taille} & \textbf{Vitesse} & \textbf{Précision outils} & \textbf{Décision} \\
         \hline
-        \texttt{qwen2.5-coder:7b} & 4,7 Go & \textasciitilde5 tok/s & 80\% & Chat (défaut) \\
+        \texttt{qwen2.\allowbreak{}5-coder:7b} & 4,7 Go & \textasciitilde5 tok/s & 80\% & Chat (défaut) \\
         \hline
-        \texttt{qwen2.5-coder:14b} & 9,0 Go & \textasciitilde3,2 tok/s & 80\% & Revue PR \\
+        \texttt{qwen2.\allowbreak{}5-coder:14b} & 9,0 Go & \textasciitilde3,2 tok/s & 80\% & Revue PR \\
         \hline
         \texttt{llama3.2:3b} & 2,0 Go & \textasciitilde8 tok/s & 0\% (prompt complet) & Expérimental \\
         \hline
-        \texttt{granite3.1-dense:2b} & 1,6 Go & \textasciitilde8,5 tok/s & 0\% & Incompatible \\
+        \texttt{granite3.\allowbreak{}1-dense:2b} & 1,6 Go & \textasciitilde8,5 tok/s & 0\% & Incompatible \\
         \hline
         \end{tabular}
         \caption{Benchmark des modèles LLM — 5 requêtes, prompt système complet, CPU BTE}
@@ -355,9 +354,9 @@ fonctionnels et non fonctionnels du projet.
         lieu, \texttt{llama3.2:3b} atteint 0\% de précision avec le prompt système complet,
         car ce dernier consomme environ 2 730 tokens, occupant les deux tiers de la fenêtre
         de contexte de 4 096 tokens et ne laissant qu'un espace résiduel pour le raisonnement.
-        En second lieu, \texttt{granite3.1-dense:2b} utilise le schéma propriétaire IBM
-        \texttt{\{"tool\_name": ...\}}, incompatible avec notre format d'appel d'outils.
-        Enfin, \texttt{qwen2.5-coder:7b} et \texttt{14b} atteignent une précision identique
+        En second lieu, \texttt{granite3.\allowbreak{}1-dense:2b} utilise le schéma propriétaire IBM
+        \texttt{\{"tool\_\allowbreak{}name": .\allowbreak{}.\allowbreak{}.\allowbreak{}\}}, incompatible avec notre format d'appel d'outils.
+        Enfin, \texttt{qwen2.\allowbreak{}5-coder:7b} et \texttt{14b} atteignent une précision identique
         de 80\%, mais le modèle 7b est 43\% plus rapide par token. Nous retenons donc une
         architecture à deux modèles : le 7b pour la classification rapide de la
         \textit{Pull Request} (environ 30 secondes) et le 14b pour l'analyse de sécurité
@@ -378,7 +377,7 @@ fonctionnels et non fonctionnels du projet.
         \hline
         Reprise après crash & Automatique depuis le checkpoint & Partielle selon configuration \\
         \hline
-        Interruption humaine & \texttt{interrupt\_before} natif & Complexe à implémenter \\
+        Interruption humaine & \texttt{interrupt\_\allowbreak{}before} natif & Complexe à implémenter \\
         \hline
         Routage conditionnel & Arêtes conditionnelles natives & Nécessite des contournements \\
         \hline
@@ -505,9 +504,9 @@ fonctionnels et non fonctionnels du projet.
         \hline
         Inférence LLM locale & Ollama & latest \\
         \hline
-        Modèle de classification & \texttt{qwen2.5-coder:7b} & 4,7 Go \\
+        Modèle de classification & \texttt{qwen2.\allowbreak{}5-coder:7b} & 4,7 Go \\
         \hline
-        Modèle d'analyse sécurité & \texttt{qwen2.5-coder:14b} & 9,0 Go \\
+        Modèle d'analyse sécurité & \texttt{qwen2.\allowbreak{}5-coder:14b} & 9,0 Go \\
         \hline
         Base de données & PostgreSQL & 16-alpine \\
         \hline

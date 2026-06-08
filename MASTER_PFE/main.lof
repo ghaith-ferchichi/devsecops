@@ -2,71 +2,73 @@
 \babel@toc {french}{}\relax 
 \addvspace {10\p@ }
 \contentsline {xchapter}{Étude préalable du sujet}{4}{chapter.1}%
-\contentsline {figure}{\numberline {\if@rl \I {1.1}\else \textLR {1.1}\fi }{\ignorespaces Organigramme de la Direction des Systèmes d'Information — BTE}}{6}{figure.caption.11}%
-\contentsline {figure}{\numberline {\if@rl \I {2.1}\else \textLR {1.2}\fi }{\ignorespaces Processus \textit {AS-IS} — revue manuelle de \textit {Pull Request} telle qu'elle existe aujourd'hui à la BTE.}}{8}{figure.caption.12}%
+\contentsline {figure}{\numberline {\if@rl \I {1.1}\else \textLR {1.1}\fi }{\ignorespaces Organigramme de la Direction des Systèmes d'Information}}{6}{figure.caption.11}%
+\contentsline {figure}{\numberline {\if@rl \I {2.1}\else \textLR {1.2}\fi }{\ignorespaces Processus \textit {AS-IS}}}{8}{figure.caption.12}%
 \contentsline {figure}{\numberline {\if@rl \I {3.1}\else \textLR {1.3}\fi }{\ignorespaces Vue d'ensemble de la solution BTE Security AI Agent}}{9}{figure.caption.13}%
-\contentsline {figure}{\numberline {\if@rl \I {4.1}\else \textLR {1.4}\fi }{\ignorespaces Processus \textit {TO-BE} — revue automatisée par le BTE Security AI Agent, déclenchée à chaque \textit {Pull Request}.}}{10}{figure.caption.14}%
-\contentsline {figure}{\numberline {\if@rl \I {5.1}\else \textLR {1.5}\fi }{\ignorespaces Cycle Scrumban adapté — sprints de deux semaines avec jalons et flux Kanban interne. \footnotesize \textit {Source : Wikimedia Commons, CC0.}}}{13}{figure.caption.16}%
-\contentsline {figure}{\numberline {\if@rl \I {6.1}\else \textLR {1.6}\fi }{\ignorespaces Tableau Kanban — visualisation du flux avec limites WIP par colonne. \footnotesize \textit {Source : Jennifer Falco, Wikimedia Commons, CC BY 4.0.}}}{14}{figure.caption.17}%
-\contentsline {figure}{\numberline {\if@rl \I {7.1}\else \textLR {1.7}\fi }{\ignorespaces Tableau Jira en fin de Sprint 3 --- application concrète des règles Scrumban : WIP=1 sur \textit {In Progress}, flux à six colonnes et carte de jalon en classe de service \textit {Fixed Date}.}}{16}{figure.caption.20}%
-\contentsline {figure}{\numberline {\if@rl \I {8.1}\else \textLR {1.8}\fi }{\ignorespaces Diagramme de Gantt du projet — dix sprints, six jalons et rédaction parallèle du rapport, du 2 février au 30 juin 2026.}}{18}{figure.caption.21}%
+\contentsline {figure}{\numberline {\if@rl \I {4.1}\else \textLR {1.4}\fi }{\ignorespaces Processus \textit {TO-BE}}}{10}{figure.caption.14}%
+\contentsline {figure}{\numberline {\if@rl \I {5.1}\else \textLR {1.5}\fi }{\ignorespaces Cycle Scrumban adapté}}{13}{figure.caption.16}%
+\contentsline {figure}{\numberline {\if@rl \I {6.1}\else \textLR {1.6}\fi }{\ignorespaces Tableau Kanban}}{14}{figure.caption.17}%
+\contentsline {figure}{\numberline {\if@rl \I {7.1}\else \textLR {1.7}\fi }{\ignorespaces Tableau Jira en fin de Sprint 3}}{16}{figure.caption.19}%
+\contentsline {figure}{\numberline {\if@rl \I {8.1}\else \textLR {1.8}\fi }{\ignorespaces Diagramme de Gantt du projet}}{17}{figure.caption.20}%
 \addvspace {10\p@ }
-\contentsline {xchapter}{État de l'art et choix technologiques}{20}{chapter.2}%
-\contentsline {figure}{\numberline {\if@rl \I {1.2}\else \textLR {2.1}\fi }{\ignorespaces Cycle de vie DevSecOps — intégration de la sécurité à chaque étape. \footnotesize \textit {Source : Rezadlt, Wikimedia Commons, CC BY-SA 4.0.}}}{21}{figure.caption.23}%
-\contentsline {figure}{\numberline {\if@rl \I {2.2}\else \textLR {2.2}\fi }{\ignorespaces Les cinq outils SAST intégrés — couverture complémentaire des risques}}{25}{figure.caption.24}%
+\contentsline {xchapter}{État de l'art et choix technologiques}{19}{chapter.2}%
+\contentsline {figure}{\numberline {\if@rl \I {1.2}\else \textLR {2.1}\fi }{\ignorespaces Cycle de vie DevSecOps}}{20}{figure.caption.22}%
+\contentsline {figure}{\numberline {\if@rl \I {2.2}\else \textLR {2.2}\fi }{\ignorespaces Les cinq outils SAST intégrés}}{24}{figure.caption.23}%
 \addvspace {10\p@ }
-\contentsline {xchapter}{Conception de la solution}{36}{chapter.3}%
-\contentsline {figure}{\numberline {\if@rl \I {1.3}\else \textLR {3.1}\fi }{\ignorespaces Architecture globale du BTE Security AI Agent — 11 conteneurs Docker}}{37}{figure.caption.33}%
-\contentsline {figure}{\numberline {\if@rl \I {2.3}\else \textLR {3.2}\fi }{\ignorespaces Architecture à deux modèles LLM — configuration et rôles}}{40}{figure.caption.36}%
-\contentsline {figure}{\numberline {\if@rl \I {3.3}\else \textLR {3.3}\fi }{\ignorespaces Graphe d'état LangGraph — 9 nœuds et arêtes conditionnelles}}{42}{figure.caption.39}%
-\contentsline {figure}{\numberline {\if@rl \I {4.3}\else \textLR {3.4}\fi }{\ignorespaces Diagramme d'interaction — Réception et validation du webhook GitHub}}{44}{figure.caption.41}%
-\contentsline {figure}{\numberline {\if@rl \I {5.3}\else \textLR {3.5}\fi }{\ignorespaces Diagramme d'interaction — Pipeline LangGraph de revue de sécurité}}{45}{figure.caption.42}%
-\contentsline {figure}{\numberline {\if@rl \I {6.3}\else \textLR {3.6}\fi }{\ignorespaces Machine à états du diff parser — extraction des lignes valides}}{47}{figure.caption.43}%
-\contentsline {figure}{\numberline {\if@rl \I {7.3}\else \textLR {3.7}\fi }{\ignorespaces Format du diff annoté avec numéros de lignes transmis au modèle 14B}}{48}{figure.caption.44}%
-\contentsline {figure}{\numberline {\if@rl \I {8.3}\else \textLR {3.8}\fi }{\ignorespaces Boucle ReAct personnalisée — de la détection de l'appel outil à la réponse finale}}{49}{figure.caption.45}%
-\contentsline {figure}{\numberline {\if@rl \I {9.3}\else \textLR {3.9}\fi }{\ignorespaces Système anti-hallucination — 6 couches de protection empilées}}{50}{figure.caption.46}%
-\contentsline {figure}{\numberline {\if@rl \I {10.3}\else \textLR {3.10}\fi }{\ignorespaces Diagramme d'interaction — Boucle ReAct du chat opérationnel}}{52}{figure.caption.48}%
-\contentsline {figure}{\numberline {\if@rl \I {11.3}\else \textLR {3.11}\fi }{\ignorespaces Diagramme E-A de la base de données PostgreSQL — 6 tables applicatives}}{53}{figure.caption.49}%
-\contentsline {figure}{\numberline {\if@rl \I {12.3}\else \textLR {3.12}\fi }{\ignorespaces Architecture de la stack d'observabilité — flux de métriques}}{54}{figure.caption.50}%
+\contentsline {xchapter}{Conception de la solution}{35}{chapter.3}%
+\contentsline {figure}{\numberline {\if@rl \I {1.3}\else \textLR {3.1}\fi }{\ignorespaces Architecture globale du BTE Security AI Agent}}{36}{figure.caption.32}%
+\contentsline {figure}{\numberline {\if@rl \I {2.3}\else \textLR {3.2}\fi }{\ignorespaces Architecture à deux modèles LLM}}{39}{figure.caption.35}%
+\contentsline {figure}{\numberline {\if@rl \I {3.3}\else \textLR {3.3}\fi }{\ignorespaces Graphe d'état LangGraph}}{41}{figure.caption.38}%
+\contentsline {figure}{\numberline {\if@rl \I {4.3}\else \textLR {3.4}\fi }{\ignorespaces Diagramme d'interaction — Réception et validation du webhook GitHub}}{43}{figure.caption.40}%
+\contentsline {figure}{\numberline {\if@rl \I {5.3}\else \textLR {3.5}\fi }{\ignorespaces Diagramme d'interaction — Pipeline LangGraph de revue de sécurité}}{44}{figure.caption.41}%
+\contentsline {figure}{\numberline {\if@rl \I {6.3}\else \textLR {3.6}\fi }{\ignorespaces Machine à états du diff parser}}{46}{figure.caption.42}%
+\contentsline {figure}{\numberline {\if@rl \I {7.3}\else \textLR {3.7}\fi }{\ignorespaces Format du diff annoté avec numéros de lignes transmis au modèle 14B}}{47}{figure.caption.43}%
+\contentsline {figure}{\numberline {\if@rl \I {8.3}\else \textLR {3.8}\fi }{\ignorespaces Boucle ReAct personnalisée}}{48}{figure.caption.44}%
+\contentsline {figure}{\numberline {\if@rl \I {9.3}\else \textLR {3.9}\fi }{\ignorespaces Système anti-hallucination}}{49}{figure.caption.45}%
+\contentsline {figure}{\numberline {\if@rl \I {10.3}\else \textLR {3.10}\fi }{\ignorespaces Diagramme d'interaction — Boucle ReAct du chat opérationnel}}{51}{figure.caption.47}%
+\contentsline {figure}{\numberline {\if@rl \I {11.3}\else \textLR {3.11}\fi }{\ignorespaces Diagramme E-A de la base de données PostgreSQL}}{52}{figure.caption.48}%
+\contentsline {figure}{\numberline {\if@rl \I {12.3}\else \textLR {3.12}\fi }{\ignorespaces Architecture de la stack d'observabilité}}{53}{figure.caption.49}%
 \addvspace {10\p@ }
-\contentsline {xchapter}{Réalisation et résultats}{58}{chapter.4}%
-\contentsline {figure}{\numberline {\if@rl \I {1.4}\else \textLR {4.1}\fi }{\ignorespaces Configuration Ollama dans docker-compose.yml — tuning CPU Haswell}}{61}{figure.caption.54}%
-\contentsline {figure}{\numberline {\if@rl \I {2.4}\else \textLR {4.2}\fi }{\ignorespaces Correctif nginx — proxy HTTP/1.1 pour les webhooks GitHub}}{62}{figure.caption.55}%
-\contentsline {figure}{\numberline {\if@rl \I {3.4}\else \textLR {4.3}\fi }{\ignorespaces Création du Personal Access Token GitHub avec les scopes \texttt {repo} et \texttt {write:discussion} nécessaires à la publication des commentaires et du statut du commit. Le token complet est masqué pour des raisons de sécurité.}}{63}{figure.caption.57}%
-\contentsline {figure}{\numberline {\if@rl \I {4.4}\else \textLR {4.4}\fi }{\ignorespaces Configuration du \textit {webhook} GitHub sur le dépôt cible — URL de l'endpoint, secret HMAC partagé et content type JSON. Le secret est masqué pour des raisons de sécurité.}}{64}{figure.caption.58}%
-\contentsline {figure}{\numberline {\if@rl \I {5.4}\else \textLR {4.5}\fi }{\ignorespaces Webhook GitHub correctement reçu par l'agent — vue de l'historique des livraisons côté GitHub avec réponse 202 \textit {Accepted}.}}{64}{figure.caption.59}%
-\contentsline {figure}{\numberline {\if@rl \I {6.4}\else \textLR {4.6}\fi }{\ignorespaces Handler FastAPI de réception des webhooks GitHub --- validation HMAC-SHA256, filtrage des événements \textit {pull\_request} et dispatch asynchrone vers le moteur de workflow.}}{65}{figure.caption.61}%
-\contentsline {figure}{\numberline {\if@rl \I {7.4}\else \textLR {4.7}\fi }{\ignorespaces Comparaison diff API GitHub (-U3) vs diff local (-U15) — contexte SQL injection}}{67}{figure.caption.62}%
-\contentsline {figure}{\numberline {\if@rl \I {8.4}\else \textLR {4.8}\fi }{\ignorespaces PR~\#18 — exécution parallèle des cinq scanners, résultats et mise en cache Redis}}{68}{figure.caption.63}%
-\contentsline {figure}{\numberline {\if@rl \I {9.4}\else \textLR {4.9}\fi }{\ignorespaces PR~\#18 — revue de sécurité, partie~1 : résumé et score de risque (\texttt {HIGH}, verdict \texttt {BLOCK}).}}{69}{figure.caption.65}%
-\contentsline {figure}{\numberline {\if@rl \I {10.4}\else \textLR {4.10}\fi }{\ignorespaces PR~\#18 — revue de sécurité, partie~2 : détail des vulnérabilités et résultats SAST.}}{69}{figure.caption.66}%
-\contentsline {figure}{\numberline {\if@rl \I {11.4}\else \textLR {4.11}\fi }{\ignorespaces PR~\#18 — revue de sécurité, partie~3 : recommandations, échec du check \texttt {security-ai-agent} et statut du commit.}}{70}{figure.caption.67}%
-\contentsline {figure}{\numberline {\if@rl \I {12.4}\else \textLR {4.12}\fi }{\ignorespaces PR~\#18 — revue de qualité de code publiée dans l'onglet \textit {Conversation}.}}{70}{figure.caption.68}%
-\contentsline {figure}{\numberline {\if@rl \I {13.4}\else \textLR {4.13}\fi }{\ignorespaces PR~\#18 — suggestion \textit {inline} sur l'injection SQL (\texttt {banking\_demo\_final.php}, bouton \textit {Apply}).}}{71}{figure.caption.69}%
-\contentsline {figure}{\numberline {\if@rl \I {14.4}\else \textLR {4.14}\fi }{\ignorespaces PR~\#18 — journaux agent lors de la finalisation (\texttt {pr=18}, cinq \textit {inline}, statut commit \texttt {error}).}}{71}{figure.caption.70}%
-\contentsline {figure}{\numberline {\if@rl \I {15.4}\else \textLR {4.15}\fi }{\ignorespaces PR~\#18 — notification Slack de fin de revue (\texttt {HIGH}, \texttt {BLOCK}).}}{72}{figure.caption.71}%
-\contentsline {figure}{\numberline {\if@rl \I {16.4}\else \textLR {4.16}\fi }{\ignorespaces Scheduler autonome — gardien disque et health digest quotidien}}{73}{figure.caption.72}%
-\contentsline {figure}{\numberline {\if@rl \I {17.4}\else \textLR {4.17}\fi }{\ignorespaces Configuration OAuth du \textit {bot} Slack — portées \texttt {channels:read}, \texttt {chat:write} et \texttt {chat:write.public}.}}{74}{figure.caption.73}%
-\contentsline {figure}{\numberline {\if@rl \I {18.4}\else \textLR {4.18}\fi }{\ignorespaces Health digest quotidien Slack — état complet de la plateforme BTE}}{74}{figure.caption.74}%
-\contentsline {figure}{\numberline {\if@rl \I {19.4}\else \textLR {4.19}\fi }{\ignorespaces Cibles Prometheus — 4 cibles vertes après correction des chemins}}{75}{figure.caption.75}%
-\contentsline {figure}{\numberline {\if@rl \I {20.4}\else \textLR {4.20}\fi }{\ignorespaces Dashboard Grafana VPS Host Monitoring — 13 panneaux node-exporter}}{76}{figure.caption.76}%
-\contentsline {figure}{\numberline {\if@rl \I {21.4}\else \textLR {4.21}\fi }{\ignorespaces Dashboard Grafana DevSecOps AI Agent — version Sprint~5 (33 panneaux, cinq lignes)}}{76}{figure.caption.77}%
-\contentsline {figure}{\numberline {\if@rl \I {22.4}\else \textLR {4.22}\fi }{\ignorespaces Dashboard Grafana PR Security Reviews — données PostgreSQL}}{77}{figure.caption.78}%
-\contentsline {figure}{\numberline {\if@rl \I {23.4}\else \textLR {4.23}\fi }{\ignorespaces Configuration node-exporter — pid:host et network\_mode:host}}{78}{figure.caption.79}%
-\contentsline {figure}{\numberline {\if@rl \I {24.4}\else \textLR {4.24}\fi }{\ignorespaces Correction AlertManager — ajout du path\_prefix dans prometheus.yml}}{80}{figure.caption.82}%
-\contentsline {figure}{\numberline {\if@rl \I {25.4}\else \textLR {4.25}\fi }{\ignorespaces Comportement du chat agent — avant hallucination vs après correction}}{81}{figure.caption.83}%
-\contentsline {figure}{\numberline {\if@rl \I {26.4}\else \textLR {4.26}\fi }{\ignorespaces Interface BTE Security AI Agent — chat opérationnel avec raisonnement visible}}{82}{figure.caption.84}%
-\contentsline {figure}{\numberline {\if@rl \I {27.4}\else \textLR {4.27}\fi }{\ignorespaces Interrogation de la base de connaissances sécurité via le chat opérationnel — l'outil \texttt {query\_database} extrait l'historique des revues de PR et la réponse cite verbatim les valeurs issues de PostgreSQL.}}{83}{figure.caption.85}%
-\contentsline {figure}{\numberline {\if@rl \I {28.4}\else \textLR {4.28}\fi }{\ignorespaces Analyse des trois bugs cumulatifs du parser PR review (Sprint 8)}}{84}{figure.caption.86}%
-\contentsline {figure}{\numberline {\if@rl \I {29.4}\else \textLR {4.29}\fi }{\ignorespaces Architecture du parser réécrit — trois stratégies imbriquées}}{86}{figure.caption.88}%
-\contentsline {figure}{\numberline {\if@rl \I {30.4}\else \textLR {4.30}\fi }{\ignorespaces Prompt restructuré — STEP 1 : production du bloc JSON en première position (risk\_score, verdict, commentaires inline).}}{88}{figure.caption.89}%
-\contentsline {figure}{\numberline {\if@rl \I {31.4}\else \textLR {4.31}\fi }{\ignorespaces Prompt restructuré — STEP 2 : production du markdown de la revue globale après le JSON.}}{89}{figure.caption.90}%
-\contentsline {figure}{\numberline {\if@rl \I {32.4}\else \textLR {4.32}\fi }{\ignorespaces Test HMAC — rejet 403 sur signature invalide, acceptation 202 sur signature correcte}}{103}{figure.caption.96}%
-\contentsline {figure}{\numberline {\if@rl \I {33.4}\else \textLR {4.33}\fi }{\ignorespaces Test déduplication Redis — second webhook ignoré, pipeline unique exécuté}}{103}{figure.caption.97}%
-\contentsline {figure}{\numberline {\if@rl \I {34.4}\else \textLR {4.34}\fi }{\ignorespaces Test circuit breaker — fallback regex activé quand Ollama est indisponible}}{104}{figure.caption.98}%
-\contentsline {figure}{\numberline {\if@rl \I {35.4}\else \textLR {4.35}\fi }{\ignorespaces Test gardien disque — nettoyage automatique déclenché et notifié sur Slack}}{105}{figure.caption.99}%
-\contentsline {figure}{\numberline {\if@rl \I {36.4}\else \textLR {4.36}\fi }{\ignorespaces PR~\#18 — vue d'ensemble de la revue publiée sur GitHub (\texttt {HIGH}, \texttt {BLOCK}, cinq suggestions \textit {inline}).}}{106}{figure.caption.100}%
-\contentsline {figure}{\numberline {\if@rl \I {37.4}\else \textLR {4.37}\fi }{\ignorespaces Prometheus — 15 règles d'alerte inactives, aucun incident en production}}{107}{figure.caption.102}%
+\contentsline {xchapter}{Réalisation et résultats}{57}{chapter.4}%
+\contentsline {figure}{\numberline {\if@rl \I {1.4}\else \textLR {4.1}\fi }{\ignorespaces Configuration Ollama dans docker-compose.yml}}{60}{figure.caption.53}%
+\contentsline {figure}{\numberline {\if@rl \I {2.4}\else \textLR {4.2}\fi }{\ignorespaces Correctif nginx}}{61}{figure.caption.54}%
+\contentsline {figure}{\numberline {\if@rl \I {3.4}\else \textLR {4.3}\fi }{\ignorespaces Création du Personal Access Token GitHub}}{62}{figure.caption.56}%
+\contentsline {figure}{\numberline {\if@rl \I {4.4}\else \textLR {4.4}\fi }{\ignorespaces Configuration du \textit {webhook} GitHub sur le dépôt cible}}{63}{figure.caption.57}%
+\contentsline {figure}{\numberline {\if@rl \I {5.4}\else \textLR {4.5}\fi }{\ignorespaces Webhook GitHub correctement reçu par l'agent}}{63}{figure.caption.58}%
+\contentsline {figure}{\numberline {\if@rl \I {6.4}\else \textLR {4.6}\fi }{\ignorespaces Handler FastAPI de réception des webhooks GitHub}}{64}{figure.caption.60}%
+\contentsline {figure}{\numberline {\if@rl \I {7.4}\else \textLR {4.7}\fi }{\ignorespaces Comparaison diff API GitHub (-U3) vs diff local (-U15)}}{66}{figure.caption.61}%
+\contentsline {figure}{\numberline {\if@rl \I {8.4}\else \textLR {4.8}\fi }{\ignorespaces PR~\#18 — exécution parallèle des cinq scanners}}{67}{figure.caption.62}%
+\contentsline {figure}{\numberline {\if@rl \I {9.4}\else \textLR {4.9}\fi }{\ignorespaces PR~\#18 — revue de sécurité, partie~1}}{68}{figure.caption.64}%
+\contentsline {figure}{\numberline {\if@rl \I {10.4}\else \textLR {4.10}\fi }{\ignorespaces PR~\#18 — revue de sécurité, partie~2}}{68}{figure.caption.65}%
+\contentsline {figure}{\numberline {\if@rl \I {11.4}\else \textLR {4.11}\fi }{\ignorespaces PR~\#18 — revue de sécurité, partie~3}}{69}{figure.caption.66}%
+\contentsline {figure}{\numberline {\if@rl \I {12.4}\else \textLR {4.12}\fi }{\ignorespaces PR~\#18 — revue de qualité de code publiée dans l'onglet \textit {Conversation}.}}{69}{figure.caption.67}%
+\contentsline {figure}{\numberline {\if@rl \I {13.4}\else \textLR {4.13}\fi }{\ignorespaces PR~\#18 — suggestion \textit {inline} sur l'injection SQL}}{70}{figure.caption.68}%
+\contentsline {figure}{\numberline {\if@rl \I {14.4}\else \textLR {4.14}\fi }{\ignorespaces PR~\#18 — journaux agent lors de la finalisation}}{70}{figure.caption.69}%
+\contentsline {figure}{\numberline {\if@rl \I {15.4}\else \textLR {4.15}\fi }{\ignorespaces PR~\#18 — notification Slack de fin de revue}}{71}{figure.caption.70}%
+\contentsline {figure}{\numberline {\if@rl \I {16.4}\else \textLR {4.16}\fi }{\ignorespaces Scheduler autonome}}{72}{figure.caption.71}%
+\contentsline {figure}{\numberline {\if@rl \I {17.4}\else \textLR {4.17}\fi }{\ignorespaces Configuration OAuth du \textit {bot} Slack}}{73}{figure.caption.72}%
+\contentsline {figure}{\numberline {\if@rl \I {18.4}\else \textLR {4.18}\fi }{\ignorespaces Health digest quotidien Slack}}{73}{figure.caption.73}%
+\contentsline {figure}{\numberline {\if@rl \I {19.4}\else \textLR {4.19}\fi }{\ignorespaces Cibles Prometheus}}{74}{figure.caption.74}%
+\contentsline {figure}{\numberline {\if@rl \I {20.4}\else \textLR {4.20}\fi }{\ignorespaces Dashboard Grafana VPS Host Monitoring}}{75}{figure.caption.75}%
+\contentsline {figure}{\numberline {\if@rl \I {21.4}\else \textLR {4.21}\fi }{\ignorespaces Dashboard Grafana DevSecOps AI Agent}}{75}{figure.caption.76}%
+\contentsline {figure}{\numberline {\if@rl \I {22.4}\else \textLR {4.22}\fi }{\ignorespaces Dashboard Grafana PR Security Reviews}}{76}{figure.caption.77}%
+\contentsline {figure}{\numberline {\if@rl \I {23.4}\else \textLR {4.23}\fi }{\ignorespaces Configuration node-exporter}}{77}{figure.caption.78}%
+\contentsline {figure}{\numberline {\if@rl \I {24.4}\else \textLR {4.24}\fi }{\ignorespaces Correction AlertManager}}{79}{figure.caption.81}%
+\contentsline {figure}{\numberline {\if@rl \I {25.4}\else \textLR {4.25}\fi }{\ignorespaces Comportement du chat agent}}{80}{figure.caption.82}%
+\contentsline {figure}{\numberline {\if@rl \I {26.4}\else \textLR {4.26}\fi }{\ignorespaces Interface BTE Security AI Agent}}{81}{figure.caption.83}%
+\contentsline {figure}{\numberline {\if@rl \I {27.4}\else \textLR {4.27}\fi }{\ignorespaces Interrogation de la base de connaissances sécurité via le chat opérationnel}}{81}{figure.caption.84}%
+\contentsline {figure}{\numberline {\if@rl \I {28.4}\else \textLR {4.28}\fi }{\ignorespaces Analyse des trois bugs cumulatifs du parser PR review (Sprint 8)}}{83}{figure.caption.85}%
+\contentsline {figure}{\numberline {\if@rl \I {29.4}\else \textLR {4.29}\fi }{\ignorespaces Architecture du parser réécrit}}{85}{figure.caption.87}%
+\contentsline {figure}{\numberline {\if@rl \I {30.4}\else \textLR {4.30}\fi }{\ignorespaces Prompt restructuré — STEP 1}}{87}{figure.caption.88}%
+\contentsline {figure}{\numberline {\if@rl \I {31.4}\else \textLR {4.31}\fi }{\ignorespaces Prompt restructuré — STEP 2}}{88}{figure.caption.89}%
+\contentsline {figure}{\numberline {\if@rl \I {32.4}\else \textLR {4.32}\fi }{\ignorespaces Test HMAC}}{102}{figure.caption.95}%
+\contentsline {figure}{\numberline {\if@rl \I {33.4}\else \textLR {4.33}\fi }{\ignorespaces Test déduplication Redis}}{103}{figure.caption.96}%
+\contentsline {figure}{\numberline {\if@rl \I {34.4}\else \textLR {4.34}\fi }{\ignorespaces Test circuit breaker}}{103}{figure.caption.97}%
+\contentsline {figure}{\numberline {\if@rl \I {35.4}\else \textLR {4.35}\fi }{\ignorespaces Test gardien disque}}{104}{figure.caption.98}%
+\contentsline {figure}{\numberline {\if@rl \I {36.4}\else \textLR {4.36}\fi }{\ignorespaces PR~\#18 — vue d'ensemble de la revue sur GitHub (1/3) : en-tête de la \textit {Pull Request} et premiers commentaires de revue}}{105}{figure.caption.99}%
+\contentsline {figure}{\numberline {\if@rl \I {37.4}\else \textLR {4.37}\fi }{\ignorespaces PR~\#18 — vue d'ensemble de la revue sur GitHub (2/3) : suite des commentaires \textit {inline} sur le diff}}{106}{figure.caption.100}%
+\contentsline {figure}{\numberline {\if@rl \I {38.4}\else \textLR {4.38}\fi }{\ignorespaces PR~\#18 — vue d'ensemble de la revue sur GitHub (3/3) : revue de sécurité consolidée et verdict \texttt {BLOCK}}}{107}{figure.caption.101}%
+\contentsline {figure}{\numberline {\if@rl \I {39.4}\else \textLR {4.39}\fi }{\ignorespaces Prometheus — 15 règles d'alerte inactives}}{108}{figure.caption.103}%
 \babel@toc {arabic}{}\relax 
 \babel@toc {french}{}\relax 
 \babel@toc {english}{}\relax 

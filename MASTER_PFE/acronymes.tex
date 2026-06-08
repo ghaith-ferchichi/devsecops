@@ -1,28 +1,40 @@
 \chapter*{Liste des abréviations}
-\addcontentsline{toc}{chapter}{Liste des abréviations}
 
+\begingroup
+\setlist[itemize]{leftmargin=0pt, itemindent=0pt, labelwidth=0pt, labelsep=0pt, label={}}
+% Local override: widen the abbreviation column so long labels (e.g. DevSecOps)
+% do not overlap the "=" sign.
+\renewcommand{\sortitem}[2][\relax]{%
+  \DTLnewrow{list}%
+  \DTLnewdbentry{list}{sortlabel}{#1}%
+  \DTLnewdbentry{list}{description}{%
+      \begin{minipage}[t]{0.17\columnwidth}~\textbf{#1}\end{minipage}%
+      \begin{minipage}[t]{0.04\columnwidth}\textbf{=}\end{minipage}%
+      \begin{minipage}[t]{0.77\columnwidth}#2\end{minipage}%
+  }%
+}%
 \begin{acronyms}
 
     \sortitem[AI]{
-        \textbf{A}rtificial \textbf{I}ntelligence — Intelligence Artificielle
+        \textbf{A}rtificial \textbf{I}ntelligence
     }
     \sortitem[API]{
         \textbf{A}pplication \textbf{P}rogramming \textbf{I}nterface
     }
     \sortitem[AVX2]{
-        \textbf{A}dvanced \textbf{V}ector e\textbf{X}tensions 2 — Jeu d'instructions SIMD pour l'inférence CPU
+        \textbf{A}dvanced \textbf{V}ector e\textbf{X}tensions 2
     }
     \sortitem[BTE]{
         \textbf{B}anque de \textbf{T}unisie et des \textbf{E}mirats
     }
     \sortitem[CI]{
-        \textbf{C}ontinuous \textbf{I}ntegration — Intégration Continue
+        \textbf{C}ontinuous \textbf{I}ntegration
     }
     \sortitem[CD]{
-        \textbf{C}ontinuous \textbf{D}eployment — Déploiement Continu
+        \textbf{C}ontinuous \textbf{D}eployment
     }
     \sortitem[CPU]{
-        \textbf{C}entral \textbf{P}rocessing \textbf{U}nit — Unité Centrale de Traitement
+        \textbf{C}entral \textbf{P}rocessing \textbf{U}nit
     }
     \sortitem[CVE]{
         \textbf{C}ommon \textbf{V}ulnerabilities and \textbf{E}xposures
@@ -37,7 +49,7 @@
         \textbf{D}irection des \textbf{S}ystèmes d'\textbf{I}nformation
     }
     \sortitem[GGUF]{
-        \textbf{GG}ML \textbf{U}niversal \textbf{F}ormat — Format universel de fichier pour modèles de langage quantisés
+        \textbf{GG}ML \textbf{U}niversal \textbf{F}ormat
     }
     \sortitem[GPU]{
         \textbf{G}raphics \textbf{P}rocessing \textbf{U}nit
@@ -55,10 +67,10 @@
         \textbf{J}ava\textbf{S}cript \textbf{O}bject \textbf{N}otation
     }
     \sortitem[LLM]{
-        \textbf{L}arge \textbf{L}anguage \textbf{M}odel — Grand Modèle de Langage
+        \textbf{L}arge \textbf{L}anguage \textbf{M}odel
     }
     \sortitem[MoE]{
-        \textbf{M}ixture \textbf{o}f \textbf{E}xperts — Architecture de modèle à experts spécialisés activés sélectivement
+        \textbf{M}ixture \textbf{o}f \textbf{E}xperts
     }
     \sortitem[NIST]{
         \textbf{N}ational \textbf{I}nstitute of \textbf{S}tandards and \textbf{T}echnology
@@ -73,7 +85,7 @@
         \textbf{P}ull \textbf{R}equest
     }
     \sortitem[RAM]{
-        \textbf{R}andom \textbf{A}ccess \textbf{M}emory — Mémoire Vive
+        \textbf{R}andom \textbf{A}ccess \textbf{M}emory
     }
     \sortitem[REST]{
         \textbf{RE}presentational \textbf{S}tate \textbf{T}ransfer
@@ -103,16 +115,20 @@
         \textbf{T}ime \textbf{T}o \textbf{L}ive
     }
     \sortitem[UI]{
-        \textbf{U}ser \textbf{I}nterface — Interface Utilisateur
+        \textbf{U}ser \textbf{I}nterface
     }
     \sortitem[VPS]{
-        \textbf{V}irtual \textbf{P}rivate \textbf{S}erver — Serveur Privé Virtuel
+        \textbf{V}irtual \textbf{P}rivate \textbf{S}erver
     }
     \sortitem[WIP]{
-        \textbf{W}ork \textbf{I}n \textbf{P}rogress — Travail En Cours
+        \textbf{W}ork \textbf{I}n \textbf{P}rogress
     }
     \sortitem[YAML]{
         \textbf{Y}AML \textbf{A}in't \textbf{M}arkup \textbf{L}anguage
     }
+    \sortitem[OS]{
+        \textbf{O}perating \textbf{S}ystem
+    }
 
 \end{acronyms}
+\endgroup

@@ -31,7 +31,6 @@
     \field{howpublished}{\url{https://www.bte.com.tn}}
     \field{note}{[Accès le 5-Mai-2026]}
     \field{title}{{Site officiel de la BTE}}
-    \field{year}{2024}
   \endentry
 
   \entry{Agile}{misc}{}{}
@@ -119,7 +118,6 @@
     \field{howpublished}{\url{https://www.atlassian.com/agile/kanban}}
     \field{note}{[Accès le 8-Mai-2026]}
     \field{title}{{Kanban — A brief introduction to the Kanban method}}
-    \field{year}{2023}
   \endentry
 
   \entry{DevSecOps}{misc}{}{}
@@ -136,7 +134,6 @@
   \field{howpublished}{\url{https://www.redhat.com/en/topics/devops/what-is-devsecops}}
     \field{note}{[Accès le 8-Mai-2026]}
     \field{title}{{What is DevSecOps?}}
-    \field{year}{2023}
   \endentry
 
   \entry{NIST_DevSecOps}{misc}{}{}
@@ -189,7 +186,6 @@
     \field{howpublished}{\url{https://docs.github.com/en/webhooks}}
     \field{note}{[Accès le 12-Mai-2026]}
     \field{title}{{GitHub Webhooks Documentation}}
-    \field{year}{2024}
   \endentry
 
   \entry{HMAC}{misc}{}{}
@@ -224,7 +220,6 @@
     \field{howpublished}{\url{https://qwenlm.github.io/blog/qwen2.5-coder/}}
     \field{note}{[Accès le 12-Mai-2026]}
     \field{title}{{Qwen2.5-Coder Technical Report}}
-    \field{year}{2024}
   \endentry
 
   \entry{Ollama}{misc}{}{}
@@ -241,7 +236,6 @@
     \field{howpublished}{\url{https://ollama.com}}
     \field{note}{[Accès le 15-Mai-2026]}
     \field{title}{{Ollama — Run Large Language Models locally}}
-    \field{year}{2024}
   \endentry
 
   \entry{LangGraph}{misc}{}{}
@@ -259,7 +253,6 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{LangGraph — Build stateful, multi-actor applications with
   LLMs}}
-    \field{year}{2024}
   \endentry
 
   \entry{LangChain}{misc}{}{}
@@ -276,7 +269,6 @@
     \field{howpublished}{\url{https://python.langchain.com/docs/}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{LangChain Documentation}}
-    \field{year}{2024}
   \endentry
 
   \entry{Trivy}{misc}{}{}
@@ -293,7 +285,6 @@
     \field{howpublished}{\url{https://trivy.dev}}
     \field{note}{[Accès le 20-Mai-2026]}
     \field{title}{{Trivy — A comprehensive and versatile security scanner}}
-    \field{year}{2024}
   \endentry
 
   \entry{Gitleaks}{misc}{}{}
@@ -312,7 +303,6 @@
     \field{howpublished}{\url{https://gitleaks.io}}
     \field{note}{[Accès le 20-Mai-2026]}
     \field{title}{{Gitleaks — Protect and discover secrets using Gitleaks}}
-    \field{year}{2024}
   \endentry
 
   \entry{Semgrep}{misc}{}{}
@@ -329,7 +319,6 @@
     \field{howpublished}{\url{https://semgrep.dev}}
     \field{note}{[Accès le 20-Mai-2026]}
     \field{title}{{Semgrep — Lightweight static analysis for many languages}}
-    \field{year}{2024}
   \endentry
 
   \entry{Checkov}{misc}{}{}
@@ -347,7 +336,6 @@
     \field{note}{[Accès le 20-Mai-2026]}
     \field{title}{{Checkov — Static code analysis tool for infrastructure as
   code}}
-    \field{year}{2024}
   \endentry
 
   \entry{OSVScanner}{misc}{}{}
@@ -365,7 +353,6 @@
     \field{note}{[Accès le 20-Mai-2026]}
     \field{title}{{OSV-Scanner — Vulnerability scanner for open source
   dependencies}}
-    \field{year}{2024}
   \endentry
 
   \entry{FastAPI}{misc}{}{}
@@ -385,7 +372,6 @@
     \field{note}{[Accès le 15-Mai-2026]}
     \field{title}{{FastAPI — Modern, fast web framework for building APIs
   with Python}}
-    \field{year}{2024}
   \endentry
 
   \entry{PostgreSQL}{misc}{}{}
@@ -402,7 +388,6 @@
     \field{howpublished}{\url{https://www.postgresql.org/docs/16/}}
     \field{note}{[Accès le 15-Mai-2026]}
     \field{title}{{PostgreSQL 16 Documentation}}
-    \field{year}{2024}
   \endentry
 
   \entry{Redis}{misc}{}{}
@@ -419,7 +404,6 @@
     \field{howpublished}{\url{https://redis.io/docs/}}
     \field{note}{[Accès le 15-Mai-2026]}
     \field{title}{{Redis Documentation}}
-    \field{year}{2024}
   \endentry
 
   \entry{Prometheus}{misc}{}{}
@@ -436,7 +420,6 @@
   \field{howpublished}{\url{https://prometheus.io/docs/introduction/overview/}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Prometheus — Monitoring system and time series database}}
-    \field{year}{2024}
   \endentry
 
   \entry{VictoriaMetrics}{misc}{}{}
@@ -454,7 +437,6 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{VictoriaMetrics — Fast, cost-effective and scalable
   monitoring solution}}
-    \field{year}{2024}
   \endentry
 
   \entry{Grafana}{misc}{}{}
@@ -471,7 +453,6 @@
     \field{howpublished}{\url{https://grafana.com/docs/grafana/latest/}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Grafana Documentation — The open observability platform}}
-    \field{year}{2024}
   \endentry
 
   \entry{NodeExporter}{misc}{}{}
@@ -489,7 +470,6 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{node\_exporter — Prometheus exporter for hardware and OS
   metrics}}
-    \field{year}{2024}
   \endentry
 
   \entry{AlertManager}{misc}{}{}
@@ -506,7 +486,6 @@
   \field{howpublished}{\url{https://prometheus.io/docs/alerting/latest/alertmanager/}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Alertmanager — Handles alerts sent by Prometheus server}}
-    \field{year}{2024}
   \endentry
 
   \entry{cAdvisor}{misc}{}{}
@@ -524,7 +503,6 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{cAdvisor — Container Advisor, analyzes resource usage and
   performance of running containers}}
-    \field{year}{2024}
   \endentry
 
   \entry{NGINX}{misc}{}{}
@@ -541,7 +519,6 @@
     \field{howpublished}{\url{https://nginx.org/en/docs/}}
     \field{note}{[Accès le 15-Mai-2026]}
     \field{title}{{NGINX Documentation}}
-    \field{year}{2024}
   \endentry
 
   \entry{Docker}{misc}{}{}
@@ -558,7 +535,6 @@
     \field{howpublished}{\url{https://docs.docker.com}}
     \field{note}{[Accès le 12-Mai-2026]}
     \field{title}{{Docker Documentation}}
-    \field{year}{2024}
   \endentry
 
   \entry{LocalAI}{misc}{}{}
@@ -576,7 +552,6 @@
     \field{note}{[Accès le 12-Mai-2026]}
     \field{title}{{LocalAI — Open Source, OpenAI-compatible inference
   server}}
-    \field{year}{2024}
   \endentry
 
   \entry{GGUF}{misc}{}{}
@@ -593,7 +568,6 @@
   \field{howpublished}{\url{https://github.com/ggerganov/ggml/blob/master/docs/gguf.md}}
     \field{note}{[Accès le 12-Mai-2026]}
     \field{title}{{GGUF — File format for quantised language models}}
-    \field{year}{2024}
   \endentry
 
   \entry{HuggingFaceHub}{misc}{}{}
@@ -610,7 +584,6 @@
     \field{howpublished}{\url{https://huggingface.co}}
     \field{note}{[Accès le 12-Mai-2026]}
     \field{title}{{The Hugging Face Hub — Models, Datasets and Spaces}}
-    \field{year}{2024}
   \endentry
 
   \entry{OpenAI}{misc}{}{}
@@ -627,7 +600,6 @@
     \field{howpublished}{\url{https://platform.openai.com/docs/api-reference}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{OpenAI Platform — API Reference}}
-    \field{year}{2024}
   \endentry
 
   \entry{Anthropic}{misc}{}{}
@@ -644,7 +616,6 @@
     \field{howpublished}{\url{https://docs.anthropic.com}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Anthropic Claude API Documentation}}
-    \field{year}{2024}
   \endentry
 
   \entry{MistralAI}{misc}{}{}
@@ -661,7 +632,6 @@
     \field{howpublished}{\url{https://docs.mistral.ai}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Mistral AI Platform Documentation}}
-    \field{year}{2024}
   \endentry
 
   \entry{vLLM}{misc}{}{}
@@ -679,7 +649,6 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{vLLM — Easy, fast, and cheap LLM serving with
   PagedAttention}}
-    \field{year}{2024}
   \endentry
 
   \entry{Llama3}{misc}{}{}
@@ -696,7 +665,6 @@
   \field{howpublished}{\url{https://ai.meta.com/blog/llama-3-2-connect-2024-vision-edge-mobile-devices/}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Llama 3.2 — Multimodal and lightweight models}}
-    \field{year}{2024}
   \endentry
 
   \entry{Granite3}{misc}{}{}
@@ -714,7 +682,6 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{IBM Granite 3.1 — Dense and Mixture-of-Experts foundation
   models}}
-    \field{year}{2024}
   \endentry
 
   \entry{Prefect}{misc}{}{}
@@ -731,7 +698,6 @@
     \field{howpublished}{\url{https://docs.prefect.io}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Prefect — Modern dataflow orchestration platform}}
-    \field{year}{2024}
   \endentry
 
   \entry{Celery}{misc}{}{}
@@ -748,7 +714,6 @@
     \field{howpublished}{\url{https://docs.celeryq.dev}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Celery — Distributed task queue}}
-    \field{year}{2024}
   \endentry
 
   \entry{OWASPSAST}{misc}{}{}
@@ -765,7 +730,6 @@
   \field{howpublished}{\url{https://owasp.org/www-community/Source_Code_Analysis_Tools}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{OWASP Source Code Analysis Tools — SAST Tools Comparison}}
-    \field{year}{2024}
   \endentry
 
   \entry{CNCFLandscape}{misc}{}{}
@@ -783,7 +747,6 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{CNCF Cloud Native Landscape — Observability and Security
   categories}}
-    \field{year}{2024}
   \endentry
 
   \entry{Grype}{misc}{}{}
@@ -801,7 +764,6 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Grype — A vulnerability scanner for container images and
   filesystems}}
-    \field{year}{2024}
   \endentry
 
   \entry{TruffleHog}{misc}{}{}
@@ -818,7 +780,6 @@
     \field{howpublished}{\url{https://github.com/trufflesecurity/trufflehog}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{TruffleHog — Find credentials all over the place}}
-    \field{year}{2024}
   \endentry
 
   \entry{SonarQube}{misc}{}{}
@@ -835,7 +796,6 @@
     \field{howpublished}{\url{https://docs.sonarsource.com/sonarqube}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{SonarQube — Continuous code quality and security}}
-    \field{year}{2024}
   \endentry
 
   \entry{KICS}{misc}{}{}
@@ -852,7 +812,6 @@
     \field{howpublished}{\url{https://docs.kics.io}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{KICS — Keeping Infrastructure as Code Secure}}
-    \field{year}{2024}
   \endentry
 
   \entry{Snyk}{misc}{}{}
@@ -869,7 +828,6 @@
     \field{howpublished}{\url{https://docs.snyk.io}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Snyk — Developer security platform}}
-    \field{year}{2024}
   \endentry
 
   \entry{DataDog}{misc}{}{}
@@ -886,7 +844,6 @@
     \field{howpublished}{\url{https://docs.datadoghq.com}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Datadog — Cloud monitoring as a service}}
-    \field{year}{2024}
   \endentry
 
   \entry{InfluxDB}{misc}{}{}
@@ -903,7 +860,6 @@
     \field{howpublished}{\url{https://docs.influxdata.com/influxdb/}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{InfluxDB — Time series data platform}}
-    \field{year}{2024}
   \endentry
 
   \entry{Kibana}{misc}{}{}
@@ -921,7 +877,6 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{Kibana — Visualization and management tool for
   Elasticsearch}}
-    \field{year}{2024}
   \endentry
 
   \entry{PagerDuty}{misc}{}{}
@@ -938,7 +893,6 @@
     \field{howpublished}{\url{https://developer.pagerduty.com}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{PagerDuty — Digital operations management platform}}
-    \field{year}{2024}
   \endentry
 \enddatalist
 \endinput

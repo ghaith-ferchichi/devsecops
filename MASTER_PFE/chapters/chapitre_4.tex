@@ -25,17 +25,17 @@ bout en bout de la plateforme.
         \centering
         \begin{tabular}{|m{3cm}|m{3cm}|m{4.5cm}|m{2.5cm}|}
         \hline
-        \textbf{Composant} & \textbf{Valeur} & \textbf{Détail} & \textbf{Contrainte} \\
+        \textbf{Composant} & \textbf{Valeur} & \textbf{Détail} \\
         \hline
-        CPU & 12 cœurs & Intel Haswell, AVX2 & \texttt{libggml-cpu-haswell.so} \\
+        CPU & 12 cœurs & Intel Haswell, AVX2 \\
         \hline
-        RAM & 45 Go & \textasciitilde41 Go disponibles & Ollama limité à 42 Go \\
+        RAM & 45 Go & \textasciitilde41 Go disponibles \\
         \hline
-        Disque & 290 Go & \textasciitilde245 Go libres & Après urgence 233 Go récupérés \\
+        Disque & 290 Go & \textasciitilde245 Go libres \\
         \hline
-        GPU & Aucun & CPU-only AVX2 & 14B à \textasciitilde3–6 tok/s \\
+        GPU & Aucun & CPU-only AVX2 \\
         \hline
-        OS & Ubuntu Linux & kernel 6.14.0-37 & Docker 29.4.0 \\
+        OS & Ubuntu Linux & kernel 6.14.0-37 \\
         \hline
         \end{tabular}
         \caption{Environnement matériel — VPS de production BTE}
@@ -87,10 +87,12 @@ bout en bout de la plateforme.
     (Sprint~1 à Sprint~8) qui ont construit la plateforme dans sa forme livrée,
     et deux micro-sprints d'extension (Post-Sprint~8 et Sprint~8.1) menés après la
     clôture du périmètre initial pour évaluer un second backend d'inférence et
-    étendre la couverture d'observabilité. Chaque sprint est présenté ci-dessous
-    selon le même encart standardisé (\textit{Objectif du sprint}, \textit{Obstacles
-    rencontrés}, \textit{Livrable}), suivi du détail technique des décisions, des
-    configurations et des correctifs déployés.
+    étendre la couverture d'observabilité.
+
+    % Chaque sprint est présenté ci-dessous
+    %selon le même encart standardisé (\textit{Objectif du sprint}, \textit{Obstacles
+    %rencontrés}, \textit{Livrable}), suivi du détail technique des décisions, des
+    %configurations et des correctifs déployés.
 
     \subsection{Sprint 1 — Fondations : VPS, Docker et webhook GitHub}
 
@@ -108,35 +110,33 @@ bout en bout de la plateforme.
         \end{description}
 
         Le premier sprint a consisté à mettre en place l'ensemble de l'infrastructure
-        Docker \cite{Docker} et à valider la réception des webhooks GitHub.
+        Docker Docker et à valider la réception des webhooks GitHub.
         Le déploiement initial de la plateforme a comporté l'installation de
         Docker Engine 29.4.0 sur l'OS Ubuntu existant, la configuration des
         règles \texttt{iptables} limitant l'exposition externe aux ports 80 et
         443 via nginx, l'initialisation du schéma PostgreSQL ainsi que le clone
         et le démarrage des onze conteneurs. Ces étapes, relevant de la pratique
-        courante d'administration système Linux, ne sont pas détaillées ici ; le
-        chapitre 3 présente l'architecture résultante et le tableau
-        \ref{tab:containers} liste les onze conteneurs déployés. La suite de
+        courante d'administration système Linux. La suite de
         cette sous-section se concentre sur les deux tunings spécifiques qui
         ont conditionné la réussite du sprint : la configuration de performance
-        d'Ollama pour un fonctionnement CPU-only, et le correctif nginx
+        d'Ollama pour un fonctionnement CPU-only et le correctif nginx
         nécessaire à la bonne réception des webhooks GitHub.
 
-        La configuration de performance d'Ollama \cite{Ollama} est critique pour un fonctionnement CPU-only.
+        La configuration de performance d'Ollama Ollama est critique pour un fonctionnement CPU-only.
         Sans tuning, le modèle 14B consomme plus de onze Go de mémoire KV à seize mille
         tokens de contexte avec les paramètres par défaut. La figure \ref{fig:ollama_compose}
-        présente la configuration Ollama dans le fichier \texttt{docker-compose.yml}.
+        présente la configuration Ollama dans le fichier \texttt{docker-compose.\allowbreak{}yml}.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{ollama_docker_compose}}
-            \caption{Configuration Ollama dans docker-compose.yml — tuning CPU Haswell}
+            \caption{Configuration Ollama dans docker-compose.yml}
             \label{fig:ollama_compose}
         \end{figure}
 
-        La variable \texttt{OLLAMA\_FLASH\_ATTENTION=1} réduit la complexité mémoire du
+        La variable \texttt{OLLAMA\_\allowbreak{}FLASH\_\allowbreak{}ATTENTION=1} réduit la complexité mémoire du
         cache KV de O(n²) à O(n), économisant environ 650 Mo à seize mille tokens de
-        contexte. La variable \texttt{OLLAMA\_KV\_CACHE\_TYPE=q8\_0} applique une
+        contexte. La variable \texttt{OLLAMA\_\allowbreak{}KV\_\allowbreak{}CACHE\_\allowbreak{}TYPE=q8\_\allowbreak{}0} applique une
         quantisation huit bits au cache KV, divisant sa consommation mémoire par deux.
         La mémoire partagée est fixée à deux Go pour les buffers de synchronisation
         des threads, contre une valeur par défaut de soixante-quatre Mo insuffisante
@@ -152,15 +152,15 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{nginx_webhook_fix}}
-            \caption{Correctif nginx — proxy HTTP/1.1 pour les webhooks GitHub}
+            \caption{Correctif nginx}
             \label{fig:nginx_fix}
         \end{figure}
 
-        L'ajout de \texttt{proxy\_http\_version 1.1} et \texttt{proxy\_set\_header Connection ""}
+        L'ajout de \texttt{proxy\_\allowbreak{}http\_\allowbreak{}version 1.\allowbreak{}1} et \texttt{proxy\_\allowbreak{}set\_\allowbreak{}header Connection ""}
         a résolu ce problème en forçant nginx à utiliser des connexions persistantes
         HTTP/1.1 avec l'agent, éliminant le mangling des corps \textit{chunked}.
 
-        \paragraph{Configuration de l'intégration GitHub.}
+        \paragraph{Configuration de l'intégration GitHub:}
         Côté GitHub, deux configurations ont été nécessaires pour permettre la
         communication bidirectionnelle entre la plateforme et le dépôt cible.
         En premier lieu, un \textit{Personal Access Token} a été créé sur le
@@ -168,34 +168,29 @@ bout en bout de la plateforme.
         contenu) et \texttt{write:discussion} (publication des commentaires
         \textit{inline} et mise à jour du statut du commit), comme présenté
         sur la figure \ref{fig:github_token_creation}. Ce token est injecté
-        dans l'agent via la variable d'environnement \texttt{GITHUB\_TOKEN}
+        dans l'agent via la variable d'environnement \texttt{GITHUB\_\allowbreak{}TOKEN}
         et stocké en \textit{secret} Docker pour ne pas apparaître dans les
         logs ou les images.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{github_token_creation}}
-            \caption{Création du Personal Access Token GitHub avec les scopes
-                     \texttt{repo} et \texttt{write:discussion} nécessaires à
-                     la publication des commentaires et du statut du commit.
-                     Le token complet est masqué pour des raisons de sécurité.}
+            \caption{Création du Personal Access Token GitHub}
             \label{fig:github_token_creation}
         \end{figure}
 
         En second lieu, un \textit{webhook} a été configuré sur le dépôt cible
         pour notifier l'agent à chaque événement de \textit{Pull Request}.
         La figure \ref{fig:github_webhook_config} présente cette configuration :
-        l'URL pointe vers l'endpoint public \texttt{/webhooks/github} de l'agent,
+        l'URL pointe vers l'endpoint public \texttt{/\allowbreak{}webhooks/\allowbreak{}github} de l'agent,
         un secret partagé est défini pour la signature HMAC-SHA256 des charges
-        utiles, et le \textit{content type} est fixé à \texttt{application/json}
+        utiles, et le \textit{content type} est fixé à \texttt{application/\allowbreak{}json}
         conformément à ce qu'attend le router FastAPI.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{github_webhook_config}}
-            \caption{Configuration du \textit{webhook} GitHub sur le dépôt cible —
-                     URL de l'endpoint, secret HMAC partagé et content type JSON.
-                     Le secret est masqué pour des raisons de sécurité.}
+            \caption{Configuration du \textit{webhook} GitHub sur le dépôt cible}
             \label{fig:github_webhook_config}
         \end{figure}
 
@@ -208,28 +203,23 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{webhook_received_github}}
-            \caption{Webhook GitHub correctement reçu par l'agent — vue de
-                     l'historique des livraisons côté GitHub avec réponse 202
-                     \textit{Accepted}.}
+            \caption{Webhook GitHub correctement reçu par l'agent}
             \label{fig:webhook_received_github}
         \end{figure}
 
-        \paragraph{Traitement applicatif de l'événement.}
+        \paragraph{Traitement applicatif de l'événement:}
         La livraison côté GitHub ne suffit pas : il faut aussi décrire ce que
         l'agent fait une fois la requête reçue. La figure
         \ref{fig:github_webhook_handler} présente le handler implémenté dans
-        \texttt{app/routers/webhooks.py}. L'endpoint
-        \texttt{POST /webhooks/github} répond en 202 et confie le reste à une
+        \texttt{app/\allowbreak{}routers/\allowbreak{}webhooks.\allowbreak{}py}. L'endpoint
+        \texttt{POST /\allowbreak{}webhooks/\allowbreak{}github} répond en 202 et confie le reste à une
         tâche de fond, afin de rester dans les délais de réponse imposés par
         GitHub.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.92\columnwidth]{github_webhook_handler_code}}
-            \caption{Handler FastAPI de réception des webhooks GitHub ---
-                     validation HMAC-SHA256, filtrage des événements
-                     \textit{pull\_request} et dispatch asynchrone vers le
-                     moteur de workflow.}
+            \caption{Handler FastAPI de réception des webhooks GitHub}
             \label{fig:github_webhook_handler}
         \end{figure}
 
@@ -240,15 +230,15 @@ bout en bout de la plateforme.
         est ensuite interprété selon le \textit{content type} reçu. GitHub
         peut transmettre la charge utile en JSON direct, ou l'encapsuler dans
         un champ \texttt{payload} au format
-        \texttt{application/x-www-form-urlencoded}. Cette seconde branche a
+        \texttt{application/\allowbreak{}x-www-form-urlencoded}. Cette seconde branche a
         été ajoutée après les premiers tests d'intégration, lorsque certaines
         livraisons ne correspondaient pas au format JSON initialement prévu.
 
-        Seuls les événements \texttt{pull\_request} dont l'action vaut
+        Seuls les événements \texttt{pull\_\allowbreak{}request} dont l'action vaut
         \texttt{opened} ou \texttt{synchronize} sont conservés. Les autres
         retournent une réponse HTTP 200 avec un message d'ignorance, sans
         lancer de pipeline. Pour un événement accepté, un identifiant de
-        tâche est généré et la fonction \texttt{dispatch\_event} est
+        tâche est généré et la fonction \texttt{dispatch\_\allowbreak{}event} est
         enregistrée via \texttt{BackgroundTasks} de FastAPI. L'appel HTTP se
         termine sans attendre la fin de l'analyse ; la déduplication Redis et
         le lancement du graphe LangGraph sont pris en charge par le
@@ -266,7 +256,7 @@ bout en bout de la plateforme.
                 permettre au modèle d'identifier le contexte d'une vulnérabilité.
             \item[Livrable :] Génération d'un diff local avec quinze lignes de
                 contexte, exécution parallèle des cinq scanners via
-                \texttt{asyncio.gather()} avec isolation des erreurs par coroutine,
+                \texttt{asyncio.\allowbreak{}gather()} avec isolation des erreurs par coroutine,
                 mise en cache Redis des résultats avec TTL d'une heure.
         \end{description}
 
@@ -282,22 +272,21 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{diff_comparison}}
-            \caption{Comparaison diff API GitHub (-U3) vs diff local (-U15) — contexte SQL injection}
+            \caption{Comparaison diff API GitHub (-U3) vs diff local (-U15)}
             \label{fig:diff_comparison}
         \end{figure}
 
-        L'exécution parallèle des scanners via \texttt{asyncio.gather()} est un élément
+        L'exécution parallèle des scanners via \texttt{asyncio.\allowbreak{}gather()} est un élément
         clé des performances du pipeline. Chaque scanner s'exécute dans sa propre coroutine
         avec isolation des erreurs, et son résultat est mis en cache dans Redis. La figure
         \ref{fig:scan_parallel} montre le résultat de cette exécution parallèle avec les
         sorties des cinq scanners, ici sur la PR~\#18 du dépôt
-        \texttt{GhaiethFerchichi/Vuln-application}.
+        \texttt{GhaiethFerchichi/\allowbreak{}Vuln-application}.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{scanners_parallel_output}}
-            \caption{PR~\#18 — exécution parallèle des cinq scanners, résultats et mise
-                     en cache Redis}
+            \caption{PR~\#18 — exécution parallèle des cinq scanners}
             \label{fig:scan_parallel}
         \end{figure}
 
@@ -313,7 +302,7 @@ bout en bout de la plateforme.
                 totalisant entre treize et vingt-trois minutes, durée incompatible
                 avec la fluidité d'un pipeline CI/CD.
             \item[Livrable :] Fusion des deux appels 14B en un seul appel combiné
-                dans le nœud \texttt{analyze\_review\_node}, durée totale du pipeline
+                dans le nœud \texttt{analyze\_\allowbreak{}review\_\allowbreak{}node}, durée totale du pipeline
                 ramenée à quinze à vingt-cinq minutes (gain d'environ 50\,\% par rapport
                 aux deux appels séquentiels), commentaires inline opérationnels avec
                 bouton \textit{Apply}.
@@ -343,7 +332,7 @@ bout en bout de la plateforme.
         \end{table}
 
         La PR~\#18 sert de fil rouge pour valider ce sprint. Le fichier
-        \texttt{banking\_demo\_final.php} y regroupe cinq failles types :
+        \texttt{banking\_\allowbreak{}demo\_\allowbreak{}final.\allowbreak{}php} y regroupe cinq failles types :
         injection SQL, secrets en dur, path traversal, injection de commande
         et hachage faible. Les figures~\ref{fig:github_review_sec0}
         à~\ref{fig:slack_notification_pr_result} retracent la revue de bout
@@ -353,32 +342,28 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_0}
-            \caption{PR~\#18 — revue de sécurité, partie~1 : résumé et score
-                     de risque (\texttt{HIGH}, verdict \texttt{BLOCK}).}
+            \caption{PR~\#18 — revue de sécurité, partie~1}
             \label{fig:github_review_sec0}
         \end{figure}
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_1}
-            \caption{PR~\#18 — revue de sécurité, partie~2 : détail des
-                     vulnérabilités et résultats SAST.}
+            \caption{PR~\#18 — revue de sécurité, partie~2}
             \label{fig:github_review_sec1}
         \end{figure}
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_2}
-            \caption{PR~\#18 — revue de sécurité, partie~3 : recommandations,
-                     échec du check \texttt{security-ai-agent} et statut du commit.}
+            \caption{PR~\#18 — revue de sécurité, partie~3}
             \label{fig:github_review_sec2}
         \end{figure}
 
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{pr_comment-code_quality_review_0}
-            \caption{PR~\#18 — revue de qualité de code publiée dans
-                     l'onglet \textit{Conversation}.}
+            \caption{PR~\#18 — revue de qualité de code publiée dans l'onglet \textit{Conversation}.}
             \label{fig:github_review_quality}
         \end{figure}
 
@@ -389,8 +374,7 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{github_inline_suggestions}
-            \caption{PR~\#18 — suggestion \textit{inline} sur l'injection SQL
-                     (\texttt{banking\_demo\_final.php}, bouton \textit{Apply}).}
+            \caption{PR~\#18 — suggestion \textit{inline} sur l'injection SQL}
             \label{fig:inline_suggestions}
         \end{figure}
 
@@ -402,9 +386,7 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.92\columnwidth]{agent_logs_pr_complete}}
-            \caption{PR~\#18 — journaux agent lors de la finalisation
-                     (\texttt{pr=18}, cinq \textit{inline}, statut commit
-                     \texttt{error}).}
+            \caption{PR~\#18 — journaux agent lors de la finalisation}
             \label{fig:agent_logs_pr_complete}
         \end{figure}
 
@@ -415,8 +397,7 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.80\columnwidth]{slack_notification_pr_result}}
-            \caption{PR~\#18 — notification Slack de fin de revue
-                     (\texttt{HIGH}, \texttt{BLOCK}).}
+            \caption{PR~\#18 — notification Slack de fin de revue}
             \label{fig:slack_notification_pr_result}
         \end{figure}
 
@@ -428,7 +409,7 @@ bout en bout de la plateforme.
                 surveillance disque autonome et un \textit{health digest} quotidien
                 publié sur Slack.
             \item[Obstacles rencontrés :] Incident critique du 20 avril 2026. Un
-                téléchargement partiel du modèle \texttt{qwen2.5-coder:32b} a laissé
+                téléchargement partiel du modèle \texttt{qwen2.\allowbreak{}5-coder:32b} a laissé
                 un blob de 242~Go sur le disque sans manifeste associé, portant
                 l'utilisation à 92\,\%.
             \item[Livrable :] 233~Go récupérés sans aucune interruption de service,
@@ -441,7 +422,7 @@ bout en bout de la plateforme.
 
         L'incident date du sprint trois ; nous le racontons ici parce que c'est
         lui qui a poussé à coder le gardien disque de ce sprint. Un téléchargement
-        interrompu du modèle \texttt{qwen2.5-coder:32b} avait laissé un blob de
+        interrompu du modèle \texttt{qwen2.\allowbreak{}5-coder:32b} avait laissé un blob de
         242~Go sans manifeste. Avec le cache Docker et le modèle
         \texttt{llama3.2:3b} toujours présent, le disque est monté à 92\,\%.
         Nous n'avons pas gardé de capture d'écran de la session de dépannage ;
@@ -460,24 +441,22 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.65\columnwidth,height=0.80\textheight,keepaspectratio]{scheduler_tasks}}
-            \caption{Scheduler autonome — gardien disque et health digest quotidien}
+            \caption{Scheduler autonome}
             \label{fig:scheduler}
         \end{figure}
 
         Pour permettre à l'agent d'émettre des notifications sur Slack, un
         \textit{bot} a été créé dans l'espace \texttt{team-devsecops} avec les
         portées \texttt{channels:read}, \texttt{chat:write} et
-        \texttt{chat:write.public}, comme le montre la
+        \texttt{chat:write.\allowbreak{}public}, comme le montre la
         figure~\ref{fig:slack_bot_config}. Son \textit{bot token} est injecté
-        via \texttt{SLACK\_BOT\_TOKEN}, l'identifiant du canal via
-        \texttt{SLACK\_CHANNEL\_ID}.
+        via \texttt{SLACK\_\allowbreak{}BOT\_\allowbreak{}TOKEN}, l'identifiant du canal via
+        \texttt{SLACK\_\allowbreak{}CHANNEL\_\allowbreak{}ID}.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{slack_bot_config}}
-            \caption{Configuration OAuth du \textit{bot} Slack — portées
-                     \texttt{channels:read}, \texttt{chat:write} et
-                     \texttt{chat:write.public}.}
+            \caption{Configuration OAuth du \textit{bot} Slack}
             \label{fig:slack_bot_config}
         \end{figure}
 
@@ -488,7 +467,7 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.70\columnwidth]{slack_health_digest}}
-            \caption{Health digest quotidien Slack — état complet de la plateforme BTE}
+            \caption{Health digest quotidien Slack}
             \label{fig:slack_digest}
         \end{figure}
 
@@ -500,11 +479,11 @@ bout en bout de la plateforme.
                 trois dashboards opérationnels pour la surveillance de la plateforme.
             \item[Obstacles rencontrés :] Au premier démarrage, les trois cibles
                 Prometheus affichaient toutes l'état \texttt{down}. L'option
-                \texttt{--web.route-prefix} de Prometheus et AlertManager préfixait
+                \texttt{--web.\allowbreak{}route-prefix} de Prometheus et AlertManager préfixait
                 l'ensemble de leurs chemins HTTP, ce qui rendait les chemins de
                 \textit{scrape} par défaut incorrects.
             \item[Livrable :] Quatre cibles Prometheus en état \texttt{up} après
-                ajout des \texttt{metrics\_path} explicites, trois dashboards Grafana
+                ajout des \texttt{metrics\_\allowbreak{}path} explicites, trois dashboards Grafana
                 provisionnés (VPS Host Monitoring, DevSecOps AI Agent, PR Security
                 Reviews).
         \end{description}
@@ -514,21 +493,21 @@ bout en bout de la plateforme.
         Lors du premier démarrage de la stack Prometheus \cite{Prometheus},
         les trois cibles configurées affichaient l'état \texttt{down}. Prometheus
         et AlertManager \cite{AlertManager} tournent avec
-        \texttt{--web.route-prefix}, ce qui déplace le chemin \texttt{/metrics}
+        \texttt{--web.\allowbreak{}route-prefix}, ce qui déplace le chemin \texttt{/metrics}
         par rapport à ce que le scrape attend par défaut. Nous n'avons pas
         archivé la page \textit{Targets} dans cet état initial ; le diagnostic
         repose sur les journaux de scrape et la lecture de
-        \texttt{prometheus.yml}.
+        \texttt{prometheus.\allowbreak{}yml}.
 
-        Après ajout des \texttt{metrics\_path} explicites (\texttt{/prometheus/metrics}
-        pour Prometheus et \texttt{/alertmanager/metrics} pour AlertManager), ainsi que
+        Après ajout des \texttt{metrics\_\allowbreak{}path} explicites (\texttt{/\allowbreak{}prometheus/\allowbreak{}metrics}
+        pour Prometheus et \texttt{/\allowbreak{}alertmanager/\allowbreak{}metrics} pour AlertManager), ainsi que
         l'ajout de la cible node-exporter, les quatre cibles sont passées à l'état
         \texttt{up}, comme le montre la figure \ref{fig:prom_targets_after}.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{prometheus_targets_green}}
-            \caption{Cibles Prometheus — 4 cibles vertes après correction des chemins}
+            \caption{Cibles Prometheus}
             \label{fig:prom_targets_after}
         \end{figure}
 
@@ -541,7 +520,7 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{grafana_vps_host_dashboard}
-            \caption{Dashboard Grafana VPS Host Monitoring — 13 panneaux node-exporter}
+            \caption{Dashboard Grafana VPS Host Monitoring}
             \label{fig:grafana_vps}
         \end{figure}
 
@@ -555,8 +534,7 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{grafana_agent_dashboard}
-            \caption{Dashboard Grafana DevSecOps AI Agent — version Sprint~5
-                     (33 panneaux, cinq lignes)}
+            \caption{Dashboard Grafana DevSecOps AI Agent}
             \label{fig:grafana_agent}
         \end{figure}
 
@@ -567,7 +545,7 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.88\columnwidth]{grafana_pr_reviews_dashboard}
-            \caption{Dashboard Grafana PR Security Reviews — données PostgreSQL}
+            \caption{Dashboard Grafana PR Security Reviews}
             \label{fig:grafana_pr}
         \end{figure}
 
@@ -581,8 +559,8 @@ bout en bout de la plateforme.
                 bridge ne pouvait pas accéder aux systèmes de fichiers \texttt{/proc}
                 et \texttt{/sys} du host, le privant des métriques essentielles.
             \item[Livrable :] \texttt{node-exporter} déployé en \texttt{pid:host}
-                + \texttt{network\_mode:host} avec règle iptables associée, chat
-                basculé sur le modèle \texttt{qwen2.5-coder:7b} (43\,\% plus rapide
+                + \texttt{network\_\allowbreak{}mode:host} avec règle iptables associée, chat
+                basculé sur le modèle \texttt{qwen2.\allowbreak{}5-coder:7b} (43\,\% plus rapide
                 que le 14B), prompt système compressé de 36\,\% (11\,794 à
                 7\,577 caractères).
         \end{description}
@@ -593,7 +571,7 @@ bout en bout de la plateforme.
         spécifique car ce
         conteneur doit s'exécuter en dehors du réseau Docker bridge pour avoir accès aux
         métriques réelles du système hôte. Il utilise \texttt{pid: host} et
-        \texttt{network\_mode: host} pour accéder aux systèmes de fichiers \texttt{/proc}
+        \texttt{network\_\allowbreak{}mode: host} pour accéder aux systèmes de fichiers \texttt{/proc}
         et \texttt{/sys} du host. Une règle iptables a été ajoutée pour autoriser le
         bridge Docker à joindre le port 9100 du host. La figure \ref{fig:node_exporter}
         présente la configuration déployée.
@@ -601,14 +579,14 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{node_exporter_config}}
-            \caption{Configuration node-exporter — pid:host et network\_mode:host}
+            \caption{Configuration node-exporter}
             \label{fig:node_exporter}
         \end{figure}
 
         \subsubsection{Optimisation du chat agent}
 
         Le benchmark des quatre modèles disponibles a abouti au résultat présenté dans
-        le tableau \ref{tab:benchmark_result}. Les modèles \texttt{qwen2.5-coder:7b} et
+        le tableau \ref{tab:benchmark_result}. Les modèles \texttt{qwen2.\allowbreak{}5-coder:7b} et
         \texttt{14b} atteignent la même précision de 80\%, mais le 7b est 43\% plus rapide
         par token. Il a donc été retenu comme modèle par défaut du chat. Par ailleurs, la
         compression du prompt système de 11 794 à 7 577 caractères (réduction de 36\%)
@@ -620,13 +598,13 @@ bout en bout de la plateforme.
         \hline
         \textbf{Modèle} & \textbf{Taille} & \textbf{Vitesse} & \textbf{Précision} & \textbf{Décision} \\
         \hline
-        \texttt{qwen2.5-coder:7b} & 4,7 Go & \textasciitilde5 tok/s & 80\% & Chat défaut \\
+        \texttt{qwen2.\allowbreak{}5-coder:7b} & 4,7 Go & \textasciitilde5 tok/s & 80\% & Chat défaut \\
         \hline
-        \texttt{qwen2.5-coder:14b} & 9,0 Go & \textasciitilde3,2 tok/s & 80\% & Revue PR \\
+        \texttt{qwen2.\allowbreak{}5-coder:14b} & 9,0 Go & \textasciitilde3,2 tok/s & 80\% & Revue PR \\
         \hline
         \texttt{llama3.2:3b} & 2,0 Go & \textasciitilde8 tok/s & 0\% & Expérimental \\
         \hline
-        \texttt{granite3.1-dense:2b} & 1,6 Go & \textasciitilde8,5 tok/s & 0\% & Incompatible \\
+        \texttt{granite3.\allowbreak{}1-dense:2b} & 1,6 Go & \textasciitilde8,5 tok/s & 0\% & Incompatible \\
         \hline
         \end{tabular}
         \caption{Résultats du benchmark — décision finale par modèle}
@@ -677,15 +655,15 @@ bout en bout de la plateforme.
         \end{table}
 
         La figure \ref{fig:alertmanager_fix} illustre la correction de la configuration
-        AlertManager dans \texttt{prometheus.yml}. L'absence du paramètre
-        \texttt{path\_prefix: /alertmanager/} entraînait l'envoi de chaque alerte vers
-        \texttt{/api/v2/alerts} au lieu de \texttt{/alertmanager/api/v2/alerts}, générant
+        AlertManager dans \texttt{prometheus.\allowbreak{}yml}. L'absence du paramètre
+        \texttt{path\_\allowbreak{}prefix: /\allowbreak{}alertmanager/} entraînait l'envoi de chaque alerte vers
+        \texttt{/\allowbreak{}api/\allowbreak{}v2/\allowbreak{}alerts} au lieu de \texttt{/\allowbreak{}alertmanager/\allowbreak{}api/\allowbreak{}v2/\allowbreak{}alerts}, générant
         une erreur 404 silencieuse depuis le premier déploiement.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{alertmanager_fix}}
-            \caption{Correction AlertManager — ajout du path\_prefix dans prometheus.yml}
+            \caption{Correction AlertManager}
             \label{fig:alertmanager_fix}
         \end{figure}
 
@@ -701,7 +679,7 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{hallucination_before_after}}
-            \caption{Comportement du chat agent — avant hallucination vs après correction}
+            \caption{Comportement du chat agent}
             \label{fig:hallucination_comparison}
         \end{figure}
 
@@ -712,13 +690,13 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \includegraphics[width=0.92\columnwidth]{chat_ui_screenshot}
-            \caption{Interface BTE Security AI Agent — chat opérationnel avec raisonnement visible}
+            \caption{Interface BTE Security AI Agent}
             \label{fig:chat_ui}
         \end{figure}
 
         Au-delà des questions d'état système, l'assistant de chat sait également
         interroger la base de connaissances sécurité hébergée dans PostgreSQL
-        grâce à son outil \texttt{query\_database}. La figure \ref{fig:db_query_via_chat}
+        grâce à son outil \texttt{query\_\allowbreak{}database}. La figure \ref{fig:db_query_via_chat}
         illustre une requête en langage naturel portant sur l'historique des
         revues de \textit{Pull Requests} : le modèle décide d'invoquer l'outil,
         construit la requête SQL appropriée, exécute la lecture sur la table
@@ -730,10 +708,7 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.92\columnwidth]{db_query_via_chat}}
-            \caption{Interrogation de la base de connaissances sécurité via le
-                     chat opérationnel — l'outil \texttt{query\_database}
-                     extrait l'historique des revues de PR et la réponse cite
-                     verbatim les valeurs issues de PostgreSQL.}
+            \caption{Interrogation de la base de connaissances sécurité via le chat opérationnel}
             \label{fig:db_query_via_chat}
         \end{figure}
 
@@ -765,7 +740,7 @@ bout en bout de la plateforme.
         (PR \#14 et PR \#15) ont produit des revues de sécurité où le commentaire global
         s'affichait correctement, mais où aucun commentaire inline n'apparaissait sur
         l'onglet \textit{Files Changed}. L'analyse approfondie des journaux a révélé trois
-        bugs cumulatifs dans le code de parsing du nœud \texttt{analyze\_review\_node}.
+        bugs cumulatifs dans le code de parsing du nœud \texttt{analyze\_\allowbreak{}review\_\allowbreak{}node}.
 
         \subsubsection{Investigation du bug}
 
@@ -788,9 +763,9 @@ bout en bout de la plateforme.
         \hline
         \textbf{Bug} & \textbf{Symptôme} & \textbf{Cause racine} \\
         \hline
-        Regex intolérant aux espaces & \texttt{json\_match=None} → défauts \texttt{MEDIUM/REQUEST\_CHANGES}, \texttt{raw\_comments=[]} & Le motif \texttt{\textbackslash\{"risk\_score"...} exigeait que \texttt{"risk\_score"} suive immédiatement \texttt{\{}. Lorsque le modèle pré-formattait le JSON (\texttt{\{} + saut de ligne + indentation), le regex échouait silencieusement. \\
+        Regex intolérant aux espaces & \texttt{json\_\allowbreak{}match=None} → défauts \texttt{MEDIUM/\allowbreak{}REQUEST\_\allowbreak{}CHANGES}, \texttt{raw\_\allowbreak{}comments=[]} & Le motif \texttt{\textbackslash\{"risk\_score"...} exigeait que \texttt{"risk\_\allowbreak{}score"} suive immédiatement \texttt{\{}. Lorsque le modèle pré-formattait le JSON (\texttt{\{} + saut de ligne + indentation), le regex échouait silencieusement. \\
         \hline
-        \texttt{json.loads} strict sur les caractères en fin & \texttt{JSONDecodeError} → fallback aux groupes regex mais \texttt{raw\_comments} restait vide & \texttt{json.loads(raw[json\_start:])} consommait toute la chaîne jusqu'à la fin du fichier, y compris les délimiteurs Markdown \verb|```| en queue. \\
+        \texttt{json.loads} strict sur les caractères en fin & \texttt{JSONDecodeError} → fallback aux groupes regex mais \texttt{raw\_\allowbreak{}comments} restait vide & \texttt{json.\allowbreak{}loads(raw[json\_\allowbreak{}start:])} consommait toute la chaîne jusqu'à la fin du fichier, y compris les délimiteurs Markdown \verb|```| en queue. \\
         \hline
         Modèle omettant le JSON & PR \#15 : la revue se terminait à la section "Recommandations" sans aucun objet JSON & Le modèle, manquant de budget de génération, tronquait sa sortie après la section markdown, omettant complètement le bloc JSON requis par le prompt. \\
         \hline
@@ -808,7 +783,7 @@ bout en bout de la plateforme.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.40\columnwidth,height=0.85\textheight,keepaspectratio]{parser_rewrite}}
-            \caption{Architecture du parser réécrit — trois stratégies imbriquées}
+            \caption{Architecture du parser réécrit}
             \label{fig:parser_rewrite}
         \end{figure}
 
@@ -866,16 +841,14 @@ else:
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{prompt_restructured_step_1}}
-            \caption{Prompt restructuré — STEP 1 : production du bloc JSON en première
-                     position (risk\_score, verdict, commentaires inline).}
+            \caption{Prompt restructuré — STEP 1}
             \label{fig:prompt_restructured_step_1}
         \end{figure}
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{prompt_restructured_step_2}}
-            \caption{Prompt restructuré — STEP 2 : production du markdown de la revue
-                     globale après le JSON.}
+            \caption{Prompt restructuré — STEP 2}
             \label{fig:prompt_restructured_step_2}
         \end{figure}
 
@@ -899,7 +872,7 @@ else:
         \hline
         Lignes 12, 17, 26, 34 du diff PR \#14 & \checkmark Toutes valides après parsing \\
         \hline
-        Bug identique dans \texttt{\_build\_degraded\_review()} & \checkmark Patché aux deux endroits \\
+        Bug identique dans \texttt{\_\allowbreak{}build\_\allowbreak{}degraded\_\allowbreak{}review()} & \checkmark Patché aux deux endroits \\
         \hline
         \end{tabular}
         \caption{Vérifications post-réécriture du parser PR review}
@@ -919,8 +892,8 @@ else:
                 alternatif (LocalAI) sur exactement le même fichier GGUF afin de
                 transformer le choix initial en mesure objective.
             \item[Obstacles rencontrés :] Bug \textit{cold-load} sur le modèle
-                Phi-4. Le \textit{watchdog} \texttt{stream\_chunk\_timeout=120s}
-                de \texttt{langchain\_openai} tuait le \textit{stream} avant le
+                Phi-4. Le \textit{watchdog} \texttt{stream\_\allowbreak{}chunk\_\allowbreak{}timeout=120s}
+                de \texttt{langchain\_\allowbreak{}openai} tuait le \textit{stream} avant le
                 premier token, car le chargement à froid d'un modèle 15B sur CPU
                 dépassait régulièrement deux minutes.
             \item[Livrable :] Sandbox LocalAI opérationnelle en parallèle d'Ollama,
@@ -957,32 +930,33 @@ else:
 
         \subsubsection{Mise en place de la sandbox LocalAI}
 
-        La sandbox est définie dans un fichier \texttt{docker-compose.localai.yml}
+        La sandbox est définie dans un fichier \texttt{docker-compose.\allowbreak{}localai.\allowbreak{}yml}
         autonome, séparé du Compose principal du projet, qui rejoint le réseau Docker
         existant \texttt{devsecops-net} et expose son API compatible OpenAI sur le
         port hôte 8081. Le conteneur est configuré pour utiliser les douze cœurs CPU
         Haswell avec \texttt{THREADS=12}, un contexte de 8192 tokens, une limite
         mémoire de 24 Go et un \texttt{shm\_size} de 2 Go pour les tampons de
         synchronisation entre threads. Les modèles téléchargés sont persistés dans
-        un volume Docker nommé \texttt{localai\_models}, ce qui les protège des
+        un volume Docker nommé \texttt{localai\_\allowbreak{}models}, ce qui les protège des
         redémarrages du conteneur.
 
         L'installation des modèles passe par deux voies. Les modèles présents dans
         la galerie LocalAI (\texttt{gemma-3-4b-it}, \texttt{gemma-3-12b-it},
         \texttt{qwen3-coder-30b-a3b-instruct}) se déclenchent par un simple
-        \texttt{POST /models/apply}. Les GGUF HuggingFace hors galerie, comme le
-        \texttt{qwen2.5-coder-7b} que nous avons choisi pour répliquer le modèle
+        \texttt{POST /\allowbreak{}models/\allowbreak{}apply}. Les GGUF HuggingFace hors galerie, comme le
+        \texttt{qwen2.\allowbreak{}5-coder-7b} que nous avons choisi pour répliquer le modèle
         d'Ollama, demandent un fichier YAML par modèle décrivant la source et les
         paramètres d'exécution. Une particularité de LocalAI v3 nous a fait perdre du
         temps à ce stade : le moteur ne scrute que la racine du dossier
-        \texttt{/build/models/} et ignore les sous-dossiers comme \texttt{config/}.
+        \texttt{/\allowbreak{}build/\allowbreak{}models/} et ignore les sous-dossiers comme \texttt{config/}.
         Chaque YAML doit donc être monté individuellement dans le bon emplacement
         plutôt que regroupé dans un répertoire dédié.
 
         \begin{lstlisting}[style=yaml, caption={Configuration LocalAI du modèle Qwen2.5-Coder 7B, identique à celui servi par Ollama}, label={lst:localai_qwen_yaml}]
 name: qwen2.5-coder-7b
 parameters:
-  model: huggingface://bartowski/Qwen2.5-Coder-7B-Instruct-GGUF/Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
+  model: "huggingface://bartowski/Qwen2.5-Coder-7B-Instruct-GGUF/\
+Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf"
 context_size: 8192
 threads: 12
 f16: true
@@ -997,11 +971,11 @@ mmap: true
 
         \subsubsection{Architecture du routeur dual-backend}
 
-        Le routeur de chat (fichier \texttt{agent/app/routers/chat.py}) a été étendu
+        Le routeur de chat (fichier \texttt{agent/\allowbreak{}app/\allowbreak{}routers/\allowbreak{}chat.\allowbreak{}py}) a été étendu
         pour accepter un identifiant de modèle préfixé par le backend cible :
-        \texttt{ollama/qwen2.5-coder:7b} continue d'emprunter le chemin de production,
-        tandis que \texttt{localai/phi-4} ou \texttt{localai/qwen2.5-coder-7b}
-        bifurque vers la sandbox. La fonction \texttt{\_parse\_backend()} sépare le
+        \texttt{ollama/\allowbreak{}qwen2.\allowbreak{}5-coder:7b} continue d'emprunter le chemin de production,
+        tandis que \texttt{localai/\allowbreak{}phi-4} ou \texttt{localai/\allowbreak{}qwen2.\allowbreak{}5-coder-7b}
+        bifurque vers la sandbox. La fonction \texttt{\_\allowbreak{}parse\_\allowbreak{}backend()} sépare le
         préfixe du nom de modèle ; en l'absence de préfixe, le routeur retombe sur
         Ollama pour préserver la rétrocompatibilité des conversations sauvegardées
         avant l'ajout de LocalAI.
@@ -1012,7 +986,8 @@ backend, raw_model = _parse_backend(req.model)
 if backend == "ollama":
     await _unload_other_models(keep=raw_model)
     llm = ChatOllama(base_url=settings.ollama_base_url, model=raw_model,
-                     temperature=0.0, num_ctx=_num_ctx, num_predict=_num_predict,
+                     temperature=0.0, num_ctx=_num_ctx,
+                     num_predict=_num_predict,
                      keep_alive="10m", request_timeout=request_timeout)
 else:  # localai - API compatible OpenAI
     yield _sse({"type": "status", "content": f"Warming up {raw_model}..."})
@@ -1024,7 +999,7 @@ else:  # localai - API compatible OpenAI
                      stream_chunk_timeout=None)  # cf. correction cold-load
         \end{lstlisting}
 
-        La route \texttt{/chat/models} fusionne les deux catalogues dans un seul
+        La route \texttt{/\allowbreak{}chat/\allowbreak{}models} fusionne les deux catalogues dans un seul
         \textit{dropdown} de l'interface, en taggant chaque entrée avec son backend
         d'origine. Si la sandbox LocalAI est arrêtée, la requête vers son endpoint
         échoue silencieusement et seuls les modèles Ollama apparaissent : nous avons
@@ -1034,19 +1009,19 @@ else:  # localai - API compatible OpenAI
         \subsubsection{Découverte et résolution d'un bug de \og cold-load \fg{}}
 
         Le premier essai grandeur réelle a échoué de manière révélatrice. Après
-        avoir sélectionné le modèle \texttt{localai/phi-4} et envoyé une simple
+        avoir sélectionné le modèle \texttt{localai/\allowbreak{}phi-4} et envoyé une simple
         question dans l'interface de chat, le flux SSE s'est interrompu après
         exactement cent-vingt secondes avec le message d'erreur suivant :
 
-        \begin{quote}
-        \verb|No streaming chunk received for 120.0s (model=phi-4, chunks_received=1).|
-        \verb|The connection may be alive at the TCP layer but is not producing|
-        \verb|content. Tune or disable via the `stream_chunk_timeout` constructor|
-        \verb|kwarg or the LANGCHAIN_OPENAI_STREAM_CHUNK_TIMEOUT_S env var.|
-        \end{quote}
+        \begin{lstlisting}[basicstyle=\footnotesize\ttfamily, breaklines=true, breakatwhitespace=false, frame=none, numbers=none, xleftmargin=1.5em]
+No streaming chunk received for 120.0s (model=phi-4, chunks_received=1).
+The connection may be alive at the TCP layer but is not producing
+content. Tune or disable via the `stream_chunk_timeout` constructor
+kwarg or the LANGCHAIN_OPENAI_STREAM_CHUNK_TIMEOUT_S env var.
+\end{lstlisting}
 
         L'analyse a révélé que le client \texttt{ChatOpenAI} de la bibliothèque
-        \texttt{langchain\_openai} embarque un chien de garde par chunk de cent-vingt
+        \texttt{langchain\_\allowbreak{}openai} embarque un chien de garde par chunk de cent-vingt
         secondes, indépendant du timeout global de la requête (réglé à quinze
         minutes dans notre configuration). Or, sur notre VPS douze cœurs sans GPU,
         le chargement d'un modèle 15 B quantisé en Q4\_K\_M comme Phi-4 (8,5 Go sur
@@ -1057,20 +1032,21 @@ else:  # localai - API compatible OpenAI
 
         La correction tient en trois ajustements complémentaires. Le plus direct a
         été de désactiver le chien de garde par chunk en passant
-        \texttt{stream\_chunk\_timeout=None} au constructeur \texttt{ChatOpenAI} :
+        \texttt{stream\_\allowbreak{}chunk\_\allowbreak{}timeout=None} au constructeur \texttt{ChatOpenAI} :
         sur un backend local situé sur le même \textit{bridge} Docker que l'agent,
         le \textit{keepalive} TCP du noyau suffit à détecter une connexion morte,
         et le chien de garde applicatif ne fait que tuer prématurément des requêtes
         longues mais légitimes. Le deuxième ajustement a été d'ajouter un
         \textit{prime} explicite du modèle avant le démarrage du streaming. Une
-        petite requête synchrone \texttt{POST /v1/chat/completions} avec
-        \texttt{max\_tokens=4} et un message \og hi \fg{} suffit à forcer LocalAI à
+        petite requête synchrone \texttt{POST /\allowbreak{}v1/\allowbreak{}chat/\allowbreak{}completions} avec
+        \texttt{max\_\allowbreak{}tokens=4} et un message \og hi \fg{} suffit à forcer LocalAI à
         charger le GGUF en mémoire avant que LangChain ne commence à attendre des
         tokens. Quand la requête réelle arrive ensuite, le moteur est déjà chaud.
 
         \begin{lstlisting}[language=Python, caption={Aide-mémoire de \og pre-warm \fg{} pour le backend LocalAI}, label={lst:localai_prime}]
 async def _prime_localai_model(model: str) -> None:
-    """Force LocalAI a charger `model` avant que LangChain ne commence le streaming."""
+    """Force LocalAI a charger `model` avant que LangChain
+    ne commence le streaming."""
     base = get_settings().localai_base_url
     payload = {"model": model,
                "messages": [{"role": "user", "content": "hi"}],
@@ -1101,15 +1077,15 @@ async def _prime_localai_model(model: str) -> None:
         distincts, celui des architectures de modèles et celui des moteurs
         d'inférence. Nous voulions isoler le second. Le fichier YAML LocalAI pointe
         donc sur exactement le même GGUF que celui distribué par Ollama, à savoir
-        \texttt{bartowski/Qwen2.5-Coder-7B-Instruct-Q4\_K\_M.gguf}, soit 4,7 Go.
+        \texttt{bartowski/\allowbreak{}Qwen2.\allowbreak{}5-Coder-7B-Instruct-Q4\_\allowbreak{}K\_\allowbreak{}M.\allowbreak{}gguf}, soit 4,7 Go.
 
-        Le script \texttt{scripts/benchmark-backends.sh} reprend la méthodologie du
+        Le script \texttt{scripts/\allowbreak{}benchmark-backends.\allowbreak{}sh} reprend la méthodologie du
         banc d'essai mono-backend introduit en Sprint 6. Une passe à froid de quatre
         tokens, non chronométrée, amène d'abord le modèle en RAM. La passe chaude
         qui suit, sur un prompt identique demandant un résumé OWASP Top 10 d'une
         application PHP à température 0,1, est mesurée au chronomètre et limitée à
         quatre-vingts tokens. Le débit est ensuite calculé en parsant le champ
-        \texttt{usage.completion\_tokens} de la réponse JSON. Pour rendre la
+        \texttt{usage.\allowbreak{}completion\_\allowbreak{}tokens} de la réponse JSON. Pour rendre la
         comparaison équitable, les deux appels sont émis depuis l'intérieur du
         conteneur \texttt{devsecops-agent} avec la bibliothèque \texttt{httpx}.
         Ollama n'étant pas publié sur le port hôte et son image officielle
@@ -1125,9 +1101,9 @@ async def _prime_localai_model(model: str) -> None:
         \hline
         \textbf{Backend} & \textbf{Modèle} & \textbf{Tokens} & \textbf{Temps (s)} & \textbf{Débit (tok/s)} \\
         \hline
-        Ollama  & \texttt{qwen2.5-coder:7b}  & 69 & 12,56 & \textbf{5,49} \\
+        Ollama  & \texttt{qwen2.\allowbreak{}5-coder:7b}  & 69 & 12,56 & \textbf{5,49} \\
         \hline
-        LocalAI & \texttt{qwen2.5-coder-7b}  & 80 & 17,79 & \textbf{4,50} \\
+        LocalAI & \texttt{qwen2.\allowbreak{}5-coder-7b}  & 80 & 17,79 & \textbf{4,50} \\
         \hline
         \end{tabular}
         \caption{Benchmark croisé Ollama vs LocalAI sur modèle identique (Qwen2.5-Coder 7B, quantification Q4\_K\_M, prompt OWASP Top 10, douze cœurs Haswell, sans GPU)}
@@ -1144,8 +1120,8 @@ async def _prime_localai_model(model: str) -> None:
         continue d'élaborer jusqu'à atteindre la limite des quatre-vingts tokens.
         L'écart de débit s'explique vraisemblablement par l'intégration plus serrée
         d'Ollama avec \texttt{llama.cpp} et par les options qu'il active à
-        l'exécution (\texttt{OLLAMA\_FLASH\_ATTENTION=1},
-        \texttt{OLLAMA\_KV\_CACHE\_TYPE=q8\_0}, \texttt{OLLAMA\_NUM\_THREAD=12}),
+        l'exécution (\texttt{OLLAMA\_\allowbreak{}FLASH\_\allowbreak{}ATTENTION=1},
+        \texttt{OLLAMA\_\allowbreak{}KV\_\allowbreak{}CACHE\_\allowbreak{}TYPE=q8\_\allowbreak{}0}, \texttt{OLLAMA\_\allowbreak{}NUM\_\allowbreak{}THREAD=12}),
         contre une couche d'orchestration plus générique côté LocalAI qui doit
         couvrir plusieurs runtimes.
 
@@ -1163,15 +1139,15 @@ async def _prime_localai_model(model: str) -> None:
         \hline
         \textbf{Fichier} & \textbf{Modification} \\
         \hline
-        \texttt{agent/app/routers/chat.py} & Fonction \texttt{\_parse\_backend()}, \texttt{\_prime\_localai\_model()}, \texttt{stream\_chunk\_timeout=None}, deux événements SSE supplémentaires, table \texttt{LOCALAI\_MODEL\_META} \\
+        \texttt{agent/\allowbreak{}app/\allowbreak{}routers/\allowbreak{}chat.\allowbreak{}py} & Fonction \texttt{\_\allowbreak{}parse\_\allowbreak{}backend()}, \texttt{\_\allowbreak{}prime\_\allowbreak{}localai\_\allowbreak{}model()}, \texttt{stream\_\allowbreak{}chunk\_\allowbreak{}timeout=None}, deux événements SSE supplémentaires, table \texttt{LOCALAI\_\allowbreak{}MODEL\_\allowbreak{}META} \\
         \hline
-        \texttt{agent/app/config.py} & Nouveau champ \texttt{localai\_base\_url} \\
+        \texttt{agent/\allowbreak{}app/\allowbreak{}config.\allowbreak{}py} & Nouveau champ \texttt{localai\_\allowbreak{}base\_\allowbreak{}url} \\
         \hline
-        \texttt{docker-compose.localai.yml} & Nouveau Compose autonome pour la sandbox LocalAI \\
+        \texttt{docker-compose.\allowbreak{}localai.\allowbreak{}yml} & Nouveau Compose autonome pour la sandbox LocalAI \\
         \hline
-        \texttt{localai/config/qwen2.5-coder-7b.yaml} & Nouveau — pointe sur le même GGUF HuggingFace qu'Ollama \\
+        \texttt{localai/\allowbreak{}config/\allowbreak{}qwen2.\allowbreak{}5-coder-7b.\allowbreak{}yaml} & Nouveau — pointe sur le même GGUF HuggingFace qu'Ollama \\
         \hline
-        \texttt{scripts/benchmark-backends.sh} & Nouveau — comparaison head-to-head des deux backends \\
+        \texttt{scripts/\allowbreak{}benchmark-backends.\allowbreak{}sh} & Nouveau — comparaison head-to-head des deux backends \\
         \hline
         \end{tabular}
         \caption{Fichiers modifiés ou créés lors du Post-Sprint~8}
@@ -1227,20 +1203,20 @@ async def _prime_localai_model(model: str) -> None:
         été sans appel : cAdvisor s'avère architecturalement incompatible avec la
         configuration Docker de notre VPS. Le démon Docker 29.4 utilise le
         \textit{containerd snapshotter} comme magasin d'images, qui ne maintient pas
-        la base \texttt{/var/lib/docker/image/overlayfs/layerdb/mounts/} dont cAdvisor
+        la base \texttt{/\allowbreak{}var/\allowbreak{}lib/\allowbreak{}docker/\allowbreak{}image/\allowbreak{}overlayfs/\allowbreak{}layerdb/\allowbreak{}mounts/} dont cAdvisor
         a besoin pour résoudre l'identifiant de couche par conteneur. Tous les
-        \textit{cgroups} \texttt{/system.slice/docker-<hash>.scope} étaient découverts
+        \textit{cgroups} \texttt{/\allowbreak{}system.\allowbreak{}slice/\allowbreak{}docker-<hash>.\allowbreak{}scope} étaient découverts
         par cAdvisor mais immédiatement écartés avec le message
         \texttt{failed to identify the read-write layer ID}. L'usage des \textit{flags}
-        \texttt{--containerd=/run/containerd/containerd.sock} et
-        \texttt{--raw\_cgroup\_prefix\_whitelist=/system.slice/docker-} n'a pas permis
+        \texttt{--containerd=/\allowbreak{}run/\allowbreak{}containerd/\allowbreak{}containerd.\allowbreak{}sock} et
+        \texttt{--raw\_\allowbreak{}cgroup\_\allowbreak{}prefix\_\allowbreak{}whitelist=/\allowbreak{}system.\allowbreak{}slice/\allowbreak{}docker-} n'a pas permis
         de résoudre le problème : la factory Docker de cAdvisor revendique en premier
         les \textit{cgroups} et empêche la factory \textit{raw} de prendre le relais.
 
         Plutôt que de poursuivre l'effort de configuration de cAdvisor, nous avons
         pivoté vers une solution beaucoup plus simple, déjà rendue possible par
         l'infrastructure existante : l'agent monte déjà le socket
-        \texttt{/var/run/docker.sock} pour les besoins de ses outils d'introspection
+        \texttt{/\allowbreak{}var/\allowbreak{}run/\allowbreak{}docker.\allowbreak{}sock} pour les besoins de ses outils d'introspection
         opérationnels. Une centaine de lignes Python suffisent pour interroger
         directement l'API Docker Engine toutes les trente secondes et exposer le
         résultat sous forme de \textit{gauges} Prometheus, sans aucun conteneur
@@ -1263,14 +1239,18 @@ async def _poll_docker_stats():
                                        params={"stream": "false"})).json()
                 # Memoire
                 mem = st["memory_stats"]
-                container_memory_bytes.labels(name=name, image=img).set(mem.get("usage", 0))
+                container_memory_bytes.labels(
+                    name=name, image=img).set(mem.get("usage", 0))
                 # CPU% (rapport delta-CPU / delta-systeme x cores)
                 cpu, pre = st["cpu_stats"], st["precpu_stats"]
-                d_cpu = cpu["cpu_usage"]["total_usage"] - pre["cpu_usage"]["total_usage"]
-                d_sys = cpu.get("system_cpu_usage", 0) - pre.get("system_cpu_usage", 0)
+                d_cpu = (cpu["cpu_usage"]["total_usage"]
+                         - pre["cpu_usage"]["total_usage"])
+                d_sys = (cpu.get("system_cpu_usage", 0)
+                         - pre.get("system_cpu_usage", 0))
                 online = cpu.get("online_cpus") or 1
                 pct = (d_cpu / d_sys) * online * 100.0 if d_sys > 0 else 0.0
-                container_cpu_percent.labels(name=name, image=img).set(max(0.0, pct))
+                container_cpu_percent.labels(
+                    name=name, image=img).set(max(0.0, pct))
         await asyncio.sleep(30)
         \end{lstlisting}
 
@@ -1284,16 +1264,16 @@ async def _poll_docker_stats():
 
         \subsubsection{Instrumentation du routeur de chat pour la télémétrie A/B}
 
-        La fonction \texttt{\_stream\_react()} du routeur de chat a été enveloppée d'un
-        bloc \texttt{try/except/finally} qui mesure trois grandeurs pour chaque appel
-        à \texttt{/chat/stream} : la latence avant le premier \textit{token} émis
+        La fonction \texttt{\_\allowbreak{}stream\_\allowbreak{}react()} du routeur de chat a été enveloppée d'un
+        bloc \texttt{try/\allowbreak{}except/\allowbreak{}finally} qui mesure trois grandeurs pour chaque appel
+        à \texttt{/\allowbreak{}chat/\allowbreak{}stream} : la latence avant le premier \textit{token} émis
         (\textit{Time-To-First-Token}), la durée totale du \textit{stream}, et le
         nombre de \textit{chunks} effectivement renvoyés à l'interface. Chaque
         observation est labellisée par le couple \texttt{(backend, model)} de sorte
         que Grafana peut tracer côte à côte la performance d'Ollama et de LocalAI sur
         la même question. L'instrumentation est strictement passive : aucune branche
         logique de la boucle ReAct n'a été modifiée, et le chemin de revue de Pull
-        Request, qui n'emprunte pas \texttt{\_stream\_react()}, reste totalement
+        Request, qui n'emprunte pas \texttt{\_\allowbreak{}stream\_\allowbreak{}react()}, reste totalement
         inchangé.
 
         \begin{lstlisting}[language=Python, caption={Instrumentation A/B du \textit{stream} de chat — observation pure}, label={lst:chat_ab_telemetry}]
@@ -1321,19 +1301,20 @@ async def _stream_react(req: ChatRequest):
     finally:
         chat_request_seconds.labels(backend=backend, model=raw_model)\
             .observe(_time.perf_counter() - _t_start)
-        chat_requests_total.labels(backend=backend, model=raw_model, status=_status).inc()
+        chat_requests_total.labels(
+            backend=backend, model=raw_model, status=_status).inc()
         if _token_count:
             chat_tokens_streamed_total.labels(backend=backend, model=raw_model)\
                 .inc(_token_count)
         \end{lstlisting}
 
         Une seconde modification de moindre ampleur a accompagné cette
-        instrumentation : le dictionnaire \texttt{LOCALAI\_MODEL\_META}, qui décrit la
+        instrumentation : le dictionnaire \texttt{LOCALAI\_\allowbreak{}MODEL\_\allowbreak{}META}, qui décrit la
         taille en gigaoctets et le débit moyen mesuré pour chaque modèle LocalAI,
         était jusqu'alors défini à l'intérieur de la \textit{route}
-        \texttt{/chat/models}. Il a été déplacé à la portée du module pour que le
+        \texttt{/\allowbreak{}chat/\allowbreak{}models}. Il a été déplacé à la portée du module pour que le
         \textit{poller} LocalAI puisse l'importer et alimenter la jauge
-        \texttt{localai\_model\_size\_gb} à partir de la même source de vérité,
+        \texttt{localai\_\allowbreak{}model\_\allowbreak{}size\_\allowbreak{}gb} à partir de la même source de vérité,
         évitant ainsi toute divergence entre l'affichage de l'interface et la valeur
         exposée à Prometheus.
 
@@ -1373,9 +1354,9 @@ async def _stream_react(req: ChatRequest):
         Les onze indicateurs de la \textit{row} \og Service Health \fg{} agrègent
         trois sources de signal complémentaires : la métrique \texttt{up\{job=...\}}
         de Prometheus pour les cibles qu'il scrute directement (agent, prometheus,
-        alertmanager, node-exporter), les jauges \texttt{ollama\_reachable} et
-        \texttt{localai\_reachable} émises par leurs \textit{pollers} respectifs, et
-        la jauge \texttt{container\_running\{name=...\}} du nouveau \textit{poller}
+        alertmanager, node-exporter), les jauges \texttt{ollama\_\allowbreak{}reachable} et
+        \texttt{localai\_\allowbreak{}reachable} émises par leurs \textit{pollers} respectifs, et
+        la jauge \texttt{container\_\allowbreak{}running\{name=.\allowbreak{}.\allowbreak{}.\allowbreak{}\}} du nouveau \textit{poller}
         Docker pour les services qui ne sont pas instrumentés Prometheus (postgres,
         redis, nginx, grafana, victoriametrics). L'opérateur dispose ainsi
         d'un \og tableau vert/rouge \fg{} immédiat à l'ouverture du \textit{dashboard}.
@@ -1384,23 +1365,23 @@ async def _stream_react(req: ChatRequest):
 
         L'instrumentation A/B a immédiatement révélé une anomalie sur le modèle
         Phi-4 : la requête se terminait avec un statut \texttt{ok}, mais le compteur
-        \texttt{chat\_tokens\_streamed\_total\{model="phi-4"\}} restait obstinément à
+        \texttt{chat\_\allowbreak{}tokens\_\allowbreak{}streamed\_\allowbreak{}total\{model="phi-4"\}} restait obstinément à
         zéro. Sans la nouvelle télémétrie, ce comportement aurait été indétectable
         au niveau opérationnel. L'utilisateur voyait simplement une réponse vide,
         sans qu'aucun log ne rapporte d'erreur. La cause racine, localisée dans le
-        fichier \texttt{localai/config/phi-4.yaml}, était subtile : la chaîne de
+        fichier \texttt{localai/\allowbreak{}config/\allowbreak{}phi-4.\allowbreak{}yaml}, était subtile : la chaîne de
         \textit{template} utilisée pour la clé \texttt{chat} était identique à celle
-        de \texttt{chat\_message}, ce qui revient à n'enrouler aucun préfixe de
+        de \texttt{chat\_\allowbreak{}message}, ce qui revient à n'enrouler aucun préfixe de
         génération autour de l'historique formaté. Le modèle recevait donc une
         conversation déjà close (terminée par son propre \texttt{<|im\_end|>}) et
         n'avait aucune raison de prendre la parole.
 
         Le \textit{template} a été récrit en s'alignant strictement sur le fichier
-        \texttt{tokenizer\_config.json} officiel publié par Microsoft sur le Hub
-        Hugging Face. La clé \texttt{chat\_message} sert désormais uniquement à
+        \texttt{tokenizer\_\allowbreak{}config.\allowbreak{}json} officiel publié par Microsoft sur le Hub
+        Hugging Face. La clé \texttt{chat\_\allowbreak{}message} sert désormais uniquement à
         formater un message individuel, tandis que \texttt{chat} injecte l'historique
         complet et ajoute explicitement le \textit{prompt} de génération
-        \texttt{<|im\_start|>assistant<|im\_sep|>}. Les retours à la ligne parasites
+        \texttt{<|im\_\allowbreak{}start|>assistant<|im\_\allowbreak{}sep|>}. Les retours à la ligne parasites
         autour de \texttt{<|im\_sep|>} ont également été supprimés, et le suffixe
         \texttt{|-} de YAML strip-newlines a été employé pour garantir qu'aucun
         caractère blanc ne sépare le \textit{prompt} de génération de la première
@@ -1417,18 +1398,18 @@ template:
         \end{lstlisting}
 
         La persistance du correctif est assurée par un nouveau \textit{bind-mount}
-        dans \texttt{docker-compose.localai.yml} qui projette le fichier de l'hôte
+        dans \texttt{docker-compose.\allowbreak{}localai.\allowbreak{}yml} qui projette le fichier de l'hôte
         sur le chemin attendu par LocalAI à l'intérieur du conteneur, exactement
         comme pour le YAML de Qwen2.5-Coder. Le fichier survit ainsi à un cycle
-        complet de \texttt{docker compose down/up} sans recourir à une intervention
+        complet de \texttt{docker compose down/\allowbreak{}up} sans recourir à une intervention
         manuelle via \texttt{docker exec}.
 
         \textbf{Validation expérimentale.} Un appel direct à l'endpoint
-        \texttt{/v1/chat/completions} de LocalAI, en contournant l'agent, retourne
-        désormais le contenu \texttt{Pong} avec \texttt{completion\_tokens = 3},
+        \texttt{/\allowbreak{}v1/\allowbreak{}chat/\allowbreak{}completions} de LocalAI, en contournant l'agent, retourne
+        désormais le contenu \texttt{Pong} avec \texttt{completion\_\allowbreak{}tokens = 3},
         valeur strictement positive là où elle valait 0 avant le correctif. Par le
         chemin du routeur de chat de l'agent, le compteur
-        \texttt{chat\_tokens\_streamed\_total\{model="phi-4"\}} est passé de 0 à 51
+        \texttt{chat\_\allowbreak{}tokens\_\allowbreak{}streamed\_\allowbreak{}total\{model="phi-4"\}} est passé de 0 à 51
         \textit{tokens}. Le \textit{stream} fonctionne donc aussi bien en appel
         direct qu'à travers la pile complète.
 
@@ -1487,7 +1468,7 @@ template:
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{test_hmac_validation}}
-            \caption{Test HMAC — rejet 403 sur signature invalide, acceptation 202 sur signature correcte}
+            \caption{Test HMAC}
             \label{fig:test_hmac}
         \end{figure}
 
@@ -1502,7 +1483,7 @@ template:
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{test_deduplication}}
-            \caption{Test déduplication Redis — second webhook ignoré, pipeline unique exécuté}
+            \caption{Test déduplication Redis}
             \label{fig:test_dedup}
         \end{figure}
 
@@ -1518,7 +1499,7 @@ template:
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{test_circuit_breaker}}
-            \caption{Test circuit breaker — fallback regex activé quand Ollama est indisponible}
+            \caption{Test circuit breaker}
             \label{fig:test_circuit}
         \end{figure}
 
@@ -1526,7 +1507,7 @@ template:
 
         Le quatrième test vérifie le déclenchement automatique du nettoyage Docker
         lorsque l'utilisation du disque dépasse 90\%. En simulant un seuil critique via
-        la jauge Prometheus \texttt{agent\_disk\_used\_percent}, nous avons vérifié que
+        la jauge Prometheus \texttt{agent\_\allowbreak{}disk\_\allowbreak{}used\_\allowbreak{}percent}, nous avons vérifié que
         la commande \texttt{docker builder prune -f} est exécutée automatiquement et
         que le résultat est transmis sur Slack, comme le montre la figure
         \ref{fig:test_disk_guard}.
@@ -1534,7 +1515,7 @@ template:
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.75\columnwidth]{test_disk_guard}}
-            \caption{Test gardien disque — nettoyage automatique déclenché et notifié sur Slack}
+            \caption{Test gardien disque}
             \label{fig:test_disk_guard}
         \end{figure}
 
@@ -1544,18 +1525,36 @@ template:
     \subsection{Résultat de la revue sur une Pull Request de démonstration}
 
         Le pipeline a été validé de bout en bout sur la PR~\#18 du dépôt
-        \texttt{GhaiethFerchichi/Vuln-application}, ouverte le 28~mai~2026 pour
+        \texttt{GhaiethFerchichi/\allowbreak{}Vuln-application}, ouverte le 28~mai~2026 pour
         un module bancaire de démonstration contenant cinq vulnérabilités types.
-        La figure~\ref{fig:pr_full_result} en donne la vue d'ensemble : commentaires
-        de revue, suggestions \textit{inline}, verdict \texttt{BLOCK} et échec
-        du check \texttt{security-ai-agent}.
+        Les figures~\ref{fig:pr_full_result}, \ref{fig:pr_full_result_2}
+        et~\ref{fig:pr_full_result_3} en donnent la vue d'ensemble, scindée en
+        trois parties pour la lisibilité : commentaires de revue, suggestions
+        \textit{inline}, verdict \texttt{BLOCK} et échec du check
+        \texttt{security-ai-agent}.
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.92\columnwidth]{pr_review_full_result}
-            \caption{PR~\#18 — vue d'ensemble de la revue publiée sur GitHub
-                     (\texttt{HIGH}, \texttt{BLOCK}, cinq suggestions \textit{inline}).}
+            \frame{\includegraphics[trim=0 5109 0 0, clip, width=0.82\columnwidth]{pr_review_full_result}}
+            \caption{PR~\#18 — vue d'ensemble de la revue sur GitHub (1/3) :
+                     en-tête de la \textit{Pull Request} et premiers commentaires de revue}
             \label{fig:pr_full_result}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[trim=0 2554 0 2555, clip, width=0.82\columnwidth]{pr_review_full_result}}
+            \caption{PR~\#18 — vue d'ensemble de la revue sur GitHub (2/3) :
+                     suite des commentaires \textit{inline} sur le diff}
+            \label{fig:pr_full_result_2}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[trim=0 0 0 5109, clip, width=0.82\columnwidth]{pr_review_full_result}}
+            \caption{PR~\#18 — vue d'ensemble de la revue sur GitHub (3/3) :
+                     revue de sécurité consolidée et verdict \texttt{BLOCK}}
+            \label{fig:pr_full_result_3}
         \end{figure}
 
         Le tableau~\ref{tab:pr_results} synthétise le résultat de cette revue.
@@ -1582,7 +1581,7 @@ template:
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.88\columnwidth]{prometheus_alerts_inactive}}
-            \caption{Prometheus — 15 règles d'alerte inactives, aucun incident en production}
+            \caption{Prometheus — 15 règles d'alerte inactives}
             \label{fig:prom_alerts_ok}
         \end{figure}
 
@@ -1637,7 +1636,7 @@ template:
         exploitation durcie. Plusieurs services internes ont conservé un \textit{binding}
         sur l'hôte hérité de la phase de mise au point. Ce choix a facilité le diagnostic
         au cours des sprints, dans la mesure où une commande \texttt{curl
-        http://vps:9090/api/v1/query} était plus rapide à taper que l'ouverture d'un
+        http:/\allowbreak{}/\allowbreak{}vps:9090/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}query} était plus rapide à taper que l'ouverture d'un
         tunnel SSH. Il expose toutefois une surface qu'il faut réduire avant tout
         passage en production réelle. Le tableau \ref{tab:hardening_gaps}
         récapitule les écarts relevés et la correction prévue.
@@ -1658,7 +1657,7 @@ template:
         \hline
         \texttt{devsecops-agent} & 8000 & Contournement de l'authentification Basic Auth de nginx & Retrait du binding hôte, accès exclusif via nginx \\
         \hline
-        Open WebUI & 3001 & Création de compte ouverte (\texttt{ENABLE\_SIGNUP=true}) & Désactivation du \textit{signup} une fois le compte administrateur créé \\
+        Open WebUI & 3001 & Création de compte ouverte (\texttt{ENABLE\_\allowbreak{}SIGNUP=true}) & Désactivation du \textit{signup} une fois le compte administrateur créé \\
         \hline
         \end{tabular}
         \caption{Écarts de durcissement identifiés sur la configuration de production}
