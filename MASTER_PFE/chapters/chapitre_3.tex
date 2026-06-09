@@ -3,13 +3,11 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
-Ce chapitre décrit la conception architecturale du BTE Security AI Agent. Nous y
-présentons d'abord la vue globale de l'architecture logicielle, ses onze conteneurs
-et son point d'entrée, puis nous détaillons la conception de chacun des six
-sous-systèmes qui composent la solution : l'inférence LLM, la revue de
-\textit{Pull Request}, l'analyse du diff, l'assistant de chat opérationnel, la
-persistance et l'observabilité. L'objectif est de fixer toutes les décisions de
-conception avant d'aborder la réalisation au chapitre suivant.
+Ce chapitre décrit la conception architecturale du BTE Security AI Agent. Il part de la
+vue globale de l'architecture logicielle, de ses onze conteneurs et de son point
+d'entrée, pour entrer ensuite dans la conception de chacun des six sous-systèmes qui
+composent la solution : l'inférence LLM, la revue de \textit{Pull Request}, l'analyse du
+diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Présentation de l'architecture logicielle}
@@ -43,8 +41,8 @@ conception avant d'aborder la réalisation au chapitre suivant.
         webhooks, le rate limiting et le cache des résultats de scanners. Enfin, la
         \textbf{couche observabilité} regroupe Prometheus \cite{Prometheus},
         VictoriaMetrics \cite{VictoriaMetrics}, Grafana \cite{Grafana},
-        node-exporter \cite{NodeExporter} et AlertManager \cite{AlertManager} pour une
-        surveillance complète de la plateforme.
+        node-exporter \cite{NodeExporter} et AlertManager \cite{AlertManager}, qui
+        assurent la collecte, le stockage, la visualisation et l'alerting.
 
     \subsection{Inventaire des conteneurs}
 
@@ -122,7 +120,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
         La séparation du pipeline LLM en deux modèles distincts répond à une contrainte de
         performance. Utiliser le modèle 14B pour la classification de la
         \textit{Pull Request} serait disproportionné : cette tâche ne nécessite que la
-        production d'un simple tag JSON en environ trente secondes, alors que la revue de
+        production d'une simple étiquette JSON en environ trente secondes, alors que la revue de
         sécurité approfondie requiert un modèle plus capable. La figure
         \ref{fig:two_model_arch} illustre cette architecture.
 
@@ -133,11 +131,10 @@ conception avant d'aborder la réalisation au chapitre suivant.
             \label{fig:two_model_arch}
         \end{figure}
 
-        Toutes les instances LLM sont décorées \texttt{@lru\_cache} et construites une seule
-        fois par processus, puis réutilisées pour tous les appels suivants. Par ailleurs,
-        la configuration \texttt{OLLAMA\_\allowbreak{}MAX\_\allowbreak{}LOADED\_\allowbreak{}MODELS=1} garantit qu'un seul modèle
-        est chargé en RAM à la fois, allouant la totalité des ressources disponibles au
-        modèle actif.
+        Les instances LLM sont construites une seule fois par processus, puis réutilisées
+        pour les appels suivants. La configuration \texttt{OLLAMA\_\allowbreak{}MAX\_\allowbreak{}LOADED\_\allowbreak{}MODELS=1}
+        garantit en outre qu'un seul modèle est chargé en RAM à la fois, ce qui réserve
+        l'ensemble des ressources au modèle actif.
 
         La fusion de deux appels 14B séquentiels en un seul appel combiné dans le nœud
         \texttt{analyze\_\allowbreak{}review\_\allowbreak{}node} est l'optimisation principale du pipeline. Avant
@@ -148,26 +145,19 @@ conception avant d'aborder la réalisation au chapitre suivant.
         Haswell 12 cœurs sans GPU), soit un gain de près de cinquante pourcent
         sur la durée totale.
 
-        \paragraph{Contrainte matérielle et perspective d'évolution.}
-        La durée d'analyse de 15 à 25 minutes par \textit{Pull Request} est la
-        conséquence directe du choix d'inférence locale sur CPU Haswell 12 cœurs
-        sans GPU, contrainte imposée par les exigences de confidentialité bancaire
-        de la BCT qui interdisent toute sortie de code source vers une
-        infrastructure tierce. Sur ce matériel, le débit mesuré du modèle
-        \texttt{qwen2.\allowbreak{}5-coder:14B} est d'environ 3 tokens par seconde. Une
-        migration vers un GPU dédié (par exemple NVIDIA RTX 4090 ou A100)
-        porterait ce débit à 30--50 tokens/seconde, ramenant la durée d'analyse
-        à 2 à 5 minutes par PR --- soit un facteur d'accélération de 5 à 10.
-        Cette migration matérielle ne remettrait pas en cause l'architecture
-        locale --- l'inférence resterait sur l'infrastructure BTE, conformément
-        aux exigences de la BCT --- et constitue le levier d'évolution le plus
-        direct pour passer à l'échelle de l'ensemble des dépôts BTE. Le détail
-        de cette perspective d'évolution figure dans la conclusion générale.
+        \paragraph{Contrainte matérielle.}
+        La durée d'analyse de 15 à 25 minutes par \textit{Pull Request} découle directement
+        du choix d'inférence locale sur CPU sans GPU, imposé par les exigences de
+        confidentialité de la BCT. Sur ce matériel, le modèle 14B produit environ 3 tokens
+        par seconde. Une migration vers un GPU dédié, qui resterait sur l'infrastructure BTE
+        et préserverait donc cette confidentialité, ramènerait l'analyse à quelques minutes
+        par \textit{Pull Request} ; cette perspective est développée dans la conclusion
+        générale.
 
-        \subsubsection{Configuration des factories LLM}
+        \subsubsection{Configuration des fabriques LLM}
 
-        Le tableau \ref{tab:llm_factories} détaille la configuration de chaque fonction LLM
-        factory utilisée dans le pipeline.
+        Le tableau \ref{tab:llm_factories} détaille la configuration de chaque fonction de
+        fabrique LLM utilisée dans le pipeline.
 
         \begin{table}[H]
         \centering
@@ -180,7 +170,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
         \texttt{get\_\allowbreak{}combined\_\allowbreak{}llm()} & 14b & 12 288 & 2 500 & 0.1 & 15–25 min \\
         \hline
         \end{tabular}
-        \caption{Configuration des fonctions LLM factory (décorées \texttt{@lru\_cache})}
+        \caption{Configuration des fonctions de fabrique LLM}
         \label{tab:llm_factories}
         \end{table}
 
@@ -253,6 +243,13 @@ conception avant d'aborder la réalisation au chapitre suivant.
         ce cas, l'image Docker est construite puis scannée par Trivy en complément du scan
         du filesystem.
 
+        La catégorie \texttt{config} ne déclenche pour sa part ni Checkov ni OSV-Scanner.
+        Checkov est réservé à la classification \texttt{infrastructure}, qui couvre les
+        Dockerfile et les manifestes Terraform ou Kubernetes, alors qu'un simple fichier de
+        configuration applicatif ne relève pas de l'Infrastructure-as-Code ; Trivy FS et
+        Gitleaks y suffisent à couvrir respectivement les CVE de filesystem et les secrets
+        éventuels.
+
         Deux fonctions de routage guident le flux du graphe. La fonction \texttt{route\_scans}
         redirige vers \texttt{skip\_\allowbreak{}scan\_\allowbreak{}node} pour les PRs de documentation, vers
         \texttt{scan\_\allowbreak{}full\_\allowbreak{}node} si un Dockerfile est détecté, et vers \texttt{scan\_\allowbreak{}fs\_\allowbreak{}node}
@@ -297,10 +294,10 @@ conception avant d'aborder la réalisation au chapitre suivant.
         \subsubsection{Architecture logique}
 
         Un modèle de langage peut halluciner des numéros de lignes qui n'existent pas dans
-        le diff réel de la \textit{Pull Request}. Poster un commentaire inline sur une ligne
-        inexistante provoque une erreur 422 de l'API GitHub. Le module \texttt{diff\_\allowbreak{}parser.\allowbreak{}py}
-        résout ce problème en construisant, pour chaque fichier modifié, l'ensemble exact
-        des numéros de lignes valides avant tout posting.
+        le diff réel de la \textit{Pull Request}. Or, poster un commentaire \textit{inline}
+        sur une ligne inexistante provoque une erreur 422 de l'API GitHub. Le module
+        \texttt{diff\_\allowbreak{}parser.\allowbreak{}py} résout ce problème en construisant, pour chaque fichier
+        modifié, l'ensemble exact des numéros de lignes valides avant toute publication.
 
         \begin{figure}[H]
             \centering
@@ -309,28 +306,20 @@ conception avant d'aborder la réalisation au chapitre suivant.
             \label{fig:diff_parser}
         \end{figure}
 
-        Comme le montre la figure \ref{fig:diff_parser}, le parser fonctionne comme une
-        machine à états qui parcourt le diff ligne par ligne. Lorsqu'une ligne commence
-        par \texttt{"+++ b/"}, elle identifie un nouveau fichier et crée une entrée dans
-        le dictionnaire résultat. Lorsqu'une ligne commence par \texttt{"@@ "}, elle
-        extrait le numéro de ligne de début dans le nouveau fichier. Lorsqu'une ligne
-        commence par \texttt{"+"}, elle ajoute le numéro courant à l'ensemble des
-        \texttt{added\_lines} et incrémente le compteur. Lorsqu'une ligne commence par
-        un espace, elle ajoute le numéro à l'ensemble des \texttt{context\_\allowbreak{}lines} et
-        incrémente le compteur. Les lignes supprimées (commençant par \texttt{"-"})
-        n'incrémentent pas le compteur car elles n'existent pas dans le nouveau fichier.
-
-        La fonction \texttt{diff\_\allowbreak{}lines\_\allowbreak{}for\_\allowbreak{}file} retourne l'union des ensembles
-        \texttt{added\_lines} et \texttt{context\_\allowbreak{}lines}, représentant toutes les lignes
-        que le modèle peut légitimement référencer. Tout commentaire sur une ligne absente
-        de cet ensemble est silencieusement éliminé, éliminant les hallucinations.
+        Comme le montre la figure \ref{fig:diff_parser}, le parser parcourt le diff ligne
+        par ligne et reconstruit, pour chaque fichier modifié, l'ensemble des numéros de
+        lignes réellement présents dans la nouvelle version : les lignes ajoutées et les
+        lignes de contexte alimentent cet ensemble, tandis que les lignes supprimées sont
+        ignorées puisqu'elles n'existent pas dans le fichier final. Tout commentaire du
+        modèle portant sur une ligne absente de cet ensemble est écarté avant publication,
+        ce qui supprime les hallucinations de numéros de lignes.
 
         \subsubsection{Format du diff annoté}
 
-        En plus du diff brut utilisé pour la narrative de sécurité, un diff annoté avec
-        numéros de lignes visibles est généré et transmis au LLM. Cette annotation
-        permet au modèle de cibler précisément les lignes problématiques dans ses
-        commentaires inline. La figure \ref{fig:annotated_diff} illustre ce format.
+        En plus du diff brut utilisé pour le récit de sécurité, un diff annoté de numéros
+        de lignes visibles est transmis au modèle. Cette annotation lui permet de cibler
+        précisément les lignes problématiques dans ses commentaires \textit{inline}. La
+        figure \ref{fig:annotated_diff} illustre ce format.
 
         \begin{figure}[H]
             \centering
@@ -356,18 +345,16 @@ conception avant d'aborder la réalisation au chapitre suivant.
             \label{fig:react_loop_arch}
         \end{figure}
 
-        La boucle fonctionne de la manière suivante. Les tokens LLM sont streamés dans un
-        buffer et analysés pour détecter la forme d'un appel d'outil (objet JSON ou bloc
-        fencé). Un extracteur JSON à quatre passes tente successivement le parsing d'un
-        objet JSON direct, d'un bloc \texttt{```json.\allowbreak{}.\allowbreak{}.\allowbreak{}```}, d'un JSON embarqué après du
-        texte, et d'un bloc fencé embarqué. Une garde de déduplication bloque tout appel
-        identique déjà effectué dans la même réponse, éliminant les boucles infinies. Une
-        garde sans-outil intercepte toute réponse finale produite à l'étape zéro pour une
-        question de type live (CPU, disque, conteneurs, alertes) et force un appel d'outil.
-        L'outil est exécuté via \texttt{asyncio.\allowbreak{}run\_\allowbreak{}in\_\allowbreak{}executor} avec résultat mis en cache
-        selon un TTL par outil. Le résultat est injecté dans le contexte avec la directive
-        verbatim. La boucle se répète jusqu'à un maximum de huit appels d'outils par réponse,
-        après quoi la réponse finale est streamée en événements SSE.
+        À chaque tour, les tokens produits par le modèle sont accumulés et analysés pour y
+        détecter un appel d'outil au format JSON, qu'un extracteur tolérant sait reconnaître
+        sous plusieurs formes (objet direct, bloc délimité, JSON embarqué dans du texte).
+        Deux gardes encadrent la boucle : la première bloque tout appel identique déjà
+        effectué dans la même réponse, ce qui supprime les boucles infinies ; la seconde
+        force un appel d'outil dès qu'une question porte sur une donnée en temps réel (CPU,
+        disque, conteneurs, alertes), pour empêcher le modèle d'y répondre de mémoire.
+        L'outil est ensuite exécuté et son résultat injecté dans le contexte. La boucle se
+        répète jusqu'à huit appels au maximum, après quoi la réponse finale est diffusée en
+        événements SSE.
 
         Un modèle de langage a tendance à inventer des valeurs de métriques (pourcentage de
         CPU, espace disque libre, nombre de conteneurs) lorsqu'il répond à des questions sur
@@ -382,18 +369,15 @@ conception avant d'aborder la réalisation au chapitre suivant.
             \label{fig:anti_hallucination_layers}
         \end{figure}
 
-        La première couche est la configuration \texttt{temperature=0.\allowbreak{}0}, qui rend la
-        sélection des tokens entièrement déterministe, éliminant toute invention probabiliste
-        de valeurs. La deuxième couche est l'augmentation du \texttt{num\_ctx} à 6 144 tokens,
-        laissant 4 100 tokens libres après le prompt système pour les observations des outils.
-        La troisième couche est la limitation de \texttt{num\_predict} à 800 tokens pour
-        garantir des réponses complètes sans troncature. Les réponses tronquées amenaient
-        en effet le modèle à compléter depuis sa mémoire d'entraînement. La quatrième couche est la
-        garde sans-outil au niveau du code, qui intercepte toute réponse finale sur une
-        question live et force un appel d'outil. La cinquième couche est le bloc
-        ANTI-HALLUCINATION dans le prompt système, comportant cinq règles explicites. La
-        sixième couche est l'injection d'observation renforcée après chaque résultat d'outil,
-        exigeant que toute valeur citée apparaisse verbatim dans un bloc \texttt{[OBSERVATION]}.
+        Les trois premières couches agissent sur la configuration du modèle :
+        \texttt{temperature=0.\allowbreak{}0} rend la génération déterministe et supprime toute
+        invention probabiliste de valeurs ; \texttt{num\_ctx} porté à 6 144 tokens laisse
+        environ 4 100 tokens libres pour les observations des outils ; et
+        \texttt{num\_predict} plafonné à 800 tokens garantit des réponses complètes. Les trois
+        suivantes relèvent du contrôle applicatif : la garde sans-outil déjà évoquée, un bloc
+        ANTI-HALLUCINATION de cinq règles dans le prompt système, et l'injection, après chaque
+        appel d'outil, d'une observation imposant que toute valeur citée apparaisse verbatim
+        dans un bloc \texttt{[OBSERVATION]}.
 
         L'assistant dispose de dix-neuf outils de monitoring couvrant l'ensemble de
         l'infrastructure. Le tableau \ref{tab:tools} présente ces outils organisés par
@@ -458,10 +442,9 @@ conception avant d'aborder la réalisation au chapitre suivant.
         \subsubsection{Description des tables}
 
         La table \texttt{pr\_reviews} est la table centrale de la base de connaissances.
-        Elle stocke pour chaque revue de \textit{Pull Request} : l'identifiant du dépôt, le
-        numéro de PR, le titre, l'auteur, la classification, le score de risque, le verdict,
-        le texte complet de la revue en markdown, le résumé des scanners en JSONB, les
-        fichiers modifiés en JSONB, la durée du pipeline et la date de création. La table
+        Elle conserve, pour chaque revue de \textit{Pull Request}, ses métadonnées (dépôt,
+        numéro, auteur, classification), le score de risque et le verdict, le texte complet
+        de la revue ainsi que le résumé des scanners et la liste des fichiers modifiés. La table
         \texttt{scan\_\allowbreak{}results} enregistre les sorties brutes de chaque scanner par dépôt et
         par déclencheur. La table \texttt{repo\_\allowbreak{}profiles} maintient un score de risque moyen
         glissant et un compteur de revues par dépôt, mis à jour après chaque exécution du
@@ -482,7 +465,7 @@ conception avant d'aborder la réalisation au chapitre suivant.
 
         \subsubsection{Architecture logique}
 
-        La stack d'observabilité assure la surveillance complète de la plateforme. La figure
+        La stack d'observabilité centralise la surveillance de la plateforme. La figure
         \ref{fig:monitoring_stack} présente le flux de métriques depuis les sources de collecte
         jusqu'aux dashboards Grafana et aux alertes Slack.
 
@@ -494,59 +477,28 @@ conception avant d'aborder la réalisation au chapitre suivant.
         \end{figure}
 
         L'agent expose vingt-huit métriques Prometheus personnalisées à l'endpoint
-        \texttt{/metrics}, en plus des métriques HTTP auto-instrumentées. Ce nombre intègre
-        l'expansion de monitoring du sprint 8.1 (cf. Sprint~8.1 du chapitre suivant) qui a porté
-        la couverture observabilité de \og agent + Ollama uniquement \fg{} à \og l'ensemble du
-        VPS \fg{}, avec trois nouvelles familles de métriques : six métriques par conteneur
-        (\texttt{container\_\allowbreak{}running}, \texttt{container\_\allowbreak{}memory\_\allowbreak{}bytes},
-        \texttt{container\_\allowbreak{}cpu\_\allowbreak{}percent}, \texttt{container\_\allowbreak{}network\_\allowbreak{}rx/\allowbreak{}tx\_\allowbreak{}bytes}, plus
-        \texttt{container\_\allowbreak{}memory\_\allowbreak{}limit\_\allowbreak{}bytes}) émises par un \textit{poller} interrogeant le
-        socket Docker toutes les trente secondes ; cinq métriques de santé pour la sandbox
-        LocalAI (\texttt{localai\_\allowbreak{}reachable}, \texttt{localai\_\allowbreak{}models\_\allowbreak{}total},
-        \texttt{localai\_\allowbreak{}model\_\allowbreak{}installed}, \texttt{localai\_\allowbreak{}model\_\allowbreak{}size\_\allowbreak{}gb},
-        \texttt{localai\_\allowbreak{}health\_\allowbreak{}check\_\allowbreak{}latency\_\allowbreak{}seconds}) ; et quatre métriques de télémétrie
-        A/B sur le routeur de chat (\texttt{chat\_\allowbreak{}requests\_\allowbreak{}total},
-        \texttt{chat\_\allowbreak{}request\_\allowbreak{}seconds}, \texttt{chat\_\allowbreak{}first\_\allowbreak{}token\_\allowbreak{}seconds},
-        \texttt{chat\_\allowbreak{}tokens\_\allowbreak{}streamed\_\allowbreak{}total}, toutes labellisées par \texttt{backend} et
-        \texttt{model}) permettant la comparaison directe Ollama vs LocalAI sur les mêmes
-        requêtes.
+        \texttt{/metrics}, en plus des métriques HTTP auto-instrumentées. Treize couvrent
+        l'agent, Ollama et le disque ; les quinze autres, ajoutées lors de l'extension
+        d'observabilité décrite au chapitre suivant, se répartissent en trois familles :
+        des métriques par conteneur (mémoire, CPU, trafic réseau, état), émises par un
+        \textit{poller} interrogeant le socket Docker toutes les trente secondes ; des
+        métriques de santé pour la sandbox LocalAI ; et une télémétrie A/B du routeur de
+        chat, labellisée par couple \texttt{backend} et \texttt{model} afin de comparer
+        Ollama et LocalAI sur les mêmes requêtes.
 
-        Parmi les métriques héritées des sprints précédents, \texttt{ollama\_\allowbreak{}reachable} mérite
-        une attention particulière. Elle est mise à jour toutes les trente secondes par un
-        \textit{poller} asynchrone qui interroge l'API Ollama. Cette métrique distingue deux
-        états fondamentalement différents : Ollama inactif (aucun modèle chargé, état normal
-        entre deux revues PR) où \texttt{ollama\_\allowbreak{}reachable=1}, et Ollama injoignable (panne
-        réelle) où \texttt{ollama\_\allowbreak{}reachable=0}. L'ancienne expression d'alerte utilisant
-        \texttt{ollama\_\allowbreak{}models\_\allowbreak{}loaded\_\allowbreak{}total == 0} déclenchait systématiquement une fausse
-        alerte CRITICAL pendant les périodes de veille. La métrique \texttt{ollama\_\allowbreak{}reachable}
-        résout définitivement ce problème.
+        La métrique \texttt{ollama\_\allowbreak{}reachable}, mise à jour toutes les trente secondes par
+        un \textit{poller} asynchrone, distingue deux états qu'une simple jauge de modèles
+        chargés confond : Ollama inactif entre deux revues, qui est l'état normal, et Ollama
+        réellement injoignable. Cette distinction évite les fausses alertes critiques pendant
+        les périodes de veille.
 
-        Les règles d'alerte sont organisées en cinq groupes. Le groupe \textit{disk} comporte
-        quatre règles couvrant les alertes DiskWarning et DiskCritical via node-exporter ainsi
-        que les jauges AgentDiskWarning et AgentDiskCritical de l'agent. Le groupe
-        \textit{host} comprend trois règles surveillant l'usage CPU, la mémoire RAM et les
-        I/O disque. Le groupe \textit{agent} contient trois règles pour l'état de l'agent,
-        son taux d'erreur et son backlog de revues. Le groupe \textit{ollama} comporte deux
-        règles pour la joignabilité d'Ollama et la durée sans modèle chargé. Enfin, le groupe
-        \textit{localai} ajoute trois règles \texttt{info} pour la disponibilité de la
-        sandbox, l'absence de modèles installés et la latence du \textit{health probe} ; une
-        règle d'inhibition dans AlertManager garantit que LocalAISandboxDown supprime les
-        deux autres lorsque la sandbox est arrêtée volontairement, évitant ainsi le bruit
-        d'alerte lors des sessions de test.
-
-        \subsubsection{Justification du poller interne vs cAdvisor}
-
-        Le choix d'écrire un \textit{poller} interne plutôt que de déployer cAdvisor comme
-        \textit{sidecar} mérite une justification architecturale. cAdvisor s'appuie sur la
-        base d'images Docker historique située dans \texttt{/\allowbreak{}var/\allowbreak{}lib/\allowbreak{}docker/\allowbreak{}image/\allowbreak{}overlayfs/\allowbreak{}
-        layerdb/\allowbreak{}mounts/} pour résoudre les identifiants de couches par conteneur. Or le démon
-        Docker 29.4 de notre VPS utilise le \textit{containerd snapshotter}, qui ne maintient
-        pas cette base : l'arborescence est désormais \texttt{/\allowbreak{}var/\allowbreak{}lib/\allowbreak{}docker/\allowbreak{}buildkit/\allowbreak{}
-        containerd-overlayfs/}. Toute tentative de découverte de conteneurs par cAdvisor
-        échoue avec le message \texttt{failed to identify the read-write layer ID}. Le
-        \textit{poller} intégré à l'agent contourne entièrement cette dépendance en
-        s'adressant directement à l'API Docker Engine sur le socket UNIX déjà monté par le
-        conteneur, ce qui le rend insensible au pilote de stockage utilisé par l'hôte.
+        Les quinze règles d'alerte sont organisées en cinq groupes : \textit{disk} (quatre
+        règles sur l'occupation disque, côté node-exporter et côté agent), \textit{host}
+        (trois règles : CPU, mémoire, I/O disque), \textit{agent} (trois règles :
+        disponibilité, taux d'erreur, \textit{backlog} de revues), \textit{ollama} (deux
+        règles : joignabilité et durée sans modèle chargé) et \textit{localai} (trois règles
+        \texttt{info} sur la sandbox optionnelle). Une règle d'inhibition dans AlertManager
+        supprime les alertes LocalAI redondantes lorsque la sandbox est arrêtée volontairement.
 
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
@@ -559,7 +511,6 @@ sous-système par sous-système : l'inférence LLM à deux modèles, le pipeline
 le parser de diff qui élimine les hallucinations de numéros de lignes, l'assistant de
 chat ReAct protégé par six couches anti-hallucination et ses dix-neuf outils de
 monitoring, la base PostgreSQL à six tables applicatives, et la stack d'observabilité
-étendue à vingt-huit métriques personnalisées. Chaque sous-système a été présenté
-selon le même gabarit (architecture logique puis diagramme d'interaction) pour
-garder une lecture uniforme d'un bloc à l'autre. La concrétisation de ces décisions,
-sprint par sprint, fait l'objet du chapitre suivant.
+étendue à vingt-huit métriques personnalisées. Chaque sous-système a suivi le même
+plan : architecture logique, puis diagramme d'interaction. La concrétisation de ces
+décisions, sprint par sprint, fait l'objet du chapitre suivant.

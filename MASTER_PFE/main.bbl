@@ -505,6 +505,72 @@
   performance of running containers}}
   \endentry
 
+  \entry{CodeQL}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=G}{%
+         family={{GitHub Inc.}},
+         familyi={G\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{G2}
+    \strng{fullhash}{G2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://codeql.github.com}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{CodeQL — Semantic code analysis engine (GitHub Advanced
+  Security)}}
+  \endentry
+
+  \entry{Snyk}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=S}{%
+         family={{Snyk}},
+         familyi={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{S2}
+    \strng{fullhash}{S2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.snyk.io}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Snyk — Developer security platform}}
+  \endentry
+
+  \entry{SonarQube}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=S}{%
+         family={{SonarSource}},
+         familyi={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{S4}
+    \strng{fullhash}{S4}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.sonarsource.com/sonarqube}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{SonarQube — Continuous code quality and security}}
+  \endentry
+
+  \entry{CopilotAutofix}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=G}{%
+         family={{GitHub Inc.}},
+         familyi={G\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{G2}
+    \strng{fullhash}{G2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://github.com/features/security}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{GitHub Copilot Autofix — AI-powered remediation for code
+  scanning}}
+  \endentry
+
   \entry{NGINX}{misc}{}{}
     \name{author}{1}{}{%
       {{hash=F}{%
@@ -782,22 +848,6 @@
     \field{title}{{TruffleHog — Find credentials all over the place}}
   \endentry
 
-  \entry{SonarQube}{misc}{}{}
-    \name{author}{1}{}{%
-      {{hash=S}{%
-         family={{SonarSource}},
-         familyi={S\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{S4}
-    \strng{fullhash}{S4}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{howpublished}{\url{https://docs.sonarsource.com/sonarqube}}
-    \field{note}{[Accès le 18-Mai-2026]}
-    \field{title}{{SonarQube — Continuous code quality and security}}
-  \endentry
-
   \entry{KICS}{misc}{}{}
     \name{author}{1}{}{%
       {{hash=C}{%
@@ -812,22 +862,6 @@
     \field{howpublished}{\url{https://docs.kics.io}}
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{KICS — Keeping Infrastructure as Code Secure}}
-  \endentry
-
-  \entry{Snyk}{misc}{}{}
-    \name{author}{1}{}{%
-      {{hash=S}{%
-         family={{Snyk}},
-         familyi={S\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{S2}
-    \strng{fullhash}{S2}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{howpublished}{\url{https://docs.snyk.io}}
-    \field{note}{[Accès le 18-Mai-2026]}
-    \field{title}{{Snyk — Developer security platform}}
   \endentry
 
   \entry{DataDog}{misc}{}{}

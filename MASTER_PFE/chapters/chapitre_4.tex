@@ -23,7 +23,7 @@ bout en bout de la plateforme.
 
         \begin{table}[H]
         \centering
-        \begin{tabular}{|m{3cm}|m{3cm}|m{4.5cm}|m{2.5cm}|}
+        \begin{tabular}{|m{3cm}|m{3cm}|m{6cm}|}
         \hline
         \textbf{Composant} & \textbf{Valeur} & \textbf{Détail} \\
         \hline
@@ -102,7 +102,7 @@ bout en bout de la plateforme.
                 Docker, configurer Ollama pour un fonctionnement CPU-only et valider
                 la réception du premier webhook GitHub.
             \item[Obstacles rencontrés :] Nginx, configuré en HTTP/1.0 par défaut,
-                manglait les corps \textit{chunked} des requêtes GitHub, provoquant
+                altérait les corps \textit{chunked} des requêtes GitHub, provoquant
                 systématiquement des erreurs 500 en réception.
             \item[Livrable :] Onze conteneurs déployés et opérationnels, premier
                 webhook GitHub reçu et validé par signature HMAC-SHA256, configuration
@@ -110,19 +110,19 @@ bout en bout de la plateforme.
         \end{description}
 
         Le premier sprint a consisté à mettre en place l'ensemble de l'infrastructure
-        Docker Docker et à valider la réception des webhooks GitHub.
+        Docker et à valider la réception des webhooks GitHub.
         Le déploiement initial de la plateforme a comporté l'installation de
         Docker Engine 29.4.0 sur l'OS Ubuntu existant, la configuration des
         règles \texttt{iptables} limitant l'exposition externe aux ports 80 et
         443 via nginx, l'initialisation du schéma PostgreSQL ainsi que le clone
-        et le démarrage des onze conteneurs. Ces étapes, relevant de la pratique
-        courante d'administration système Linux. La suite de
+        et le démarrage des onze conteneurs. Ces étapes relèvent de la pratique
+        courante d'administration système Linux et ne sont pas détaillées ici. La suite de
         cette sous-section se concentre sur les deux tunings spécifiques qui
         ont conditionné la réussite du sprint : la configuration de performance
         d'Ollama pour un fonctionnement CPU-only et le correctif nginx
         nécessaire à la bonne réception des webhooks GitHub.
 
-        La configuration de performance d'Ollama Ollama est critique pour un fonctionnement CPU-only.
+        La configuration de performance d'Ollama est critique pour un fonctionnement CPU-only.
         Sans tuning, le modèle 14B consomme plus de onze Go de mémoire KV à seize mille
         tokens de contexte avec les paramètres par défaut. La figure \ref{fig:ollama_compose}
         présente la configuration Ollama dans le fichier \texttt{docker-compose.\allowbreak{}yml}.
@@ -135,7 +135,7 @@ bout en bout de la plateforme.
         \end{figure}
 
         La variable \texttt{OLLAMA\_\allowbreak{}FLASH\_\allowbreak{}ATTENTION=1} réduit la complexité mémoire du
-        cache KV de O(n²) à O(n), économisant environ 650 Mo à seize mille tokens de
+        cache KV de O(n²) à O(n) et économise environ 650 Mo à seize mille tokens de
         contexte. La variable \texttt{OLLAMA\_\allowbreak{}KV\_\allowbreak{}CACHE\_\allowbreak{}TYPE=q8\_\allowbreak{}0} applique une
         quantisation huit bits au cache KV, divisant sa consommation mémoire par deux.
         La mémoire partagée est fixée à deux Go pour les buffers de synchronisation
@@ -144,9 +144,9 @@ bout en bout de la plateforme.
         autres services du VPS tout en permettant au modèle 14B (neuf Go) de fonctionner
         avec une marge suffisante.
 
-        Lors de l'intégration du webhook GitHub, un défi technique a été rencontré :
-        nginx configuré en HTTP/1.0 par défaut manglait les corps chunked des requêtes
-        GitHub, provoquant systématiquement des erreurs 500. La figure \ref{fig:nginx_fix}
+        L'intégration du webhook GitHub a buté sur un problème de transport :
+        nginx, configuré en HTTP/1.0 par défaut, altérait les corps chunked des requêtes
+        GitHub et provoquait systématiquement des erreurs 500. La figure \ref{fig:nginx_fix}
         présente le correctif appliqué dans la configuration nginx.
 
         \begin{figure}[H]
@@ -158,7 +158,7 @@ bout en bout de la plateforme.
 
         L'ajout de \texttt{proxy\_\allowbreak{}http\_\allowbreak{}version 1.\allowbreak{}1} et \texttt{proxy\_\allowbreak{}set\_\allowbreak{}header Connection ""}
         a résolu ce problème en forçant nginx à utiliser des connexions persistantes
-        HTTP/1.1 avec l'agent, éliminant le mangling des corps \textit{chunked}.
+        HTTP/1.1 avec l'agent, ce qui met fin à l'altération des corps \textit{chunked}.
 
         \paragraph{Configuration de l'intégration GitHub:}
         Côté GitHub, deux configurations ont été nécessaires pour permettre la
@@ -263,11 +263,11 @@ bout en bout de la plateforme.
         Le deuxième sprint a consisté à intégrer les cinq scanners de sécurité (Trivy
         \cite{Trivy}, Gitleaks \cite{Gitleaks}, Semgrep \cite{Semgrep}, Checkov
         \cite{Checkov} et OSV-Scanner \cite{OSVScanner}) et le modèle LLM 14B dans le
-        workflow LangGraph \cite{LangGraph}. Une première amélioration significative
-        par rapport au diff de l'API GitHub a été mise en place : la génération d'un diff
-        local avec quinze lignes de contexte au lieu des trois lignes retournées par
-        défaut par l'API GitHub. La figure \ref{fig:diff_comparison} illustre la différence
-        de qualité entre les deux approches sur un exemple de vulnérabilité SQL injection.
+        workflow LangGraph \cite{LangGraph}. Ce sprint a par ailleurs introduit un diff
+        généré localement, avec quinze lignes de contexte au lieu des trois lignes que
+        l'API GitHub renvoie par défaut. La figure \ref{fig:diff_comparison} illustre la
+        différence de qualité entre les deux approches sur un exemple de vulnérabilité
+        SQL injection.
 
         \begin{figure}[H]
             \centering
@@ -281,7 +281,7 @@ bout en bout de la plateforme.
         avec isolation des erreurs, et son résultat est mis en cache dans Redis. La figure
         \ref{fig:scan_parallel} montre le résultat de cette exécution parallèle avec les
         sorties des cinq scanners, ici sur la PR~\#18 du dépôt
-        \texttt{GhaiethFerchichi/\allowbreak{}Vuln-application}.
+        \texttt{GhaiethFerchichi/\allowbreak{}Vunl-application}.
 
         \begin{figure}[H]
             \centering
@@ -299,7 +299,7 @@ bout en bout de la plateforme.
                 \textit{Pull Request}.
             \item[Obstacles rencontrés :] L'analyse de sécurité et la revue de
                 qualité de code nécessitaient deux appels successifs au modèle 14B
-                totalisant entre treize et vingt-trois minutes, durée incompatible
+                totalisant entre trente et cinquante minutes, durée incompatible
                 avec la fluidité d'un pipeline CI/CD.
             \item[Livrable :] Fusion des deux appels 14B en un seul appel combiné
                 dans le nœud \texttt{analyze\_\allowbreak{}review\_\allowbreak{}node}, durée totale du pipeline
@@ -341,28 +341,28 @@ bout en bout de la plateforme.
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_0}
+            \frame{\includegraphics[width=0.92\columnwidth]{pr_comment-security-review_0}}
             \caption{PR~\#18 — revue de sécurité, partie~1}
             \label{fig:github_review_sec0}
         \end{figure}
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_1}
+            \frame{\includegraphics[width=0.92\columnwidth]{pr_comment-security-review_1}}
             \caption{PR~\#18 — revue de sécurité, partie~2}
             \label{fig:github_review_sec1}
         \end{figure}
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.92\columnwidth]{pr_comment-security-review_2}
+            \frame{\includegraphics[width=0.92\columnwidth]{pr_comment-security-review_2}}
             \caption{PR~\#18 — revue de sécurité, partie~3}
             \label{fig:github_review_sec2}
         \end{figure}
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.92\columnwidth]{pr_comment-code_quality_review_0}
+            \frame{\includegraphics[width=0.92\columnwidth]{pr_comment-code_quality_review_0}}
             \caption{PR~\#18 — revue de qualité de code publiée dans l'onglet \textit{Conversation}.}
             \label{fig:github_review_quality}
         \end{figure}
@@ -373,7 +373,7 @@ bout en bout de la plateforme.
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.92\columnwidth]{github_inline_suggestions}
+            \frame{\includegraphics[width=0.92\columnwidth]{github_inline_suggestions}}
             \caption{PR~\#18 — suggestion \textit{inline} sur l'injection SQL}
             \label{fig:inline_suggestions}
         \end{figure}
@@ -519,7 +519,7 @@ bout en bout de la plateforme.
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.92\columnwidth]{grafana_vps_host_dashboard}
+            \frame{\includegraphics[width=0.92\columnwidth]{grafana_vps_host_dashboard}}
             \caption{Dashboard Grafana VPS Host Monitoring}
             \label{fig:grafana_vps}
         \end{figure}
@@ -533,7 +533,7 @@ bout en bout de la plateforme.
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.92\columnwidth]{grafana_agent_dashboard}
+            \frame{\includegraphics[width=0.92\columnwidth]{grafana_agent_dashboard}}
             \caption{Dashboard Grafana DevSecOps AI Agent}
             \label{fig:grafana_agent}
         \end{figure}
@@ -544,7 +544,7 @@ bout en bout de la plateforme.
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.88\columnwidth]{grafana_pr_reviews_dashboard}
+            \frame{\includegraphics[width=0.88\columnwidth]{grafana_pr_reviews_dashboard}}
             \caption{Dashboard Grafana PR Security Reviews}
             \label{fig:grafana_pr}
         \end{figure}
@@ -669,27 +669,19 @@ bout en bout de la plateforme.
 
         \subsubsection{Implémentation du système anti-hallucination}
 
-        La figure \ref{fig:hallucination_comparison} illustre la différence de comportement
-        du chat agent avant et après l'implémentation du système anti-hallucination.
+        Le système anti-hallucination a nettement modifié le comportement du chat.
         Avant les corrections du sprint 7, le modèle inventait des valeurs de métriques
-        plausibles sans appeler aucun outil. Après les corrections, tout appel sur une
-        donnée live déclenche systématiquement l'appel d'outil correspondant et la réponse
-        cite uniquement des valeurs présentes dans les observations.
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{hallucination_before_after}}
-            \caption{Comportement du chat agent}
-            \label{fig:hallucination_comparison}
-        \end{figure}
+        plausibles sans appeler aucun outil. Après les corrections, toute question portant
+        sur une donnée live déclenche systématiquement l'appel d'outil correspondant, et la
+        réponse ne cite que des valeurs présentes dans les observations.
 
         La figure \ref{fig:chat_ui} présente l'interface du BTE Security AI Agent avec
-        les blocs de raisonnement et d'appels d'outils visibles, montrant la transparence
-        du processus de génération de la réponse.
+        les blocs de raisonnement et d'appels d'outils visibles ; cette présentation rend
+        transparent le processus de génération de la réponse.
 
         \begin{figure}[H]
             \centering
-            \includegraphics[width=0.92\columnwidth]{chat_ui_screenshot}
+            \frame{\includegraphics[width=0.92\columnwidth]{chat_ui_screenshot}}
             \caption{Interface BTE Security AI Agent}
             \label{fig:chat_ui}
         \end{figure}
@@ -712,12 +704,11 @@ bout en bout de la plateforme.
             \label{fig:db_query_via_chat}
         \end{figure}
 
-        Cette capacité d'interrogation conversationnelle de la base de
-        connaissances constitue l'un des leviers les plus appréciés par les
-        utilisateurs opérationnels : sans connaître la structure exacte des
-        tables ni le langage SQL, un membre du pôle Sécurité peut consulter
-        l'historique des revues, identifier les dépôts les plus exposés,
-        ou suivre l'évolution des scores de risque au fil du temps.
+        Cette interrogation conversationnelle de la base de connaissances a un
+        intérêt opérationnel direct : sans connaître la structure des tables ni
+        écrire de SQL, un membre du pôle Sécurité peut consulter l'historique des
+        revues, repérer les dépôts les plus exposés ou suivre l'évolution des
+        scores de risque dans le temps.
 
     \subsection{Sprint 8 — Robustesse du parser de revue PR}
 
@@ -1008,7 +999,7 @@ else:  # localai - API compatible OpenAI
 
         \subsubsection{Découverte et résolution d'un bug de \og cold-load \fg{}}
 
-        Le premier essai grandeur réelle a échoué de manière révélatrice. Après
+        Le premier essai grandeur réelle a échoué. Après
         avoir sélectionné le modèle \texttt{localai/\allowbreak{}phi-4} et envoyé une simple
         question dans l'interface de chat, le flux SSE s'est interrompu après
         exactement cent-vingt secondes avec le message d'erreur suivant :
@@ -1125,13 +1116,12 @@ async def _prime_localai_model(model: str) -> None:
         contre une couche d'orchestration plus générique côté LocalAI qui doit
         couvrir plusieurs runtimes.
 
-        Le choix opérationnel ne change pas : Ollama reste le backend de production.
-        Ce qui change, c'est le statut de ce choix. Avant cette mesure, il reposait
-        sur la réputation de l'outil et sur notre habitude de l'utiliser. Il repose
-        maintenant sur un chiffre. LocalAI garde une place utile dans le projet
-        comme sandbox optionnelle, à la fois pour accéder à des modèles
-        HuggingFace absents de la bibliothèque Ollama et pour préparer une future
-        comparaison lorsqu'un nouveau moteur d'inférence deviendra pertinent.
+        Ce résultat ne modifie pas le choix opérationnel : Ollama reste le backend de
+        production. Il le confirme en revanche sur une base mesurée, alors qu'il reposait
+        jusqu'ici sur la réputation de l'outil et sur notre habitude de l'employer. LocalAI
+        conserve une place utile comme sandbox optionnelle, pour accéder à des modèles
+        HuggingFace absents de la bibliothèque Ollama et pour préparer une comparaison
+        future, le jour où un nouveau moteur d'inférence deviendra pertinent.
 
         \begin{table}[H]
         \centering
@@ -1181,7 +1171,7 @@ async def _prime_localai_model(model: str) -> None:
         \end{description}
 
         Au lendemain du micro-sprint Post-Sprint 8, l'évaluation des backends LocalAI
-        a soulevé une nouvelle question de gouvernance : comment objectiver la qualité
+        a soulevé une nouvelle question : comment mesurer la qualité
         d'exécution de chaque modèle de chat au-delà du benchmark hors-ligne ? Le
         \textit{stack} d'observabilité hérité des sprints précédents couvrait l'agent
         et Ollama, mais n'offrait aucune visibilité par conteneur, aucune métrique
@@ -1200,7 +1190,7 @@ async def _prime_localai_model(model: str) -> None:
         \textit{cAdvisor}, le projet de référence de Google pour ce type de collecte.
         Après quarante-cinq minutes de tests sur deux versions successives
         (v0.49.1 puis v0.52.1) et trois combinaisons de \textit{flags}, le constat a
-        été sans appel : cAdvisor s'avère architecturalement incompatible avec la
+        été clair : cAdvisor est architecturalement incompatible avec la
         configuration Docker de notre VPS. Le démon Docker 29.4 utilise le
         \textit{containerd snapshotter} comme magasin d'images, qui ne maintient pas
         la base \texttt{/\allowbreak{}var/\allowbreak{}lib/\allowbreak{}docker/\allowbreak{}image/\allowbreak{}overlayfs/\allowbreak{}layerdb/\allowbreak{}mounts/} dont cAdvisor
@@ -1254,13 +1244,13 @@ async def _poll_docker_stats():
         await asyncio.sleep(30)
         \end{lstlisting}
 
-        Le premier passage du \textit{poller} a immédiatement révélé treize conteneurs
+        Le premier passage du \textit{poller} a immédiatement révélé douze conteneurs
         actifs, avec une consommation mémoire conforme à l'intuition : l'agent occupe
         environ 127 Mo, le conteneur LocalAI grimpait jusqu'à 25,7 Go lorsque le modèle
         Phi-4 était chargé, et Ollama tournait autour de 5,8 Go en veille. Cette
-        granularité, indisponible jusqu'alors, fournit le socle indispensable pour
-        détecter une dérive de mémoire ou une consommation CPU anormale sur n'importe
-        lequel des services de la plateforme.
+        granularité, indisponible jusqu'alors, permet désormais de détecter une dérive de
+        mémoire ou une consommation CPU anormale sur n'importe lequel des services de la
+        plateforme.
 
         \subsubsection{Instrumentation du routeur de chat pour la télémétrie A/B}
 
@@ -1478,7 +1468,7 @@ template:
         de PR, même SHA de commit) ne déclenchent qu'un seul pipeline. La figure
         \ref{fig:test_dedup} montre que le second webhook retourne un code 202 mais que
         l'agent l'ignore silencieusement grâce à la clé de déduplication Redis
-        \texttt{SET NX}, laissant le premier pipeline se terminer sans interruption.
+        \texttt{SET NX} ; le premier pipeline se termine alors sans interruption.
 
         \begin{figure}[H]
             \centering
@@ -1525,7 +1515,7 @@ template:
     \subsection{Résultat de la revue sur une Pull Request de démonstration}
 
         Le pipeline a été validé de bout en bout sur la PR~\#18 du dépôt
-        \texttt{GhaiethFerchichi/\allowbreak{}Vuln-application}, ouverte le 28~mai~2026 pour
+        \texttt{GhaiethFerchichi/\allowbreak{}Vunl-application}, ouverte le 28~mai~2026 pour
         un module bancaire de démonstration contenant cinq vulnérabilités types.
         Les figures~\ref{fig:pr_full_result}, \ref{fig:pr_full_result_2}
         et~\ref{fig:pr_full_result_3} en donnent la vue d'ensemble, scindée en
@@ -1568,9 +1558,101 @@ template:
         \#18 & HIGH & BLOCK & feature & \textasciitilde15 min & 5 inline \\
         \hline
         \end{tabular}
-        \caption{Résultat de la revue PR de démonstration — dépôt GhaiethFerchichi/Vuln-application}
+        \caption[Résultat de la revue PR de démonstration]{Résultat de la revue PR de démonstration — dépôt GhaiethFerchichi/Vunl-application}
         \label{tab:pr_results}
         \end{table}
+
+        Le fichier de démonstration contenait cinq vulnérabilités volontairement
+        introduites, ce qui fournit une vérité terrain explicite. Le tableau
+        \ref{tab:pr18_detection} confronte ces cinq failles aux \textit{findings}
+        effectivement produits par l'agent.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{5.2cm}|c|c|m{3.2cm}|}
+        \hline
+        \textbf{Vulnérabilité plantée} & \textbf{Ligne} & \textbf{Détectée} & \textbf{Source} \\
+        \hline
+        Injection SQL & 6 & \checkmark & Analyse LLM \\
+        \hline
+        Secrets en dur (clés AWS, mot de passe BD) & 11--13 & \checkmark & Analyse LLM \\
+        \hline
+        Path traversal & 17 & \checkmark & LLM + Semgrep \\
+        \hline
+        Injection de commande & 22 & \checkmark & LLM + Semgrep \\
+        \hline
+        Hachage faible (MD5) & 27 & \checkmark & Analyse LLM \\
+        \hline
+        \end{tabular}
+        \caption{Détection sur la PR~\#18 : cinq vulnérabilités plantées, cinq détectées}
+        \label{tab:pr18_detection}
+        \end{table}
+
+        Sur ce jeu contrôlé, l'agent a détecté les cinq vulnérabilités plantées (rappel
+        de 5/5), sans \textit{finding} erroné dans le fichier modifié. Deux observations
+        en découlent. D'abord, les secrets codés
+        en dur (lignes 11 à 13) ont été repérés par le modèle alors que Gitleaks ne les
+        avait pas signalés : le LLM et les scanners spécialisés se complètent plutôt
+        qu'ils ne se recouvrent. Ensuite, ces chiffres portent sur des vulnérabilités
+        introduites à dessein et de facture classique ; ils valident la chaîne de
+        détection de bout en bout, sans préjuger du comportement de l'agent face à des
+        failles plus subtiles ou inédites.
+
+    \subsection{Revues produites sur un corpus de Pull Requests}
+
+        La base de connaissances a accumulé huit revues réelles au fil des sprints,
+        toutes conservées dans la table \texttt{pr\_\allowbreak{}reviews}. La figure
+        \ref{fig:pr_reviews_corpus} en présente les cinq revues de PRs applicatives
+        (classification \textit{feature}), celles pour lesquelles le moteur Semgrep entre
+        en jeu : pour chacune, le score de risque, le verdict rendu et le nombre de
+        \textit{findings} remontés par Semgrep.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=\textwidth]{pr_reviews_corpus}}
+            \caption{Revues de PRs applicatives — risque, verdict et \textit{findings} SAST (table \texttt{pr\_reviews})}
+            \label{fig:pr_reviews_corpus}
+        \end{figure}
+
+        Semgrep a relevé entre 28 et 37 \textit{findings} de niveau ERROR par PR, et le
+        verdict suit le risque : \texttt{REQUEST\_\allowbreak{}CHANGES} pour les deux PRs classées
+        \textsc{medium}, \texttt{BLOCK} pour les trois classées \textsc{high}. La PR~\#18,
+        détaillée plus haut, en est le cas le plus net : cinq vulnérabilités plantées,
+        toutes détectées, verdict \texttt{BLOCK}. Sur CPU, l'inférence du modèle 14B (environ
+        3 tokens par seconde) reste le principal facteur de durée d'une revue ; c'est là que
+        la migration GPU évoquée en conclusion changerait l'échelle.
+
+    \subsection{Comparaison avec la revue manuelle}
+
+        Le tableau \ref{tab:baseline} met en regard le processus manuel décrit au
+        chapitre~1 et la chaîne automatisée mise en place.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{3.2cm}|m{4.7cm}|m{4.7cm}|}
+        \hline
+        \textbf{Critère} & \textbf{Revue manuelle (AS-IS)} & \textbf{BTE Security AI Agent (TO-BE)} \\
+        \hline
+        Délai de revue & Jusqu'à 24~heures, selon la disponibilité et l'expertise du relecteur & 15 à 25 minutes selon la PR \\
+        \hline
+        Couverture & Variable selon la disponibilité et l'expertise du relecteur & Cinq scanners et analyse LLM, OWASP Top 10 systématique \\
+        \hline
+        Gate CI/CD & Aucun blocage technique & Verdict \texttt{APPROVE} / \texttt{REQUEST\_\allowbreak{}CHANGES} / \texttt{BLOCK} \\
+        \hline
+        Secrets et dépendances & Souvent manqués à l'œil nu & Gitleaks et OSV-Scanner systématiques \\
+        \hline
+        Disponibilité & Tributaire du relecteur du jour & Automatique, à chaque \textit{Pull Request} \\
+        \hline
+        Traçabilité & Fil de discussion GitHub & Base PostgreSQL et tableaux de bord \\
+        \hline
+        \end{tabular}
+        \caption{Revue de sécurité manuelle (AS-IS) vs automatisée (TO-BE)}
+        \label{tab:baseline}
+        \end{table}
+
+        L'automatisation ne remplace pas le relecteur humain : elle lui retire le travail
+        répétitif de détection systématique et le recentre sur les décisions
+        d'architecture et sur les cas que l'agent remonte en \texttt{BLOCK}.
 
     \subsection{Résultats de l'analyse de conformité et observabilité}
 
@@ -1622,7 +1704,7 @@ template:
         \hline
         nginx Basic Auth /ui protégé & Accès refusé sans credentials & \checkmark \\
         \hline
-        Base de données PR reviews & SELECT pr\_reviews — 1 enregistrement (PR~\#18) & \checkmark \\
+        Base de données PR reviews & SELECT pr\_reviews — 8 revues (PR~\#11 à \#18) & \checkmark \\
         \hline
         \end{tabular}
         \caption{Checklist de validation complète de la plateforme}
@@ -1674,41 +1756,59 @@ template:
         marginal pour un développeur familier de la plateforme, et le gain de surface
         d'attaque est immédiat.
 
-        Le durcissement complet exige par ailleurs trois chantiers distincts des ports.
-        Un certificat Let's Encrypt installé sur nginx chiffrera tout ce qui sort du VPS
-        et fermera la dernière exposition en clair du flux externe. Une sauvegarde
-        quotidienne de PostgreSQL, qui héberge à la fois la base de connaissances
-        sécurité et les \textit{checkpoints} LangGraph, protégera contre une perte du
-        volume Docker. La panne VictoriaMetrics du mois d'avril a déjà montré qu'un
-        tel scénario peut survenir sans préavis. Restent enfin les cinq conteneurs sans
-        \textit{healthcheck} Docker (\texttt{nginx}, \texttt{alertmanager},
-        \texttt{victoriametrics}, \texttt{node-exporter} et \texttt{open-webui}) ;
-        leur instrumentation permettra au démon Docker de détecter
-        et de redémarrer ces services sans attendre que les règles Prometheus ne
-        finissent par lever l'alerte. La trajectoire amorcée par l'audit du
-        28 avril se prolonge ainsi : passer d'une plateforme qui fonctionne à une
-        plateforme qui résiste.
+        Au-delà des ports, le durcissement complet suppose trois chantiers
+        supplémentaires. Installer un certificat Let's Encrypt sur nginx chiffrerait
+        tout le flux sortant du VPS et fermerait la dernière fenêtre en clair vers
+        l'extérieur. Mettre en place une sauvegarde quotidienne de PostgreSQL, qui
+        héberge à la fois la base de connaissances sécurité et les \textit{checkpoints}
+        LangGraph, protégerait contre la perte du volume Docker ; la panne
+        VictoriaMetrics d'avril a rappelé qu'un tel incident peut survenir sans prévenir.
+        Restent enfin les sept conteneurs dépourvus de \textit{healthcheck} Docker
+        (\texttt{nginx}, \texttt{prometheus}, \texttt{alertmanager}, \texttt{grafana},
+        \texttt{victoriametrics}, \texttt{node-exporter} et \texttt{open-webui}) : les
+        instrumenter laisserait le
+        démon Docker détecter et relancer ces services de lui-même, sans attendre que
+        les règles Prometheus finissent par déclencher une alerte. Ces trois chantiers
+        prolongent la démarche engagée lors de l'audit du 28 avril et visent à rendre la
+        plateforme robuste face aux incidents d'exploitation.
+
+        Un dernier point, de nature différente, relève de la sécurité du moteur lui-même
+        plutôt que de sa surface réseau. Le diff soumis au modèle 14B est un contenu
+        rédigé par l'auteur de la \textit{Pull Request} analysée ; il constitue à ce titre
+        une entrée non fiable. Un développeur malveillant pourrait y glisser des
+        instructions destinées à détourner la revue, par exemple un commentaire de code
+        enjoignant au modèle d'émettre un verdict \texttt{APPROVE}. Deux propriétés de
+        l'architecture limitent la portée d'une telle tentative sans l'écarter
+        complètement. D'une part, les cinq scanners sont déterministes et s'exécutent
+        indépendamment du modèle : leurs \textit{findings} sont enregistrés dans
+        PostgreSQL quel que soit le texte produit par le LLM, et un secret ou une CVE
+        relevé par un scanner ne disparaît pas si le modèle est manipulé. D'autre part, la
+        température fixée à 0,1 et l'extraction structurée du bloc JSON réduisent la
+        latitude laissée au modèle dans la formulation de son verdict. La parade complète
+        reste un chantier ouvert : isoler explicitement le diff par des délimiteurs dans le
+        \textit{prompt}, et surtout faire reposer le \textit{gate} de blocage sur la
+        sévérité des \textit{findings} déterministes des scanners plutôt que sur le seul
+        verdict du modèle, de sorte qu'aucune injection dans le code revu ne puisse
+        relâcher le contrôle de sécurité.
 
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-Ce chapitre a couvert la réalisation effective du BTE Security AI Agent selon la
-méthodologie Scrumban adoptée au chapitre~1. Nous avons décrit l'environnement
-matériel et logiciel sur lequel la plateforme a été construite, puis détaillé sprint
-par sprint l'implémentation. Du Sprint~1 (fondations Docker et webhook GitHub)
-jusqu'au Sprint~8.1 (expansion de l'observabilité), nous avons présenté pour chaque
-itération l'objectif inscrit au backlog, les obstacles rencontrés en production
-et le livrable effectif. Plusieurs épisodes ont particulièrement marqué la
-réalisation : l'urgence disque d'avril, la remise en état des cibles Prometheus
-restées \og down \fg{} après le premier déploiement, le travail sur node-exporter
-et la règle iptables associée, la mise en place du système anti-hallucination du
-chat, la correction de l'AlertManager silencieusement cassé depuis le déploiement
-initial, et la réécriture du parser de revue PR au Sprint~8. Aucun de ces problèmes
-n'apparaissait dans le plan initial ; tous ont été détectés en production puis
-transformés en cartes prioritaires du sprint en cours, illustration concrète du
-\textit{pull system} Scrumban où chaque obstacle remonte au backlog au moment où
-il est observé plutôt qu'au prochain cycle de planification. La dernière section
-du chapitre a présenté le résultat de la validation sur la PR de démonstration~\#18,
-avec une revue complète produite en environ quinze minutes, des commentaires
-\textit{inline} et des suggestions de correction publiés directement sur GitHub ; la
-fourchette de quinze à vingt-cinq minutes reste la cible retenue pour des PR plus volumineuses.
+Ce chapitre a retracé la réalisation effective du BTE Security AI Agent, conduite selon
+la méthodologie Scrumban présentée au chapitre~1. Après avoir décrit l'environnement
+matériel et logiciel d'accueil, nous avons suivi l'implémentation sprint par sprint, du
+Sprint~1 (fondations Docker et webhook GitHub) au Sprint~8.1 (extension de
+l'observabilité), en exposant à chaque itération l'objectif inscrit au backlog, les
+obstacles rencontrés en production et le livrable obtenu. Certains épisodes ont davantage
+marqué le projet : l'urgence disque d'avril, la remise en service des cibles Prometheus
+restées \og down \fg{} après le premier déploiement, le travail sur node-exporter et la
+règle iptables associée, la mise en place du garde-fou anti-hallucination du chat, la
+réparation de l'AlertManager silencieusement hors service depuis le déploiement initial,
+et la réécriture du parser de revue PR au Sprint~8. Aucun de ces problèmes ne figurait au
+plan de départ : tous ont surgi en production avant d'être convertis en cartes prioritaires
+du sprint en cours. C'est là le \textit{pull system} Scrumban à l'œuvre, chaque obstacle
+remontant au backlog dès qu'il est constaté plutôt qu'au cycle de planification suivant. La
+dernière section a rendu compte de la validation sur la PR de démonstration~\#18 : une revue
+complète en une quinzaine de minutes, assortie de commentaires \textit{inline} et de
+suggestions de correction publiés directement sur GitHub, la fourchette de quinze à
+vingt-cinq minutes restant la cible pour des PR plus volumineuses.

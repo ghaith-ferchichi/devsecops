@@ -2,94 +2,89 @@
 \addcontentsline{toc}{chapter}{Conclusion générale et Perspectives}
 \markboth{Conclusion générale et Perspectives}{}
 
-Ce projet nous a permis de concevoir et de déployer le BTE Security AI Agent, un
-moteur DevSecOps autonome piloté par de l'intelligence artificielle locale. Le point
-de départ était un VPS Ubuntu vide. Le point d'arrivée est une plateforme de
-production à onze conteneurs, complétée par une douzième sandbox LocalAI activable
-à la demande pour évaluer des moteurs d'inférence alternatifs. L'objectif posé au
-départ a été atteint et vérifié sur une \textit{Pull Request} de démonstration
-instrumentée en fin de stage (PR~\#18), ainsi que sur des exécutions intermédiaires
-du pipeline pendant les sprints. Cet objectif consistait à automatiser la détection des
-vulnérabilités dans les \textit{Pull Requests} en environ 15 à 25 minutes selon
-la complexité de la PR, sans externaliser le code source et avec une couverture
-complète de l'OWASP Top 10.
+Ce projet a abouti à la conception et au déploiement du BTE Security AI Agent, un
+moteur DevSecOps autonome reposant sur une intelligence artificielle locale. Le point
+de départ était un VPS Ubuntu vierge ; la plateforme livrée compte onze conteneurs de
+production, auxquels s'ajoute une douzième \textit{sandbox} LocalAI, activable à la
+demande pour évaluer des moteurs d'inférence concurrents. L'objectif fixé au départ a
+été atteint, puis vérifié sur une \textit{Pull Request} de démonstration instrumentée
+en fin de stage (PR~\#18) ainsi que sur plusieurs exécutions intermédiaires du pipeline
+au fil des sprints. Il consistait à automatiser la détection des vulnérabilités
+dans les \textit{Pull Requests} en 15 à 25 minutes environ, sans externaliser le code
+source et en couvrant l'intégralité de l'OWASP Top 10.
 
-La combinaison du modèle \texttt{qwen2.\allowbreak{}5-coder:7b} pour la classification rapide et du
-modèle \texttt{qwen2.\allowbreak{}5-coder:14b} pour l'analyse de sécurité approfondie, tous deux
-exécutés localement via Ollama, a permis de respecter les exigences de confidentialité
-bancaire tout en produisant des revues de qualité. La fusion des deux appels LLM
-séquentiels en un seul appel combiné a divisé la durée du pipeline par deux, passant
-de trente à cinquante minutes à quinze à vingt-cinq minutes selon la complexité de la PR. La réduction de 52\% des tokens
-SAST envoyés au LLM a optimisé l'utilisation de la fenêtre de contexte et amélioré
-la qualité des analyses. Le système anti-hallucination à six couches a éliminé la
-fabrication de métriques d'infrastructure dans l'assistant de chat.
+Exécutés tous deux localement via Ollama, les modèles \texttt{qwen2.\allowbreak{}5-coder:7b}
+(classification rapide) et \texttt{qwen2.\allowbreak{}5-coder:14b} (analyse de sécurité
+approfondie) ont permis de tenir les exigences de confidentialité bancaire sans sacrifier
+la qualité des revues. Fusionner en un seul appel les deux requêtes LLM jusque-là
+séquentielles a réduit de moitié la durée du pipeline : d'une fourchette de trente à
+cinquante minutes, elle est tombée à quinze ou vingt-cinq minutes. Nettoyer les sorties
+SAST avant de les transmettre au modèle, soit 52\% de tokens en moins, a libéré de la
+fenêtre de contexte et amélioré les analyses. Le système anti-hallucination à six couches
+a, par ailleurs, mis fin à la fabrication de métriques d'infrastructure dans l'assistant
+de chat.
 
-Diverses technologies ont été mises en œuvre au sein de ce projet afin de garantir la
-sécurité, la fiabilité et l'observabilité de la plateforme. L'orchestration LangGraph avec
-persistance PostgreSQL garantit la survie du pipeline aux redémarrages. Le circuit breaker
-et les fallbacks assurent la résilience face aux indisponibilités ponctuelles des services.
-Les quinze règles d'alerte Prometheus, les vingt-huit métriques personnalisées (dont
-quinze ajoutées lors du sprint 8.1 pour couvrir la consommation par conteneur, la santé
-de la sandbox LocalAI et la télémétrie A/B du routeur de chat) et les trois \textit{dashboards}
-Grafana offrent une visibilité complète sur l'état de l'infrastructure. La méthodologie Scrumban retenue, qui combine la cadence de
-sprints à durée fixe héritée de Scrum et une discipline Kanban avec une limite WIP
-de 1, a permis, sur ses dix sprints itératifs, d'absorber les découvertes de
-production imprévues : urgence disque (242 Go),
-AlertManager silencieusement cassé depuis le déploiement, VictoriaMetrics en panne
-neuf jours, et les trois bugs cumulatifs du parser de revue PR (regex intolérant aux
-espaces, \texttt{json.loads} strict, modèle omettant le JSON). Chacune de ces découvertes
-est devenue la carte prioritaire du sprint suivant et a été transformée en amélioration
-concrète déployée en production avant la fin du sprint.
+Plusieurs briques techniques concourent à la sécurité, à la fiabilité et à
+l'observabilité de la plateforme. L'orchestration LangGraph, adossée à une persistance
+PostgreSQL, garantit que le pipeline survit aux redémarrages ; le circuit breaker et les
+\textit{fallbacks} le maintiennent opérationnel lorsqu'un service devient ponctuellement
+indisponible. Côté supervision, quinze règles d'alerte Prometheus, vingt-huit métriques
+personnalisées et trois \textit{dashboards} Grafana donnent une vue complète de
+l'infrastructure ; quinze de ces métriques ont été ajoutées au sprint 8.1 pour suivre la
+consommation par conteneur, la santé de la sandbox LocalAI et la télémétrie A/B du routeur
+de chat. Quant à la méthodologie Scrumban, qui combine la cadence de sprints à durée fixe
+héritée de Scrum et une discipline Kanban plafonnée à un seul élément en cours (WIP de 1),
+elle a permis, sur dix sprints, d'absorber les imprévus de production : l'urgence disque
+(242 Go), un AlertManager silencieusement cassé depuis le déploiement, VictoriaMetrics
+resté en panne neuf jours, ou les trois bugs cumulatifs du parser de revue PR (regex
+intolérant aux espaces, \texttt{json.loads} strict, modèle omettant le JSON). Chacun de
+ces incidents est devenu la carte prioritaire du sprint suivant et a donné lieu à un
+correctif déployé en production avant la clôture de l'itération.
 
-Plusieurs chantiers d'amélioration restent ouverts. Le premier touche au durcissement
-de la surface d'exposition : les ports hôte de Redis, Prometheus, AlertManager,
-VictoriaMetrics et de l'agent sont encore ouverts et doivent être refermés, Redis
-attend toujours son mot de passe, et la mise en place de HTTPS via Let's Encrypt
-reste un prérequis pour un usage bancaire. Vient ensuite la résilience opérationnelle :
-PostgreSQL n'a pas encore de sauvegarde quotidienne, alors qu'il héberge la base de
-connaissances sécurité et les checkpoints LangGraph. Six conteneurs tournent par
-ailleurs toujours sans \textit{healthcheck} Docker. Sur le volet inférence, l'évaluation menée
-en post-Sprint 8 d'un second moteur (LocalAI servant le même Qwen2.5-Coder 7B que
-la production) a tranché en faveur d'Ollama : 5,49 contre 4,50 tokens par seconde sur
-le même matériel, soit 22\,\% de débit en plus. Le sprint 8.1 a prolongé ce travail
-en instrumentant les deux backends de chat avec une télémétrie A/B sur la latence du
-premier \textit{token}, la durée totale et le débit en sortie par couple
-\texttt{backend}~$\times$~\texttt{model} ; ce dispositif a au passage permis de
-diagnostiquer et de corriger un bug latent du \textit{template}
-\texttt{ChatML-with-im\_\allowbreak{}sep} du modèle Phi-4, qui retournait silencieusement zéro
-\textit{token} et serait passé inaperçu sans la nouvelle instrumentation. La sandbox
-LocalAI donne par ailleurs accès à des modèles absents de la bibliothèque Ollama,
-comme Qwen3-Coder MoE 30B/3B-actifs ; un \textit{fine-tuning} sur des CVE bancaires
-reste à explorer.
+Plusieurs chantiers restent néanmoins ouverts. Le premier concerne le durcissement de la
+surface exposée : les ports hôte de Redis, Prometheus, AlertManager, VictoriaMetrics et
+de l'agent sont toujours ouverts et doivent être refermés, Redis attend encore son mot de
+passe, et le passage à HTTPS via Let's Encrypt demeure un prérequis pour un usage bancaire.
+La résilience opérationnelle vient ensuite : PostgreSQL héberge la base de connaissances
+sécurité et les checkpoints LangGraph, mais ne bénéficie d'aucune sauvegarde quotidienne,
+et sept conteneurs tournent encore sans \textit{healthcheck} Docker. Reste enfin une
+question propre au cœur IA de la plateforme : le diff analysé étant une entrée non fiable,
+faire reposer le verdict de blocage sur les \textit{findings} déterministes des scanners,
+et non sur le seul jugement du modèle, mettrait la revue à l'abri d'une éventuelle
+injection d'instructions dans le code soumis. Sur le terrain de
+l'inférence, l'évaluation conduite en post-Sprint 8 d'un second moteur (LocalAI, servant
+le même Qwen2.5-Coder 7B que la production) a tranché en faveur d'Ollama, plus rapide de
+22\,\% sur un matériel identique : 5,49 contre 4,50 tokens par seconde. Le sprint 8.1 a
+poussé plus loin cette comparaison en instrumentant les deux backends de chat ; une
+télémétrie A/B y mesure la latence du premier \textit{token}, la durée totale et le débit
+en sortie pour chaque couple \texttt{backend}~$\times$~\texttt{model}. Ce dispositif a
+d'ailleurs révélé un bug latent du \textit{template} \texttt{ChatML-with-im\_\allowbreak{}sep}
+du modèle Phi-4, qui renvoyait silencieusement zéro \textit{token} et serait passé inaperçu
+sans cette instrumentation. La sandbox LocalAI ouvre par ailleurs l'accès à des modèles
+absents de la bibliothèque Ollama, tel Qwen3-Coder MoE 30B/3B-actifs ; un \textit{fine-tuning}
+sur des CVE bancaires reste une piste à explorer.
 
-L'évolution la plus impactante pour la phase suivante est la \textbf{migration
-vers une inférence GPU}. La mesure empirique sur le matériel actuel
-(CPU Haswell 12 cœurs sans GPU) donne 15 à 25 minutes par revue de
-\textit{Pull Request} selon sa complexité, ce qui correspond à un débit
-d'environ 3 tokens/seconde pour le modèle \texttt{qwen2.\allowbreak{}5-coder:14B}. Avec
-un GPU haut de gamme (NVIDIA RTX 4090 ou A100), ce débit passerait à
-30 à 50 tokens/seconde, divisant la durée par un facteur de 5 à 10 ---
-soit environ 2 à 5 minutes par PR. L'investissement matériel
-(approximativement 3\,000~\texteuro{} pour une RTX 4090, ou
-500~\texteuro/mois pour du cloud GPU à la demande) reste compatible avec
-l'enveloppe DSI et représente le levier le plus direct pour passer à
-l'échelle de l'ensemble des dépôts BTE sans modifier l'architecture
-logicielle. Cette migration préserverait l'exigence de confidentialité
-bancaire de la BCT --- l'inférence resterait sur l'infrastructure BTE ---
-tout en rendant la revue de sécurité quasi-instantanée du point de vue
-du développeur.
+L'évolution la plus déterminante pour la suite serait la \textbf{migration vers une
+inférence GPU}. Sur le matériel actuel (CPU Haswell 12 cœurs, sans GPU), une revue de
+\textit{Pull Request} demande 15 à 25 minutes selon sa complexité, ce qui correspond à un
+débit d'environ 3 tokens par seconde pour le modèle \texttt{qwen2.\allowbreak{}5-coder:14B}.
+Un GPU haut de gamme (NVIDIA RTX 4090 ou A100) porterait ce débit à 30 ou 50 tokens par
+seconde et diviserait donc la durée par un facteur de 5 à 10, ramenant chaque revue à 2 ou
+5 minutes. Le coût reste contenu : environ 3\,000~\texteuro{} pour une RTX 4090, ou
+500~\texteuro/mois pour du cloud GPU à la demande. Il s'inscrit dans l'enveloppe de la DSI
+et constitue le moyen le plus direct d'étendre l'agent à l'ensemble des dépôts BTE sans
+toucher à l'architecture logicielle. L'inférence resterait sur l'infrastructure de la
+banque, ce qui préserve l'exigence de confidentialité de la BCT, tandis que la revue
+deviendrait quasi instantanée pour le développeur.
 
-À plus long terme, le déploiement de l'agent sur l'ensemble des
-dépôts de la BTE et la consolidation d'un tableau de bord de risques à destination
-du RSSI sont l'horizon naturel de ce projet.
+À plus longue échéance, l'agent a vocation à couvrir l'ensemble des dépôts de la BTE, et
+les revues accumulées à alimenter un tableau de bord de risques destiné au RSSI.
 
-Sur le plan personnel, ce stage a été l'occasion de pratiquer concrètement
-l'automatisation de la sécurité d'une chaîne CI/CD, le déploiement et l'exploitation
-de grands modèles de langage en local, et la mise en place d'un système
-d'observabilité capable de détecter ses propres pannes. Plusieurs des obstacles
-rencontrés en cours de route (l'urgence disque, le parser de revue PR à réécrire,
-le bug de cold-load de LocalAI) n'auraient pas été visibles sans un déploiement en
-conditions réelles. C'est probablement la leçon la plus durable que nous tirons
-de ce projet. La plateforme livrée à la BTE est prête à servir au-delà du périmètre
-du stage : elle apporte à la banque un outil tangible pour soutenir sa transformation
-DevSecOps.
+Sur le plan personnel, ce stage aura été l'occasion de mettre en pratique l'automatisation
+de la sécurité d'une chaîne CI/CD, le déploiement et l'exploitation de grands modèles de
+langage en local, et la construction d'un système d'observabilité capable de repérer ses
+propres pannes. Plusieurs des difficultés rencontrées (l'urgence disque, le parser de revue
+PR à réécrire, le bug de cold-load de LocalAI) ne seraient jamais apparues sans une mise en
+conditions réelles ; s'il fallait retenir une leçon de ce travail, ce serait sans doute
+celle-là. La plateforme remise à la BTE dépasse le cadre du stage : elle met entre les mains
+de la banque un outil concret pour appuyer sa transformation DevSecOps.
