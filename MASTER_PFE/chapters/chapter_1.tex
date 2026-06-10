@@ -97,10 +97,10 @@ sur cinq mois.
     pour cela de l'intelligence artificielle locale et des outils d'analyse statique. L'agent
     prend en charge l'ensemble du cycle, du déclenchement des scanners à la publication
     des commentaires de correction sur la \textit{Pull Request}, sans intervention
-    humaine entre les deux. L'objectif est double : raccourcir un délai de revue qui
-    peut atteindre vingt-quatre heures selon la disponibilité et l'expertise du
-    relecteur, et garantir qu'aucune \textit{Pull Request} ne soit fusionnée sans
-    avoir été passée au crible des cinq scanners.
+    humaine entre les deux. L'objectif est double : ramener le délai de revue de
+    l'ordre de la journée à quelques dizaines de minutes, et garantir qu'aucune
+    \textit{Pull Request} ne soit fusionnée sans avoir été passée au crible des
+    cinq scanners.
 
     \subsection{Étude de l'existant}
 
@@ -198,17 +198,12 @@ sur cinq mois.
 
     \subsection{Généralités}
 
-        Le cycle de vie d'un projet logiciel couvre l'analyse de l'existant, la
-        spécification des besoins, la conception, la réalisation, les tests,
-        l'exploitation et la maintenance. Plusieurs familles de méthodes encadrent ce
-        cycle : le cycle en V, qui découpe le projet en phases successives ; le découpage
-        en activités de type WBS ; et les méthodes Agiles, qui privilégient les
-        itérations courtes et l'ajustement continu. Les méthodes classiques restent
-        vulnérables à la mauvaise interprétation des besoins, aux changements
-        fonctionnels en cours de route et aux dépassements de délais ; les chiffres
-        régulièrement cités dans la littérature font état d'environ un quart de projets
-        réussis sous ces approches \cite{Agile}, ce qui rend l'option Agile plus
-        pertinente dans le contexte de notre stage.
+        Les méthodes séquentielles qui encadrent classiquement le cycle de vie d'un
+        projet logiciel, comme le cycle en V, restent vulnérables à la mauvaise
+        interprétation des besoins et aux changements fonctionnels en cours de route ;
+        la littérature fait état d'environ un quart de projets réussis sous ces
+        approches \cite{Agile}. Les méthodes Agiles, qui privilégient les itérations
+        courtes et l'ajustement continu, convenaient mieux au contexte du stage.
 
     \subsection{Comparaison des frameworks Agile}
 
@@ -389,21 +384,12 @@ sur cinq mois.
         d'absorber les incidents de production survenus pendant le projet sans compromettre
         la planification du sprint en cours.
 
-    \subsection{Illustration du tableau Scrumban en pratique}
-
-        L'outil Jira a servi de support à la gestion quotidienne du tableau Scrumban
-        tout au long du projet : création des cartes, suivi des transitions de
-        colonne, application des limites WIP et association aux jalons. La figure
-        \ref{fig:jira_sprint} présente une capture du tableau en fin de Sprint 3,
-        retenu ici comme exemple représentatif de l'application concrète de la
-        méthodologie. Cette capture donne à voir trois aspects de la méthode : la
-        limite WIP=1 sur la colonne \textit{In Progress}, qui a contraint les cartes
-        à être traitées une à une malgré leurs dépendances mutuelles ; les six
-        colonnes du flux \textit{Backlog} $\rightarrow$ \textit{Ready}
-        $\rightarrow$ \textit{In Progress} $\rightarrow$ \textit{In Review}
-        $\rightarrow$ \textit{Testing} $\rightarrow$ \textit{Done} effectivement
-        utilisées ; et la matérialisation du jalon M2 par une carte étiquetée
-        \textit{Fixed Date}.
+        L'outil Jira a servi de support quotidien à ce tableau : création des cartes,
+        transitions de colonne, application des limites WIP et association aux jalons.
+        La figure \ref{fig:jira_sprint} en montre l'état en fin de Sprint~3 ; on y
+        retrouve les six colonnes du flux, la limite WIP=1 sur la colonne
+        \textit{In Progress} et la carte étiquetée \textit{Fixed Date} qui
+        matérialise le jalon M2.
 
         \begin{figure}[H]
             \centering
@@ -452,15 +438,9 @@ sur cinq mois.
         \end{table}
 
         Le diagramme de Gantt de la figure \ref{fig:gantt} synthétise cette
-        progression sur l'axe temporel. Les dix sprints y apparaissent sous
-        forme de barres horizontales, les six jalons sous forme de losanges
-        positionnés en fin de sprint correspondant, et la rédaction du
-        rapport sous forme d'une bande continue chevauchant les derniers
-        sprints. La lecture verticale met en évidence les transitions de
-        phase, notamment le passage du développement aux micro-sprints
-        d'extension entre Sprint~8 et Post-Sprint~8. La lecture horizontale
-        révèle quant à elle la cadence régulière des livraisons sur
-        l'ensemble de la période.
+        progression : les dix sprints en barres horizontales, les six jalons en
+        losanges positionnés en fin de sprint, et la rédaction du rapport en bande
+        continue sur les derniers sprints.
 
         \begin{figure}[H]
             \centering

@@ -832,151 +832,223 @@ for sl, shapes in ANIM_BUILDS:
 # ===================== discours (notes orateur) =====================
 SPEECH = [
 # 1 — Titre
-"(≈ 30 s) Monsieur le Président du jury, Madame, Messieurs les membres du jury, bonjour. "
+"(≈ 35 s) Monsieur le Président du jury, Madame, Messieurs les membres du jury, bonjour. "
 "Je m'appelle Ghaith Ferchichi et j'ai l'honneur de vous présenter mon projet de fin d'études, "
-"réalisé au sein de la Banque de Tunisie et des Émirats, en vue de l'obtention du Diplôme National "
+"réalisé au sein de la Banque de Tunisie et des Émirats en vue de l'obtention du Diplôme National "
 "de Mastère Professionnel, spécialité Sécurité des Systèmes d'Information et des Infrastructures. "
-"Ce projet s'intitule BTE Security AI Agent : un agent d'intelligence artificielle pour la revue "
-"automatisée de sécurité du code.",
+"Ce travail a été encadré par Monsieur Kamel Kaouech, côté banque, et par Madame Ghayet El Mouna "
+"Zhioua, côté ISI. Il s'intitule BTE Security AI Agent : un agent d'intelligence artificielle "
+"pour la revue automatisée de sécurité du code.",
 # 2 — Sommaire
 "(≈ 20 s) Mon exposé suit la structure du rapport, en cinq chapitres : le contexte général du projet ; "
 "l'état de l'art et les choix technologiques ; la conception de l'agent ; sa réalisation et ses "
 "résultats ; et enfin la conclusion et les perspectives.",
 # 3 — Introduction
-"(≈ 30 s) Pour situer l'enjeu : une seule injection SQL fusionnée dans une API de paiement peut "
-"compromettre l'intégrité du système d'information de la banque. Or, à la BTE, la revue de sécurité "
-"du code demeure entièrement manuelle : elle peut atteindre vingt-quatre heures, et sa qualité dépend "
-"de la disponibilité et de l'expertise du relecteur. C'est ce constat qui motive ce travail.",
+"(≈ 40 s) Pour situer l'enjeu, partons de trois scénarios concrets : une injection SQL fusionnée dans "
+"une API de paiement, un secret d'authentification commité par mégarde dans un dépôt Git, une image "
+"Docker bâtie sur une bibliothèque exposée à un CVE critique. Chacune de ces failles peut compromettre "
+"l'intégrité du système d'information et engager la responsabilité de la banque, vis-à-vis de ses "
+"clients comme de ses régulateurs. Or, à la BTE, la revue de sécurité du code demeure entièrement "
+"manuelle : elle peut atteindre vingt-quatre heures, et sa qualité dépend de la disponibilité et de "
+"l'expertise du relecteur du jour. C'est ce constat qui motive ce travail.",
 # 4 — Divider 1
 "(≈ 5 s) Commençons par le contexte général.",
 # 5 — Organisme & AS-IS
-"(≈ 40 s) La BTE est une banque universelle née d'un partenariat entre l'État tunisien et l'Abu Dhabi "
-"Investment Authority. Mon stage s'est déroulé au sein du pôle Sécurité de la Direction des Systèmes "
-"d'Information. Le processus actuel, que vous voyez à gauche, repose intégralement sur l'examen "
-"humain : le relecteur examine le diff dans GitHub, dépose ses commentaires, puis fusionne "
-"manuellement. Aucune analyse statique, aucun gate de pipeline n'est greffé sur ce cycle.",
+"(≈ 45 s) La BTE, créée en 1982, est née d'un partenariat entre l'État tunisien et l'Abu Dhabi "
+"Investment Authority ; banque d'investissement à l'origine, elle est devenue banque universelle en "
+"2004. Mon stage s'est déroulé au sein du pôle Sécurité de la Direction des Systèmes d'Information. "
+"Le processus existant, que vous voyez à gauche, s'appuie sur GitHub : à l'ouverture d'une Pull "
+"Request, les code owners sont notifiés, un développeur senior ou un référent sécurité examine le "
+"diff à la main, dépose ses commentaires, puis déclenche la fusion. Aucune analyse statique, aucun "
+"scanner, aucun gate de pipeline n'est greffé sur ce cycle : tout repose sur l'examen humain.",
 # 6 — Problématique
-"(≈ 30 s) Quatre limites en découlent. Un délai pouvant atteindre vingt-quatre heures, selon la "
-"disponibilité et l'expertise du relecteur. L'absence de tout blocage technique : une Pull Request "
-"vulnérable peut être fusionnée. Une qualité de revue variable. Et des angles morts : les secrets "
-"commités et les dépendances vulnérables échappent à l'œil humain.",
+"(≈ 40 s) Quatre limites en découlent. D'abord le délai : jusqu'à vingt-quatre heures, pendant "
+"lesquelles la vulnérabilité reste exposée et la livraison bloquée. Ensuite l'absence de tout blocage "
+"technique : une Pull Request porteuse d'une faille critique peut être fusionnée sans obstacle. La "
+"qualité de la revue, elle, varie d'un relecteur à l'autre. Restent enfin les angles morts : les "
+"secrets commités par accident et les dépendances vulnérables introduites en transitif, deux "
+"catégories pour lesquelles l'œil humain n'est pas le bon outil.",
 # 7 — Objectifs et contribution (builds : 3 clics)
-"(≈ 40 s) Notre contribution tient en une phrase : un agent IA autonome qui revoit chaque Pull "
-"Request selon l'OWASP Top 10 en une quinzaine de minutes, publie les correctifs sur GitHub, et "
-"s'exécute intégralement en local — aucun code ne quitte la banque. [clic] De vingt-quatre heures à "
-"quinze minutes. [clic] Cinq vulnérabilités sur cinq détectées lors de la validation. [clic] Et zéro "
-"ligne de code ne sort du VPS.",
+"(≈ 45 s) Notre contribution tient en une phrase : un agent d'intelligence artificielle autonome qui "
+"revoit chaque Pull Request selon la grille OWASP Top 10, publie ses correctifs directement sur "
+"GitHub, et s'exécute intégralement en local — aucun code ne quitte la banque. Trois chiffres "
+"résument le résultat. [clic] Le délai de revue passe de vingt-quatre heures à une quinzaine de "
+"minutes. [clic] Sur la validation contrôlée, cinq vulnérabilités sur cinq sont détectées, sans faux "
+"positif dans le fichier modifié. [clic] Et la conformité aux exigences de la Banque Centrale est "
+"garantie : cent pour cent de l'inférence reste sur le VPS de la banque.",
 # 8 — Solution TO-BE
-"(≈ 30 s) Concrètement, voici le processus cible : GitHub émet un webhook signé ; l'agent classifie "
-"la Pull Request, exécute cinq scanners en parallèle, consolide leurs résultats avec un modèle de "
-"langage local, puis publie la revue, le score et le verdict. Et c'est ce verdict qui conditionne la fusion.",
+"(≈ 40 s) Concrètement, voici le processus cible. GitHub émet un webhook signé HMAC-SHA256 ; l'agent "
+"en vérifie la signature, élimine les doublons, puis classifie la Pull Request en une trentaine de "
+"secondes. Selon cette classification, il exécute en parallèle les scanners pertinents, consolide "
+"leurs résultats avec un modèle de langage local, et publie le tout sur GitHub : revue complète, "
+"score de risque, commentaires ligne par ligne et verdict — APPROVE, REQUEST_CHANGES ou BLOCK. Ce "
+"verdict est posé comme statut de commit : c'est lui qui conditionne la fusion, laquelle reste "
+"déclenchée par un humain.",
 # 9 — Méthodologie
-"(≈ 30 s) Le projet a été conduit selon la méthode Scrumban : la cadence de sprints de Scrum, la "
-"discipline de flux de Kanban avec un travail en cours limité à un. Dix sprints sur cinq mois. Chaque "
-"incident de production est devenu la carte prioritaire du sprint en cours — c'est ainsi qu'ont été "
-"absorbés l'urgence disque et la réécriture du parser de revue.",
+"(≈ 40 s) Le projet a été conduit selon la méthode Scrumban, retenue après comparaison avec Scrum, "
+"Kanban et XP : elle combine la cadence de sprints et les jalons de Scrum, utiles à l'encadrement, "
+"avec la discipline de flux de Kanban — un travail en cours limité à une seule carte. Dix sprints de "
+"deux semaines sur cinq mois, rythmés par six jalons. Une étiquette Expedite autorisait les incidents "
+"de production à passer devant tout le reste : c'est ainsi qu'ont été absorbés l'urgence disque et la "
+"réécriture du parser de revue, sans replanifier les sprints en cours.",
 # 10 — Divider 2
 "(≈ 5 s) Passons à l'état de l'art et aux choix technologiques.",
 # 11 — DevSecOps
-"(≈ 25 s) Le cadre conceptuel est le DevSecOps et son principe de shift-left : intégrer la sécurité au "
-"plus tôt du cycle, idéalement dès la Pull Request. Notre apport consiste à transformer le verdict de "
-"l'agent en un gate technique, qui conditionne réellement la fusion.",
+"(≈ 30 s) Le cadre conceptuel est le DevSecOps et son principe de shift-left : déplacer la détection "
+"des vulnérabilités au plus tôt du cycle, idéalement dès la Pull Request, là où une faille ne coûte "
+"presque rien à corriger comparée à la même faille découverte en production. Notre apport consiste à "
+"matérialiser ce principe : le verdict de l'agent devient un gate technique, qui conditionne "
+"réellement la fusion.",
 # 12 — Besoins
-"(≈ 35 s) Côté besoins fonctionnels : détecter les vulnérabilités, produire la revue OWASP, publier "
-"les commentaires, conditionner la fusion, et offrir un assistant d'exploitation. Côté non "
-"fonctionnel, la contrainte dominante est la confidentialité : l'inférence doit rester locale, "
-"conformément aux exigences de la Banque Centrale de Tunisie. S'y ajoutent la performance, la "
-"résilience et l'observabilité.",
+"(≈ 40 s) Côté besoins fonctionnels, la plateforme couvre cinq fonctions : détecter les vulnérabilités "
+"à chaque Pull Request, produire la revue OWASP avec score et verdict, publier les commentaires sur "
+"GitHub, persister chaque revue en base de connaissances, et offrir un assistant d'exploitation en "
+"langage naturel. Côté non fonctionnel, la contrainte dominante est la confidentialité : l'inférence "
+"doit rester locale, conformément aux exigences de la Banque Centrale de Tunisie. S'y ajoutent la "
+"performance — un pipeline en quinze à vingt-cinq minutes —, la résilience par circuit breaker, la "
+"fiabilité par checkpoints persistés, et l'observabilité complète de la plateforme.",
 # 13 — Benchmark
-"(≈ 40 s) Le choix des modèles repose sur un banc d'essai mené sur notre propre matériel. Deux modèles "
-"ressortent : qwen2.5-coder 7B et 14B, à égalité de précision d'appel d'outils — quatre-vingts pour "
-"cent — le 7B étant nettement plus rapide. D'où une architecture à deux modèles : le 7B classifie en "
-"trente secondes, le 14B mène l'analyse approfondie. Un benchmark croisé a par ailleurs confirmé le "
-"choix d'Ollama : vingt-deux pour cent de débit de plus que LocalAI, sur un fichier de poids identique.",
+"(≈ 50 s) Le choix des modèles ne repose pas sur la littérature, mais sur un banc d'essai mené sur le "
+"matériel cible, avec le prompt système complet. Deux candidats sont éliminés : llama 3.2 trois "
+"milliards, dont la fenêtre de contexte est saturée par le seul prompt système — sa précision tombe à "
+"zéro —, et granite, dont le schéma d'appel d'outils propriétaire est incompatible. Restent "
+"qwen2.5-coder 7B et 14B, à égalité de précision — quatre-vingts pour cent —, le 7B étant "
+"quarante-trois pour cent plus rapide par token. D'où une architecture à deux modèles : le 7B "
+"classifie en trente secondes, le 14B mène l'analyse approfondie. Un benchmark croisé a par ailleurs "
+"confirmé le choix du moteur Ollama : vingt-deux pour cent de débit de plus que LocalAI, sur un "
+"fichier de poids strictement identique.",
 # 14 — Technologies retenues
-"(≈ 30 s) L'ensemble s'appuie sur trois briques : cinq scanners spécialisés, chacun couvrant une "
-"classe de risque ; deux modèles de langage locaux ; et l'orchestrateur LangGraph, retenu pour sa "
-"persistance d'état native. Les sorties des scanners sont nettoyées — moins cinquante-deux pour cent "
-"de tokens — avant transmission au modèle.",
+"(≈ 40 s) L'ensemble s'appuie sur trois briques. Cinq scanners spécialisés, chacun couvrant une classe "
+"de risque : Trivy pour les CVE, Gitleaks pour les secrets, Semgrep pour le code applicatif, Checkov "
+"pour l'infrastructure, OSV-Scanner pour les dépendances. Deux modèles de langage servis localement "
+"par Ollama. Et l'orchestrateur LangGraph, préféré à Prefect et Celery pour sa persistance d'état "
+"native dans PostgreSQL : un pipeline de vingt minutes survit ainsi au redémarrage de son conteneur. "
+"J'ajoute un détail qui compte : les sorties des scanners sont nettoyées avant transmission au modèle "
+"— cinquante-deux pour cent de tokens en moins — afin de préserver la fenêtre de contexte pour "
+"l'analyse du code.",
 # 15 — Positionnement
-"(≈ 30 s) Aucune solution existante ne combine raisonnement par modèle de langage et inférence "
-"entièrement locale : CodeQL, Snyk et Copilot transmettent le code au cloud ; SonarQube reste "
-"auto-hébergeable mais sans explication en langage naturel. C'est notre différenciateur : rien ne "
-"sort du VPS de la banque.",
+"(≈ 35 s) Pourquoi ne pas avoir adopté un outil du marché ? Parce qu'aucun ne combine raisonnement par "
+"modèle de langage et inférence entièrement locale. CodeQL, Snyk et Copilot Autofix transmettent le "
+"code à une infrastructure tierce — rédhibitoire en contexte bancaire. SonarQube reste "
+"auto-hébergeable, mais s'appuie sur des règles statiques, sans explication ni suggestion en langage "
+"naturel. Notre contribution n'est donc pas un nouvel algorithme de détection : c'est l'intégration "
+"de ces deux mondes, sans qu'une ligne de code ne sorte du VPS.",
 # 16 — Divider 3
 "(≈ 5 s) Venons-en à la conception.",
 # 17 — Architecture
-"(≈ 30 s) La plateforme compte onze conteneurs organisés en quatre couches : la couche d'entrée, avec "
-"nginx qui valide les webhooks ; la couche IA — FastAPI, LangGraph et Ollama ; la couche données — "
-"PostgreSQL et Redis ; et la couche observabilité, sur laquelle je reviendrai.",
+"(≈ 40 s) La plateforme compte onze conteneurs Docker organisés en quatre couches. La couche d'entrée : "
+"nginx, seul point exposé, sur les ports 80 et 443, qui applique l'authentification et transmet les "
+"webhooks. La couche IA : l'agent FastAPI, qui orchestre le graphe LangGraph et exécute les scanners, "
+"et Ollama, accessible uniquement depuis le réseau Docker interne. La couche données : PostgreSQL, "
+"qui tient la base de connaissances sécurité et les checkpoints, et Redis, pour la déduplication, le "
+"rate limiting et le cache des résultats. Et la couche observabilité, sur laquelle je reviendrai en "
+"détail.",
 # 18 — Manifeste (builds : 6 clics)
-"(≈ 40 s) J'insiste sur ce point : il s'agit d'un agent, et non d'un simple appel à un modèle. Six "
-"capacités le démontrent. [clics] Il perçoit les événements GitHub ; il raisonne et route son graphe "
-"d'état ; il agit — commente, bloque, escalade ; il persiste son état et reprend après un "
-"redémarrage ; il manipule dix-neuf outils réels ; et il s'auto-exploite au quotidien.",
+"(≈ 45 s) J'insiste sur ce point, car il fonde le titre du projet : il s'agit d'un agent, et non d'un "
+"simple appel à un modèle. Six capacités le démontrent. [clics] Il perçoit son environnement — les "
+"événements GitHub, les métriques, les alertes. Il raisonne : il classifie chaque Pull Request et "
+"route son graphe d'état en conséquence. Il agit : il commente, il bloque, il escalade vers Slack. Il "
+"persiste : son état est sauvegardé après chaque nœud, et il reprend exactement où il s'était arrêté "
+"après un redémarrage. Il manipule dix-neuf outils réels. Et il s'auto-exploite : il surveille son "
+"propre disque et publie chaque matin son bilan de santé.",
 # 19 — Pipeline (builds : 7 clics)
-"(≈ 45 s) Le cœur du système est un graphe d'état à neuf nœuds. Suivons une Pull Request. [clics] "
-"Réception et déduplication du webhook ; classification par le modèle 7B ; routage des scanners selon "
-"la nature des fichiers ; exécution parallèle des cinq scanners ; analyse combinée par le 14B selon "
-"l'OWASP Top 10 ; verdict ; publication sur GitHub. La fusion des deux appels du 14B en un seul a "
-"réduit la durée totale du pipeline de moitié.",
+"(≈ 55 s) Le cœur du système est un graphe d'état à neuf nœuds. Suivons une Pull Request. [clics] Le "
+"webhook est reçu, vérifié et dédupliqué ; le dépôt est cloné et le diff généré localement avec "
+"quinze lignes de contexte. Le modèle 7B classifie en cinq catégories. Le routage choisit les "
+"scanners : une PR de documentation saute l'analyse, un Dockerfile déclenche le scan d'image complet. "
+"Les scanners s'exécutent en parallèle, chacun isolé dans sa coroutine — si l'un échoue, le pipeline "
+"continue. Le 14B mène ensuite l'analyse combinée selon l'OWASP Top 10, sur un diff annoté de numéros "
+"de lignes. Le verdict est rendu, avec escalade Slack si le risque est élevé, puis la revue est "
+"publiée sur GitHub. Une optimisation a changé l'échelle : la fusion des deux appels du 14B en un "
+"seul a fait passer le pipeline de trente-cinquante minutes à quinze-vingt-cinq.",
 # 20 — Fiabilité
-"(≈ 35 s) La question légitime : peut-on faire confiance à un modèle de langage ? Six couches de "
-"protection éliminent les hallucinations — température zéro, fenêtre de contexte maîtrisée, garde "
-"d'outils, et surtout un parser qui élimine tout commentaire portant sur une ligne inexistante du "
-"diff. C'est ce qui permet de publier sur GitHub sans aucune erreur de ligne.",
+"(≈ 45 s) Reste la question légitime : peut-on faire confiance à un modèle de langage ? La réponse "
+"tient en six couches de protection. Trois agissent sur le modèle : température à zéro, fenêtre de "
+"contexte dimensionnée, génération plafonnée. Trois relèvent du contrôle applicatif : une garde qui "
+"force l'appel d'outil pour toute donnée en temps réel, des règles anti-hallucination dans le prompt, "
+"et l'obligation de ne citer que des valeurs présentes verbatim dans les observations. S'y ajoute, "
+"pour la revue de code, un parser dédié : il reconstruit l'ensemble exact des lignes valides du diff "
+"et écarte tout commentaire portant sur une ligne inexistante. Résultat : aucune erreur de ligne "
+"publiée sur GitHub.",
 # 21 — Divider 4
 "(≈ 5 s) Passons à la réalisation et aux résultats.",
 # 22 — Environnement
-"(≈ 25 s) Le terrain d'exécution est volontairement contraint : un VPS de production de douze cœurs "
-"Haswell, quarante-cinq giga-octets de mémoire, et sans GPU. La pile logicielle est intégralement "
+"(≈ 30 s) Le terrain d'exécution est volontairement contraint : un VPS de production de douze cœurs "
+"Haswell, quarante-cinq giga-octets de mémoire, et sans GPU — c'est le prix de la confidentialité, et "
+"nous l'assumons. Cette contrainte a imposé un vrai travail de tuning : flash attention et "
+"quantisation du cache KV pour tenir le modèle 14B en mémoire. La pile logicielle est intégralement "
 "open source : Docker, Python, FastAPI, LangGraph, PostgreSQL, Redis et les cinq scanners.",
 # 23 — Défense en profondeur
-"(≈ 35 s) La détection suit une logique de défense en profondeur : chaque scanner couvre une classe "
-"de risque — CVE, secrets, code applicatif, infrastructure, dépendances — et le modèle consolide "
-"l'ensemble. Les deux se complètent : sur la PR de démonstration, le modèle a détecté des secrets en "
-"dur que Gitleaks n'avait pas signalés.",
+"(≈ 40 s) La détection suit une logique de défense en profondeur. Chaque scanner couvre une classe de "
+"risque — les CVE pour Trivy, les secrets pour Gitleaks, le code applicatif pour Semgrep, "
+"l'infrastructure pour Checkov, les dépendances pour OSV-Scanner — et le modèle consolide l'ensemble "
+"en une revue unique. Les deux niveaux se complètent réellement : sur la PR de démonstration, c'est "
+"le modèle qui a détecté des secrets en dur que Gitleaks n'avait pas signalés. Et les findings des "
+"scanners, eux, sont déterministes : ils sont persistés en base quel que soit le texte produit par le "
+"modèle.",
 # 24 — Démonstration (GIF + build BLOCK)
-"(≈ 45 s) Voici la démonstration, sur la Pull Request numéro dix-huit : un module bancaire contenant "
-"cinq vulnérabilités types. À l'écran, la revue publiée par l'agent défile jusqu'au verdict. [clic] "
-"BLOCK. Cinq commentaires inline, chacun avec une suggestion applicable en un clic, et le statut de "
-"commit passe en échec : la fusion est techniquement bloquée.",
+"(≈ 50 s) Voici la démonstration, sur la Pull Request numéro dix-huit : un module bancaire en PHP "
+"contenant cinq vulnérabilités types — injection SQL, secrets en dur, path traversal, injection de "
+"commande et hachage MD5. À l'écran, la revue publiée par l'agent défile : l'analyse de chaque "
+"faille, puis les recommandations. [clic] Le verdict tombe : BLOCK. Cinq commentaires inline, chacun "
+"avec une suggestion de correction applicable en un clic depuis GitHub, et le statut de commit passe "
+"en échec : la fusion est techniquement bloquée tant que les corrections ne sont pas poussées. Durée "
+"totale pour cette revue : une quinzaine de minutes, notification Slack comprise.",
 # 25 — Bénéfices & résultats
-"(≈ 35 s) Le tableau résume le passage du processus manuel à l'agent : un délai divisé par près de "
-"cent ; une couverture OWASP systématique ; un gate effectif ; et la confidentialité garantie. Sur le "
-"jeu contrôlé, l'agent obtient cinq sur cinq, complétés par huit revues réelles persistées en base.",
+"(≈ 40 s) Le tableau résume le passage du processus manuel à l'agent : un délai divisé par près de "
+"cent ; une couverture OWASP systématique là où elle dépendait du relecteur ; un gate effectif là où "
+"rien ne bloquait ; et une traçabilité complète en base de données. Sur le jeu contrôlé, l'agent "
+"obtient cinq sur cinq, sans faux positif dans le fichier modifié. Au-delà de la démonstration, huit "
+"revues réelles sont persistées en base : les verdicts suivent le risque — REQUEST_CHANGES sur les "
+"PR de risque moyen, BLOCK sur les PR à risque élevé.",
 # 26 — Observabilité
-"(≈ 30 s) L'agent voit l'intégralité du VPS : vingt-huit métriques, quinze règles d'alerte, trois "
-"tableaux de bord. Cette supervision n'est pas décorative : elle a permis de détecter un AlertManager "
-"silencieusement hors service et une panne de VictoriaMetrics de neuf jours.",
+"(≈ 40 s) L'agent voit l'intégralité du VPS : vingt-huit métriques personnalisées, quinze règles "
+"d'alerte organisées en cinq groupes, trois tableaux de bord Grafana. Quinze de ces métriques ont été "
+"ajoutées en fin de projet : la consommation de chaque conteneur — obtenue en interrogeant "
+"directement le socket Docker, après l'échec de cAdvisor sur notre version de Docker — et une "
+"télémétrie comparative des deux moteurs d'inférence. Cette supervision n'est pas décorative : elle a "
+"révélé un AlertManager silencieusement hors service depuis le déploiement initial, et une panne de "
+"VictoriaMetrics restée neuf jours invisible.",
 # 27 — Chat & autonomie
-"(≈ 30 s) Au-delà de la revue, un assistant conversationnel doté de dix-neuf outils permet "
-"d'interroger l'infrastructure en langage naturel : l'agent invoque l'outil réel et répond avec la "
-"valeur mesurée — jamais inventée. Et il s'auto-exploite : scheduler autonome, health digest "
-"quotidien sur Slack, gardien disque auto-réparateur.",
+"(≈ 40 s) Au-delà de la revue, un assistant conversationnel doté de dix-neuf outils permet "
+"d'interroger l'infrastructure en langage naturel : l'état des conteneurs, les métriques Prometheus, "
+"et jusqu'à la base de connaissances sécurité, que l'on peut consulter sans écrire de SQL. À chaque "
+"question portant sur une donnée réelle, l'agent invoque l'outil correspondant et répond avec la "
+"valeur mesurée — jamais inventée. Il s'auto-exploite par ailleurs : un gardien disque vérifie "
+"l'occupation toutes les trente minutes et nettoie automatiquement au-delà de quatre-vingt-dix pour "
+"cent, et un bilan de santé complet est publié chaque matin sur Slack.",
 # 28 — Phi-4
-"(≈ 30 s) L'épisode le plus révélateur : la télémétrie a mis en évidence un bug du modèle Phi-4, qui "
-"renvoyait zéro token sans aucune erreur journalisée. Le système a donc détecté une panne invisible "
-"aux journaux — diagnostiquée, corrigée, puis vérifiée. C'est, je crois, la meilleure preuve qu'il "
-"s'agit d'un système qui se surveille lui-même.",
+"(≈ 35 s) L'épisode le plus révélateur du projet : la télémétrie a mis en évidence un bug du modèle "
+"Phi-4, qui renvoyait zéro token alors que la requête se terminait sans aucune erreur journalisée. La "
+"cause était un template de conversation mal formé, qui présentait au modèle une conversation déjà "
+"close. Le correctif a été aligné sur la configuration officielle du modèle, puis vérifié : de zéro à "
+"cinquante et un tokens. Le système a donc détecté une panne invisible aux journaux — c'est, je "
+"crois, la meilleure preuve qu'il se surveille lui-même.",
 # 29 — Tests et validation
-"(≈ 30 s) La validation finale a couvert les mécanismes critiques : rejet des signatures invalides, "
-"déduplication des webhooks, circuit breaker avec repli en cas d'indisponibilité du modèle, et "
-"déclenchement du gardien disque. Une checklist de quatorze vérifications de bout en bout a été "
-"intégralement validée avant la livraison.",
+"(≈ 35 s) La validation finale a couvert les mécanismes critiques. Un webhook à la signature invalide "
+"est rejeté avant tout traitement. Un webhook dupliqué est ignoré silencieusement. En cas "
+"d'indisponibilité du modèle, le circuit breaker s'ouvre après trois échecs et une classification de "
+"repli par extensions de fichiers prend le relais : le pipeline ne s'arrête pas. Le gardien disque "
+"déclenche le nettoyage et le notifie sur Slack. Au total, une checklist de quatorze vérifications de "
+"bout en bout a été intégralement validée avant la livraison.",
 # 30 — Divider 5
 "(≈ 5 s) J'en viens à la conclusion.",
 # 31 — Limites & perspectives
-"(≈ 40 s) Trois limites assumées : l'inférence sur CPU, qui borne la revue à quinze-vingt-cinq "
-"minutes ; un durcissement réseau à compléter ; et un corpus d'évaluation restreint. Trois "
-"perspectives : la migration GPU — environ trois mille euros — ramènerait chaque revue à deux à cinq "
-"minutes ; le passage à l'échelle de l'ensemble des dépôts de la banque ; et un tableau de bord de "
-"risque destiné au RSSI.",
+"(≈ 50 s) Trois limites assumées. L'inférence sur CPU borne la revue à quinze-vingt-cinq minutes — "
+"environ trois tokens par seconde. Le durcissement réseau reste à compléter : des ports hôte à "
+"refermer, le passage à HTTPS, la sauvegarde quotidienne de la base. Et le verdict repose encore sur "
+"le jugement du modèle ; le faire reposer sur les findings déterministes des scanners le mettrait à "
+"l'abri d'une injection d'instructions dans le code soumis. Trois perspectives. La migration GPU — "
+"environ trois mille euros, dans l'enveloppe de la DSI — ramènerait chaque revue à deux-cinq minutes, "
+"sans toucher ni à l'architecture ni à la confidentialité. Le passage à l'échelle de l'ensemble des "
+"dépôts de la banque. Et un tableau de bord de risque alimenté par les revues accumulées, destiné au "
+"RSSI.",
 # 32 — Conclusion
-"(≈ 30 s) En conclusion : un agent IA agentique, déployé en production à la BTE, qui sécurise chaque "
-"Pull Request sans qu'aucun code ne quitte la banque. La plateforme est remise à la banque et "
-"constitue un socle concret pour sa transformation DevSecOps. Je vous remercie de votre attention et "
-"me tiens à votre disposition pour répondre à vos questions.",
+"(≈ 30 s) En conclusion : parti d'un VPS vierge, ce projet livre un agent d'intelligence artificielle "
+"complet, déployé en production à la BTE, qui sécurise chaque Pull Request sans qu'aucun code ne "
+"quitte la banque. La plateforme est remise à la banque et constitue un socle concret pour sa "
+"transformation DevSecOps. Je vous remercie de votre attention et me tiens à votre disposition pour "
+"répondre à vos questions.",
 ]
 _slides = list(prs.slides)
 if len(SPEECH) != len(_slides):

@@ -57,25 +57,25 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
         \hline
         \texttt{devsecops-agent} & Python 3.12 custom & 8000 & \textasciitilde120 Mo & Cœur IA + API \\
         \hline
-        \texttt{ollama} & ollama/ollama:latest & interne & \textasciitilde10 Go & Inférence LLM \\
+        \texttt{ollama} & \texttt{ollama/\allowbreak{}ollama:latest} & interne & \textasciitilde10 Go & Inférence LLM \\
         \hline
-        \texttt{postgres} & postgres:16-alpine & interne & \textasciitilde33 Mo & BD + checkpoints \\
+        \texttt{postgres} & \texttt{postgres:16-alpine} & interne & \textasciitilde33 Mo & BD + checkpoints \\
         \hline
-        \texttt{redis} & redis:7-alpine & interne & \textasciitilde5 Mo & Cache + dédup \\
+        \texttt{redis} & \texttt{redis:7-alpine} & interne & \textasciitilde5 Mo & Cache + dédup \\
         \hline
-        \texttt{nginx} & nginx:alpine & 80, 443 & \textasciitilde3 Mo & Reverse proxy \\
+        \texttt{nginx} & \texttt{nginx:alpine} & 80, 443 & \textasciitilde3 Mo & Reverse proxy \\
         \hline
-        \texttt{prometheus} & prom/prometheus & interne & \textasciitilde26 Mo & Métriques \\
+        \texttt{prometheus} & \texttt{prom/\allowbreak{}prometheus} & interne & \textasciitilde26 Mo & Métriques \\
         \hline
-        \texttt{alertmanager} & prom/alertmanager & interne & \textasciitilde10 Mo & Routage alertes \\
+        \texttt{alertmanager} & \texttt{prom/\allowbreak{}alertmanager} & interne & \textasciitilde10 Mo & Routage alertes \\
         \hline
-        \texttt{grafana} & grafana/grafana & interne & \textasciitilde96 Mo & Dashboards \\
+        \texttt{grafana} & \texttt{grafana/\allowbreak{}grafana} & interne & \textasciitilde96 Mo & Dashboards \\
         \hline
-        \texttt{victoriametrics} & victoria-metrics & interne & \textasciitilde97 Mo & Stockage 90j \\
+        \texttt{victoriametrics} & \texttt{victoria-metrics} & interne & \textasciitilde97 Mo & Stockage 90j \\
         \hline
-        \texttt{node-exporter} & prom/node-exporter & host:9100 & \textasciitilde10 Mo & Métriques host \\
+        \texttt{node-exporter} & \texttt{prom/\allowbreak{}node-exporter} & \texttt{host:9100} & \textasciitilde10 Mo & Métriques host \\
         \hline
-        \texttt{open-webui} & open-webui:main & 3001 & \textasciitilde300 Mo & UI Ollama \\
+        \texttt{open-webui} & \texttt{open-webui:main} & 3001 & \textasciitilde300 Mo & UI Ollama \\
         \hline
         \end{tabular}
         \caption{Inventaire des 11 conteneurs — ports, mémoire et rôles}
@@ -95,15 +95,15 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
         \hline
         \texttt{GET /} & redirect → \texttt{/ui} & — & — \\
         \hline
-        \texttt{GET /ui} & agent:8000/ui & défaut & Basic Auth \\
+        \texttt{GET /ui} & \texttt{agent:8000/ui} & défaut & Basic Auth \\
         \hline
-        \texttt{POST /chat/} & agent:8000/chat/ & 1800s & Basic Auth \\
+        \texttt{POST /chat/} & \texttt{agent:8000/chat/} & 1800s & Basic Auth \\
         \hline
-        \texttt{POST /\allowbreak{}webhooks/\allowbreak{}github} & agent:8000 & 30s & HMAC \\
+        \texttt{POST /\allowbreak{}webhooks/\allowbreak{}github} & \texttt{agent:8000} & 30s & HMAC \\
         \hline
-        \texttt{/grafana/} & grafana:3000 & défaut & Grafana auth \\
+        \texttt{/grafana/} & \texttt{grafana:3000} & défaut & Grafana auth \\
         \hline
-        \texttt{/\allowbreak{}prometheus/} & prometheus:9090 & défaut & — \\
+        \texttt{/\allowbreak{}prometheus/} & \texttt{prometheus:9090} & défaut & — \\
         \hline
         \end{tabular}
         \caption{Table de routage nginx}

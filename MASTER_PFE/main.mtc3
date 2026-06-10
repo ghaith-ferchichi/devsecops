@@ -17,21 +17,16 @@
 {\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.1}Présentation générale}{\reset@font\mtcSSfont 25}{subsection.2.4.1}}
 {\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.2}Les cinq catégories de risques couvertes}{\reset@font\mtcSSfont 25}{subsection.2.4.2}}
 {\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {4.3}Réduction des tokens SAST}{\reset@font\mtcSSfont 26}{subsection.2.4.3}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {5}Stack applicative et observabilité}{\reset@font\mtcSfont 26}{section.2.5}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.1}Framework API asynchrone}{\reset@font\mtcSSfont 26}{subsection.2.5.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.2}Base de données relationnelle}{\reset@font\mtcSSfont 27}{subsection.2.5.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.3}Cache et déduplication}{\reset@font\mtcSSfont 27}{subsection.2.5.3}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.4}Observabilité}{\reset@font\mtcSSfont 27}{subsection.2.5.4}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {6}Choix technologiques}{\reset@font\mtcSfont 27}{section.2.6}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {6.1}Choix du moteur d'inférence LLM}{\reset@font\mtcSSfont 27}{subsection.2.6.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {6.2}Choix du modèle LLM}{\reset@font\mtcSSfont 28}{subsection.2.6.2}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {6.3}Choix de l'orchestrateur}{\reset@font\mtcSSfont 29}{subsection.2.6.3}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {6.4}Choix des outils SAST}{\reset@font\mtcSSfont 30}{subsection.2.6.4}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {6.5}Choix de la stack applicative}{\reset@font\mtcSSfont 30}{subsection.2.6.5}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {6.6}Choix de la stack d'observabilité}{\reset@font\mtcSSfont 31}{subsection.2.6.6}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {6.7}Synthèse des choix technologiques}{\reset@font\mtcSSfont 32}{subsection.2.6.7}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {7}Positionnement par rapport aux solutions existantes}{\reset@font\mtcSfont 32}{section.2.7}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {8}Analyse et définition des besoins}{\reset@font\mtcSfont 33}{section.2.8}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {8.1}Besoins fonctionnels}{\reset@font\mtcSSfont 33}{subsection.2.8.1}}
-{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {8.2}Besoins non fonctionnels}{\reset@font\mtcSSfont 34}{subsection.2.8.2}}
-{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode Conclusion}{\reset@font\mtcSfont 34}{subsection.2.8.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {5}Choix technologiques}{\reset@font\mtcSfont 26}{section.2.5}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.1}Choix du moteur d'inférence LLM}{\reset@font\mtcSSfont 26}{subsection.2.5.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.2}Choix du modèle LLM}{\reset@font\mtcSSfont 27}{subsection.2.5.2}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.3}Choix de l'orchestrateur}{\reset@font\mtcSSfont 28}{subsection.2.5.3}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.4}Choix des outils SAST}{\reset@font\mtcSSfont 29}{subsection.2.5.4}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.5}Choix de la stack applicative}{\reset@font\mtcSSfont 29}{subsection.2.5.5}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.6}Choix de la stack d'observabilité}{\reset@font\mtcSSfont 30}{subsection.2.5.6}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {5.7}Synthèse des choix technologiques}{\reset@font\mtcSSfont 31}{subsection.2.5.7}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {6}Positionnement par rapport aux solutions existantes}{\reset@font\mtcSfont 32}{section.2.6}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode \numberline {7}Analyse et définition des besoins}{\reset@font\mtcSfont 32}{section.2.7}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {7.1}Besoins fonctionnels}{\reset@font\mtcSSfont 32}{subsection.2.7.1}}
+{\reset@font\mtcSSfont\mtc@string\contentsline{subsection}{\noexpand \leavevmode \numberline {7.2}Besoins non fonctionnels}{\reset@font\mtcSSfont 33}{subsection.2.7.2}}
+{\reset@font\mtcSfont\mtc@string\contentsline{section}{\noexpand \leavevmode Conclusion}{\reset@font\mtcSfont 34}{subsection.2.7.2}}

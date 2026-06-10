@@ -92,12 +92,14 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
 
         L'édition 2025 constitue la grille d'analyse du moteur LLM de notre solution :
         chaque \textit{finding} produit par l'agent est rattaché à l'une de ses dix
-        catégories au moyen d'une référence explicite, par exemple A01:2025 --- Broken
-        Access Control ou A05:2025 --- Injection. Le tableau \ref{tab:owasp2025} en présente
-        la liste complète.
+        catégories au moyen d'une référence explicite, par exemple
+        {\NoAutoSpacing A01:2025} --- Broken Access Control ou
+        {\NoAutoSpacing A05:2025} --- Injection. Le tableau \ref{tab:owasp2025} en
+        présente la liste complète.
 
         \begin{table}[H]
         \centering
+        \NoAutoSpacing
         \begin{tabular}{|c|m{10.5cm}|}
         \hline
         \textbf{Référence} & \textbf{Catégorie de risque} \\
@@ -123,7 +125,7 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         A10:2025 & Mishandling of Exceptional Conditions \\
         \hline
         \end{tabular}
-        \caption{Les dix catégories de l'OWASP Top 10:2025}
+        \caption{Les dix catégories de l'OWASP Top 10 (édition 2025)}
         \label{tab:owasp2025}
         \end{table}
 
@@ -140,7 +142,7 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         signée par GitHub avec un secret partagé via l'algorithme HMAC-SHA256 \cite{HMAC}.
         L'agent recalcule la signature à partir de la charge utile reçue et la compare en
         temps constant à celle envoyée dans l'en-tête \texttt{X-Hub-Signature-256} : toute
-        requête dont la signature ne correspond pas est rejetée en 401 avant la moindre
+        requête dont la signature ne correspond pas est rejetée en 403 avant la moindre
         opération. On retrouve là les deux idées centrales du DevSecOps : le webhook
         automatise le déclenchement côté événement, et la vérification de signature
         applique le principe de \textit{Security as Code} côté réception.
@@ -280,52 +282,6 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         \caption{Réduction des tokens SAST avant transmission au LLM}
         \label{tab:token_reduction}
         \end{table}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Stack applicative et observabilité}
-
-    \subsection{Framework API asynchrone}
-
-        Le cœur de l'agent expose une interface HTTP qui reçoit les webhooks GitHub,
-        publie les résultats et sert l'assistant de chat en temps réel. Cette interface
-        doit gérer des opérations longues (scans SAST, appels LLM de plusieurs minutes)
-        sans bloquer les autres requêtes entrantes, ce qui impose un framework basé sur
-        un modèle d'exécution \textbf{asynchrone} via \texttt{asyncio}. Une validation
-        automatique des charges utiles entrantes est également nécessaire pour garantir
-        l'intégrité des données reçues depuis les webhooks.
-
-    \subsection{Base de données relationnelle}
-
-        Dans notre architecture, une même base de données relationnelle porte deux
-        usages bien séparés. Elle est d'abord une \textbf{base de connaissances sécurité}
-        qui conserve les revues de \textit{Pull Requests}, les résultats de scanners et
-        les profils de risque par dépôt, et c'est elle qui alimente les requêtes de
-        tendances. Elle sert par ailleurs à la \textbf{persistance des checkpoints} de
-        l'orchestrateur, ce qui permet à un pipeline de 15 à 25 minutes de survivre au
-        redémarrage de son conteneur.
-
-    \subsection{Cache et déduplication}
-
-        Un cache en mémoire intervient à plusieurs endroits sensibles du pipeline. Il
-        assure la \textbf{déduplication des webhooks}, pour éviter qu'un même événement
-        soit traité deux fois lorsque GitHub réémet une notification après \textit{timeout}. Il
-        applique aussi le \textbf{rate limiting} qui plafonne le nombre de pipelines
-        simultanés par dépôt et protège ainsi le moteur d'inférence de la surcharge. Il
-        sert enfin de \textbf{cache des résultats de scanners} : sur un nouveau \textit{push} vers
-        la même branche, les résultats sont renvoyés en quelques millisecondes au lieu de
-        relancer une analyse complète.
-
-    \subsection{Observabilité}
-
-        Un système qui exécute des pipelines de plusieurs minutes, dépend d'un moteur
-        d'inférence local et orchestre cinq scanners externes ne reste exploitable que
-        s'il est instrumenté. La stack d'observabilité commence par la \textbf{collecte de
-        métriques} (durée du pipeline, latence des appels LLM, taux d'erreur des scanners,
-        occupation disque), que le \textbf{stockage long terme} conserve sur 90 jours pour
-        l'analyse de tendances et que des dashboards rendent lisibles par la
-        \textbf{visualisation}. À cela s'ajoute un mécanisme d'\textbf{alerting}, qui
-        signale les anomalies (saturation disque, indisponibilité du moteur LLM, échecs
-        répétés de scanners) avant qu'elles ne touchent les utilisateurs.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Choix technologiques}
@@ -487,16 +443,20 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         depuis les webhooks GitHub.
 
         Pour la base de données relationnelle, nous retenons \textbf{PostgreSQL}
-        \cite{PostgreSQL}, qui assume les deux rôles décrits précédemment : la base de
-        connaissances sécurité et la persistance des checkpoints LangGraph via
-        l'\texttt{AsyncPostgresSaver}. Son écosystème mature et son support natif des
-        types JSON facilitent le stockage des résultats hétérogènes des scanners.
+        \cite{PostgreSQL}, qui assume deux rôles bien séparés : la base de
+        connaissances sécurité (revues de \textit{Pull Requests}, résultats de
+        scanners, profils de risque par dépôt) et la persistance des checkpoints
+        LangGraph via l'\texttt{AsyncPostgresSaver}, grâce à laquelle un pipeline de
+        15 à 25 minutes survit au redémarrage de son conteneur. Son support natif des
+        types JSON facilite par ailleurs le stockage des résultats hétérogènes des
+        scanners.
 
         Le cache et la déduplication reposent enfin sur \textbf{Redis} \cite{Redis}.
-        Son opération atomique \texttt{SET NX} permet une déduplication fiable des
-        webhooks, et sa gestion native des TTL convient parfaitement au cache des
-        résultats de scanners (TTL d'une heure) et au rate limiting (maximum trois
-        pipelines simultanés par dépôt).
+        Son opération atomique \texttt{SET NX} évite qu'un même webhook soit traité
+        deux fois lorsque GitHub réémet une notification après \textit{timeout}, et sa
+        gestion native des TTL convient au cache des résultats de scanners (TTL d'une
+        heure) comme au rate limiting qui plafonne à trois les pipelines simultanés
+        par dépôt et protège le moteur d'inférence de la surcharge.
 
     \subsection{Choix de la stack d'observabilité}
 
@@ -527,8 +487,9 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
 
         La combinaison \textbf{Prometheus + VictoriaMetrics + Grafana + node-exporter +
         AlertManager} a été retenue. C'est d'abord la seule pile entièrement open source
-        et auto-hébergeable qui couvre les quatre besoins, ce qui prolonge la contrainte
-        de confidentialité déjà appliquée au moteur LLM. Les cinq composants ont par
+        et auto-hébergeable qui couvre les quatre besoins de la plateforme (collecte de
+        métriques, stockage long terme sur 90 jours, visualisation, alerting), ce qui
+        prolonge la contrainte de confidentialité déjà appliquée au moteur LLM. Les cinq composants ont par
         ailleurs été conçus pour s'intégrer entre eux sans adaptateur. Prometheus émet
         vers AlertManager nativement et Grafana lit indifféremment Prometheus et
         VictoriaMetrics, ce qui nous a évité d'écrire des couches de pontage. Reste le

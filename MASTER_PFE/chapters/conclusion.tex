@@ -34,12 +34,11 @@ l'infrastructure ; quinze de ces métriques ont été ajoutées au sprint 8.1 po
 consommation par conteneur, la santé de la sandbox LocalAI et la télémétrie A/B du routeur
 de chat. Quant à la méthodologie Scrumban, qui combine la cadence de sprints à durée fixe
 héritée de Scrum et une discipline Kanban plafonnée à un seul élément en cours (WIP de 1),
-elle a permis, sur dix sprints, d'absorber les imprévus de production : l'urgence disque
-(242 Go), un AlertManager silencieusement cassé depuis le déploiement, VictoriaMetrics
-resté en panne neuf jours, ou les trois bugs cumulatifs du parser de revue PR (regex
-intolérant aux espaces, \texttt{json.loads} strict, modèle omettant le JSON). Chacun de
-ces incidents est devenu la carte prioritaire du sprint suivant et a donné lieu à un
-correctif déployé en production avant la clôture de l'itération.
+elle a permis, sur dix sprints, d'absorber les imprévus de production : l'urgence disque,
+l'AlertManager silencieusement cassé depuis le déploiement, la panne de VictoriaMetrics
+ou la réécriture du parser de revue PR. Chacun de ces incidents est devenu la carte
+prioritaire du sprint en cours et a donné lieu à un correctif déployé en production avant
+la clôture de l'itération.
 
 Plusieurs chantiers restent néanmoins ouverts. Le premier concerne le durcissement de la
 surface exposée : les ports hôte de Redis, Prometheus, AlertManager, VictoriaMetrics et
@@ -51,18 +50,12 @@ et sept conteneurs tournent encore sans \textit{healthcheck} Docker. Reste enfin
 question propre au cœur IA de la plateforme : le diff analysé étant une entrée non fiable,
 faire reposer le verdict de blocage sur les \textit{findings} déterministes des scanners,
 et non sur le seul jugement du modèle, mettrait la revue à l'abri d'une éventuelle
-injection d'instructions dans le code soumis. Sur le terrain de
-l'inférence, l'évaluation conduite en post-Sprint 8 d'un second moteur (LocalAI, servant
-le même Qwen2.5-Coder 7B que la production) a tranché en faveur d'Ollama, plus rapide de
-22\,\% sur un matériel identique : 5,49 contre 4,50 tokens par seconde. Le sprint 8.1 a
-poussé plus loin cette comparaison en instrumentant les deux backends de chat ; une
-télémétrie A/B y mesure la latence du premier \textit{token}, la durée totale et le débit
-en sortie pour chaque couple \texttt{backend}~$\times$~\texttt{model}. Ce dispositif a
-d'ailleurs révélé un bug latent du \textit{template} \texttt{ChatML-with-im\_\allowbreak{}sep}
-du modèle Phi-4, qui renvoyait silencieusement zéro \textit{token} et serait passé inaperçu
-sans cette instrumentation. La sandbox LocalAI ouvre par ailleurs l'accès à des modèles
-absents de la bibliothèque Ollama, tel Qwen3-Coder MoE 30B/3B-actifs ; un \textit{fine-tuning}
-sur des CVE bancaires reste une piste à explorer.
+injection d'instructions dans le code soumis. Sur le terrain de l'inférence,
+l'évaluation d'un second moteur conduite en post-Sprint 8 a confirmé le choix d'Ollama,
+plus rapide de 22\,\% que LocalAI sur un matériel et un modèle identiques. La sandbox
+LocalAI conserve toutefois son intérêt : elle ouvre l'accès à des modèles absents de la
+bibliothèque Ollama, tel Qwen3-Coder MoE 30B/3B-actifs, et un \textit{fine-tuning} sur
+des CVE bancaires reste une piste à explorer.
 
 L'évolution la plus déterminante pour la suite serait la \textbf{migration vers une
 inférence GPU}. Sur le matériel actuel (CPU Haswell 12 cœurs, sans GPU), une revue de

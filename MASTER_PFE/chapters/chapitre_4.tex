@@ -44,41 +44,12 @@ bout en bout de la plateforme.
 
     \subsection{Environnement logiciel}
 
-        Le tableau \ref{tab:soft_env} présente les versions des principaux composants
-        logiciels utilisés dans la solution.
-
-        \begin{table}[H]
-        \centering
-        \begin{tabular}{|m{4.5cm}|m{3cm}|m{5cm}|}
-        \hline
-        \textbf{Logiciel} & \textbf{Version} & \textbf{Rôle} \\
-        \hline
-        Docker Engine \cite{Docker} & 29.4.0 & Conteneurisation \\
-        \hline
-        Python & 3.12-slim & Runtime FastAPI + LangGraph \\
-        \hline
-        FastAPI \cite{FastAPI} & 0.135+ & Framework API asynchrone \\
-        \hline
-        LangGraph \cite{LangGraph} & 1.1+ & Orchestration workflow LLM \\
-        \hline
-        PostgreSQL \cite{PostgreSQL} & 16-alpine & Base de données \\
-        \hline
-        Redis \cite{Redis} & 7-alpine & Cache et déduplication \\
-        \hline
-        Semgrep \cite{Semgrep} & 1.157+ & SAST OWASP \\
-        \hline
-        Checkov \cite{Checkov} & 3.2.517+ & Scan IaC \\
-        \hline
-        Trivy \cite{Trivy} & 0.69+ & Scan CVE \\
-        \hline
-        Gitleaks \cite{Gitleaks} & 8.30+ & Détection de secrets \\
-        \hline
-        OSV-Scanner \cite{OSVScanner} & 2.3+ & Scan de dépendances \\
-        \hline
-        \end{tabular}
-        \caption{Environnement logiciel — versions des composants clés}
-        \label{tab:soft_env}
-        \end{table}
+        Les versions des composants logiciels déployés sont celles arrêtées à l'issue
+        de l'étude technologique du chapitre~2 et récapitulées dans le tableau
+        \ref{tab:tech_synthesis} : Docker Engine 29.4.0 \cite{Docker}, Python 3.12,
+        FastAPI \cite{FastAPI}, LangGraph \cite{LangGraph}, PostgreSQL 16
+        \cite{PostgreSQL}, Redis 7 \cite{Redis} et les cinq scanners SAST
+        \cite{Trivy, Gitleaks, Semgrep, Checkov, OSVScanner}.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Implémentation par sprints Scrumban}
@@ -109,23 +80,17 @@ bout en bout de la plateforme.
                 Ollama tunée pour CPU Haswell AVX2.
         \end{description}
 
-        Le premier sprint a consisté à mettre en place l'ensemble de l'infrastructure
-        Docker et à valider la réception des webhooks GitHub.
-        Le déploiement initial de la plateforme a comporté l'installation de
-        Docker Engine 29.4.0 sur l'OS Ubuntu existant, la configuration des
-        règles \texttt{iptables} limitant l'exposition externe aux ports 80 et
-        443 via nginx, l'initialisation du schéma PostgreSQL ainsi que le clone
-        et le démarrage des onze conteneurs. Ces étapes relèvent de la pratique
-        courante d'administration système Linux et ne sont pas détaillées ici. La suite de
-        cette sous-section se concentre sur les deux tunings spécifiques qui
-        ont conditionné la réussite du sprint : la configuration de performance
-        d'Ollama pour un fonctionnement CPU-only et le correctif nginx
-        nécessaire à la bonne réception des webhooks GitHub.
+        Le déploiement initial (installation de Docker Engine sur l'Ubuntu existant,
+        règles \texttt{iptables} limitant l'exposition externe aux ports 80 et 443,
+        initialisation du schéma PostgreSQL, démarrage des onze conteneurs) relève de
+        l'administration système courante et n'est pas détaillé ici. Deux réglages
+        méritent en revanche d'être exposés.
 
-        La configuration de performance d'Ollama est critique pour un fonctionnement CPU-only.
-        Sans tuning, le modèle 14B consomme plus de onze Go de mémoire KV à seize mille
-        tokens de contexte avec les paramètres par défaut. La figure \ref{fig:ollama_compose}
-        présente la configuration Ollama dans le fichier \texttt{docker-compose.\allowbreak{}yml}.
+        Le premier est la configuration de performance d'Ollama, déterminante en
+        fonctionnement CPU-only : avec les paramètres par défaut, le modèle 14B
+        consomme plus de onze Go de mémoire KV à seize mille tokens de contexte. La
+        figure \ref{fig:ollama_compose} présente la configuration retenue dans le
+        fichier \texttt{docker-compose.\allowbreak{}yml}.
 
         \begin{figure}[H]
             \centering
@@ -144,10 +109,8 @@ bout en bout de la plateforme.
         autres services du VPS tout en permettant au modèle 14B (neuf Go) de fonctionner
         avec une marge suffisante.
 
-        L'intégration du webhook GitHub a buté sur un problème de transport :
-        nginx, configuré en HTTP/1.0 par défaut, altérait les corps chunked des requêtes
-        GitHub et provoquait systématiquement des erreurs 500. La figure \ref{fig:nginx_fix}
-        présente le correctif appliqué dans la configuration nginx.
+        Le second est le correctif du problème de transport signalé en tête de sprint.
+        La figure \ref{fig:nginx_fix} présente la configuration nginx corrigée.
 
         \begin{figure}[H]
             \centering
@@ -260,14 +223,12 @@ bout en bout de la plateforme.
                 mise en cache Redis des résultats avec TTL d'une heure.
         \end{description}
 
-        Le deuxième sprint a consisté à intégrer les cinq scanners de sécurité (Trivy
-        \cite{Trivy}, Gitleaks \cite{Gitleaks}, Semgrep \cite{Semgrep}, Checkov
-        \cite{Checkov} et OSV-Scanner \cite{OSVScanner}) et le modèle LLM 14B dans le
-        workflow LangGraph \cite{LangGraph}. Ce sprint a par ailleurs introduit un diff
-        généré localement, avec quinze lignes de contexte au lieu des trois lignes que
-        l'API GitHub renvoie par défaut. La figure \ref{fig:diff_comparison} illustre la
-        différence de qualité entre les deux approches sur un exemple de vulnérabilité
-        SQL injection.
+        Le diff transmis au modèle est désormais généré localement par
+        \texttt{git diff -U15}, avec quinze lignes de contexte au lieu des trois que
+        l'API GitHub renvoie par défaut. La figure \ref{fig:diff_comparison} illustre
+        la différence entre les deux approches sur un exemple d'injection SQL : avec
+        trois lignes seulement, le modèle ne voit ni l'origine de la variable
+        concaténée ni la fonction qui l'entoure.
 
         \begin{figure}[H]
             \centering
@@ -308,11 +269,10 @@ bout en bout de la plateforme.
                 bouton \textit{Apply}.
         \end{description}
 
-        Le troisième sprint a introduit l'optimisation principale du pipeline : la fusion
-        des deux appels 14B séquentiels en un seul appel combiné. Le gain porte sur la
-        durée totale (scanners, classification 7B et publication GitHub comprises), et
-        non sur la seule phase d'inférence du modèle 14B. Le tableau
-        \ref{tab:combined_perf} résume cet impact.
+        Le gain annoncé porte sur la durée totale du pipeline (scanners,
+        classification 7B et publication GitHub comprises), et non sur la seule phase
+        d'inférence du modèle 14B. Le tableau \ref{tab:combined_perf} résume cet
+        impact.
 
         \begin{table}[H]
         \centering
@@ -334,31 +294,12 @@ bout en bout de la plateforme.
         La PR~\#18 sert de fil rouge pour valider ce sprint. Le fichier
         \texttt{banking\_\allowbreak{}demo\_\allowbreak{}final.\allowbreak{}php} y regroupe cinq failles types :
         injection SQL, secrets en dur, path traversal, injection de commande
-        et hachage faible. Les figures~\ref{fig:github_review_sec0}
-        à~\ref{fig:slack_notification_pr_result} retracent la revue de bout
-        en bout, depuis l'onglet \textit{Conversation} de GitHub jusqu'à la
-        notification Slack.
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.92\columnwidth]{pr_comment-security-review_0}}
-            \caption{PR~\#18 — revue de sécurité, partie~1}
-            \label{fig:github_review_sec0}
-        \end{figure}
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.92\columnwidth]{pr_comment-security-review_1}}
-            \caption{PR~\#18 — revue de sécurité, partie~2}
-            \label{fig:github_review_sec1}
-        \end{figure}
-
-        \begin{figure}[H]
-            \centering
-            \frame{\includegraphics[width=0.92\columnwidth]{pr_comment-security-review_2}}
-            \caption{PR~\#18 — revue de sécurité, partie~3}
-            \label{fig:github_review_sec2}
-        \end{figure}
+        et hachage faible. La revue de sécurité publiée sur GitHub est reproduite
+        intégralement dans la section consacrée aux résultats
+        (figures~\ref{fig:pr_full_result} à~\ref{fig:pr_full_result_3}) ; on se
+        limite ici aux trois sorties propres à ce sprint. La
+        figure~\ref{fig:github_review_quality} montre la revue de qualité de code
+        publiée dans l'onglet \textit{Conversation}.
 
         \begin{figure}[H]
             \centering
@@ -415,7 +356,7 @@ bout en bout de la plateforme.
             \item[Livrable :] 233~Go récupérés sans aucune interruption de service,
                 gardien disque autonome surveillant l'utilisation toutes les trente
                 minutes, \textit{scheduler} asyncio avec \textit{health digest}
-                quotidien publié à 09:00 UTC.
+                quotidien publié à 09h00 UTC.
         \end{description}
 
         \subsubsection{Urgence disque du 20 avril 2026}
@@ -461,7 +402,7 @@ bout en bout de la plateforme.
         \end{figure}
 
         La figure \ref{fig:slack_digest} montre un exemple du health digest Slack publié
-        quotidiennement à 09:00 UTC, récapitulant l'état du disque, de tous les conteneurs,
+        quotidiennement à 09h00 UTC, récapitulant l'état du disque, de tous les conteneurs,
         du modèle Ollama chargé et des alertes Prometheus actives.
 
         \begin{figure}[H]
@@ -585,31 +526,13 @@ bout en bout de la plateforme.
 
         \subsubsection{Optimisation du chat agent}
 
-        Le benchmark des quatre modèles disponibles a abouti au résultat présenté dans
-        le tableau \ref{tab:benchmark_result}. Les modèles \texttt{qwen2.\allowbreak{}5-coder:7b} et
-        \texttt{14b} atteignent la même précision de 80\%, mais le 7b est 43\% plus rapide
-        par token. Il a donc été retenu comme modèle par défaut du chat. Par ailleurs, la
-        compression du prompt système de 11 794 à 7 577 caractères (réduction de 36\%)
-        a significativement réduit le cache KV et accéléré les réponses.
-
-        \begin{table}[H]
-        \centering
-        \begin{tabular}{|m{4cm}|m{2cm}|m{2.5cm}|m{2.5cm}|m{2.5cm}|}
-        \hline
-        \textbf{Modèle} & \textbf{Taille} & \textbf{Vitesse} & \textbf{Précision} & \textbf{Décision} \\
-        \hline
-        \texttt{qwen2.\allowbreak{}5-coder:7b} & 4,7 Go & \textasciitilde5 tok/s & 80\% & Chat défaut \\
-        \hline
-        \texttt{qwen2.\allowbreak{}5-coder:14b} & 9,0 Go & \textasciitilde3,2 tok/s & 80\% & Revue PR \\
-        \hline
-        \texttt{llama3.2:3b} & 2,0 Go & \textasciitilde8 tok/s & 0\% & Expérimental \\
-        \hline
-        \texttt{granite3.\allowbreak{}1-dense:2b} & 1,6 Go & \textasciitilde8,5 tok/s & 0\% & Incompatible \\
-        \hline
-        \end{tabular}
-        \caption{Résultats du benchmark — décision finale par modèle}
-        \label{tab:benchmark_result}
-        \end{table}
+        C'est au cours de ce sprint qu'a été conduit le benchmark des quatre modèles
+        disponibles, dont les résultats ont été présentés au chapitre~2 (tableau
+        \ref{tab:llm_benchmark}). À précision égale (80\,\%), le 7b est 43\,\% plus
+        rapide par token que le 14b ; il a donc été retenu comme modèle par défaut du
+        chat. La compression du prompt système de 11\,794 à 7\,577 caractères
+        (36\,\% de moins) a en outre réduit le cache KV et accéléré d'autant les
+        réponses.
 
     \subsection{Sprint 7 — Audit VPS et durcissement}
 
@@ -639,11 +562,11 @@ bout en bout de la plateforme.
         \hline
         \textbf{Découverte} & \textbf{Cause racine} & \textbf{Correction} \\
         \hline
-        VictoriaMetrics en panne 9 jours & Panic disque-plein, restart: unless-stopped non relancé après libération disque & docker compose restart, 10,9M lignes récupérées \\
+        VictoriaMetrics en panne 9 jours & Panic disque-plein, \texttt{restart: unless-stopped} non relancé après libération disque & \texttt{docker compose restart}, 10,9M lignes récupérées \\
         \hline
-        AlertManager sans alertes reçues & path\_prefix manquant dans prometheus.yml & Ajout path\_prefix: /alertmanager/ \\
+        AlertManager sans alertes reçues & \texttt{path\_\allowbreak{}prefix} manquant dans \texttt{prometheus.yml} & Ajout \texttt{path\_\allowbreak{}prefix: /alertmanager/} \\
         \hline
-        GET / retourne 404 & Absence de location par défaut dans nginx & Ajout return 301 /ui \\
+        GET / retourne 404 & Absence de location par défaut dans nginx & Ajout \texttt{return 301 /ui} \\
         \hline
         Grafana live dashboards cassés & Headers WebSocket manquants dans nginx & Ajout Upgrade et Connection headers \\
         \hline
@@ -870,11 +793,6 @@ else:
         \label{tab:parser_verification}
         \end{table}
 
-        \textbf{Livrable de Sprint 8 :} commentaires inline GitHub restaurés sur tous
-        les patterns de sortie LLM observés. Le parser tolère désormais les formats
-        JSON pré-formatté, les fences markdown en queue, et l'absence totale de bloc
-        JSON. Le bug a été reproduit puis vérifié corrigé sur les PRs \#14 et \#15.
-
     \subsection{Post-Sprint 8 — Évaluation d'un second backend d'inférence}
 
         \begin{description}
@@ -894,54 +812,30 @@ else:
                 (Ollama +22\,\% de débit sur modèle identique).
         \end{description}
 
-        Le Sprint 8 clôturé et la plateforme stabilisée, la phase de documentation a
-        été l'occasion de revenir sur une question restée ouverte depuis le premier
-        jour. Ollama \cite{Ollama} avait été choisi en Sprint 1 pour sa réputation
-        d'efficacité sur CPU, mais ce choix n'avait jamais été comparé à un moteur
-        alternatif servant exactement le même modèle. Avant de clore le projet, nous
-        voulions transformer cette intuition en mesure.
-
-        \subsubsection{Motivation et cadre du micro-sprint}
-
-        Plusieurs raisons justifiaient cette évaluation. La principale était l'absence
-        de point de comparaison : le débit d'Ollama en tokens par seconde sur notre
-        matériel n'avait jamais été mis en regard d'un autre moteur exécutant le même
-        GGUF. À cela s'ajoutait un intérêt pratique pour LocalAI \cite{LocalAI}, qui
-        consomme nativement les fichiers GGUF \cite{GGUF} publiés sur le Hub Hugging
-        Face \cite{HuggingFaceHub} et donne ainsi accès à des modèles absents de la
-        bibliothèque Ollama, notamment Phi-4 et Gemma 3. L'exercice était également
-        l'occasion de vérifier que le routeur de chat pouvait accueillir un second
-        moteur sans réécriture de la boucle ReAct, ce qui faciliterait l'intégration
-        future d'autres backends comme vLLM ou llama.cpp en mode serveur.
-
-        Le travail a été mené comme un micro-sprint isolé : un seul livrable, déployé
-        dans une sandbox parallèle, sans aucune modification du stack de production.
-        Le pipeline de revue de PR continue de tourner exclusivement sur Ollama.
-        LocalAI ne démarre qu'à la demande, via un fichier Compose distinct.
+        Ollama \cite{Ollama} avait été choisi en Sprint~1 pour sa réputation
+        d'efficacité sur CPU, sans jamais avoir été mesuré contre un moteur
+        concurrent servant exactement le même modèle. Ce micro-sprint visait à
+        transformer cette intuition en mesure, et accessoirement à vérifier que le
+        routeur de chat pouvait accueillir un second backend sans réécriture de la
+        boucle ReAct. LocalAI \cite{LocalAI} a été retenu comme point de comparaison
+        parce qu'il consomme nativement les fichiers GGUF \cite{GGUF} du Hub Hugging
+        Face \cite{HuggingFaceHub}, ce qui donne au passage accès à des modèles
+        absents de la bibliothèque Ollama, notamment Phi-4 et Gemma 3. Le travail a
+        été mené dans une sandbox isolée, sans aucune modification du stack de
+        production : le pipeline de revue de PR continue de tourner exclusivement sur
+        Ollama, et LocalAI ne démarre qu'à la demande via un fichier Compose
+        distinct.
 
         \subsubsection{Mise en place de la sandbox LocalAI}
 
-        La sandbox est définie dans un fichier \texttt{docker-compose.\allowbreak{}localai.\allowbreak{}yml}
-        autonome, séparé du Compose principal du projet, qui rejoint le réseau Docker
-        existant \texttt{devsecops-net} et expose son API compatible OpenAI sur le
-        port hôte 8081. Le conteneur est configuré pour utiliser les douze cœurs CPU
-        Haswell avec \texttt{THREADS=12}, un contexte de 8192 tokens, une limite
-        mémoire de 24 Go et un \texttt{shm\_size} de 2 Go pour les tampons de
-        synchronisation entre threads. Les modèles téléchargés sont persistés dans
-        un volume Docker nommé \texttt{localai\_\allowbreak{}models}, ce qui les protège des
-        redémarrages du conteneur.
-
-        L'installation des modèles passe par deux voies. Les modèles présents dans
-        la galerie LocalAI (\texttt{gemma-3-4b-it}, \texttt{gemma-3-12b-it},
-        \texttt{qwen3-coder-30b-a3b-instruct}) se déclenchent par un simple
-        \texttt{POST /\allowbreak{}models/\allowbreak{}apply}. Les GGUF HuggingFace hors galerie, comme le
-        \texttt{qwen2.\allowbreak{}5-coder-7b} que nous avons choisi pour répliquer le modèle
-        d'Ollama, demandent un fichier YAML par modèle décrivant la source et les
-        paramètres d'exécution. Une particularité de LocalAI v3 nous a fait perdre du
-        temps à ce stade : le moteur ne scrute que la racine du dossier
-        \texttt{/\allowbreak{}build/\allowbreak{}models/} et ignore les sous-dossiers comme \texttt{config/}.
-        Chaque YAML doit donc être monté individuellement dans le bon emplacement
-        plutôt que regroupé dans un répertoire dédié.
+        La sandbox est définie dans le fichier \texttt{docker-compose.\allowbreak{}localai.\allowbreak{}yml},
+        séparé du Compose principal, qui rejoint le réseau Docker existant et expose
+        une API compatible OpenAI sur le port hôte 8081 (douze threads, contexte de
+        8\,192 tokens, limite mémoire de 24~Go). Les modèles de la galerie LocalAI
+        s'installent par un simple \texttt{POST /\allowbreak{}models/\allowbreak{}apply} ; les GGUF hors
+        galerie, comme le \texttt{qwen2.\allowbreak{}5-coder-7b} choisi pour répliquer le modèle
+        servi par Ollama, demandent un fichier YAML décrivant la source et les
+        paramètres d'exécution.
 
         \begin{lstlisting}[style=yaml, caption={Configuration LocalAI du modèle Qwen2.5-Coder 7B, identique à celui servi par Ollama}, label={lst:localai_qwen_yaml}]
 name: qwen2.5-coder-7b
@@ -954,11 +848,10 @@ f16: true
 mmap: true
         \end{lstlisting}
 
-        Le format ChatML utilisé par la famille Qwen 2.5 est détecté automatiquement
-        par LocalAI à partir des métadonnées du fichier GGUF, ce qui nous a évité de
-        déclarer un \textit{template} explicite. La cohérence sémantique des réponses
+        Le format ChatML de la famille Qwen 2.5 est détecté automatiquement par
+        LocalAI à partir des métadonnées du fichier GGUF ; la cohérence des réponses
         produites par les deux backends sur un même prompt a confirmé après coup que
-        cette détection fonctionnait correctement.
+        cette détection fonctionnait.
 
         \subsubsection{Architecture du routeur dual-backend}
 
@@ -966,99 +859,35 @@ mmap: true
         pour accepter un identifiant de modèle préfixé par le backend cible :
         \texttt{ollama/\allowbreak{}qwen2.\allowbreak{}5-coder:7b} continue d'emprunter le chemin de production,
         tandis que \texttt{localai/\allowbreak{}phi-4} ou \texttt{localai/\allowbreak{}qwen2.\allowbreak{}5-coder-7b}
-        bifurque vers la sandbox. La fonction \texttt{\_\allowbreak{}parse\_\allowbreak{}backend()} sépare le
-        préfixe du nom de modèle ; en l'absence de préfixe, le routeur retombe sur
-        Ollama pour préserver la rétrocompatibilité des conversations sauvegardées
-        avant l'ajout de LocalAI.
-
-        \begin{lstlisting}[language=Python, caption={Bifurcation du routeur selon le backend cible}, label={lst:backend_split}]
-backend, raw_model = _parse_backend(req.model)
-
-if backend == "ollama":
-    await _unload_other_models(keep=raw_model)
-    llm = ChatOllama(base_url=settings.ollama_base_url, model=raw_model,
-                     temperature=0.0, num_ctx=_num_ctx,
-                     num_predict=_num_predict,
-                     keep_alive="10m", request_timeout=request_timeout)
-else:  # localai - API compatible OpenAI
-    yield _sse({"type": "status", "content": f"Warming up {raw_model}..."})
-    await _prime_localai_model(raw_model)
-    yield _sse({"type": "status", "content": "Generating..."})
-    llm = ChatOpenAI(base_url=f"{settings.localai_base_url}/v1",
-                     api_key="not-needed", model=raw_model, temperature=0.0,
-                     max_tokens=_num_predict, timeout=request_timeout,
-                     stream_chunk_timeout=None)  # cf. correction cold-load
-        \end{lstlisting}
-
-        La route \texttt{/\allowbreak{}chat/\allowbreak{}models} fusionne les deux catalogues dans un seul
-        \textit{dropdown} de l'interface, en taggant chaque entrée avec son backend
-        d'origine. Si la sandbox LocalAI est arrêtée, la requête vers son endpoint
-        échoue silencieusement et seuls les modèles Ollama apparaissent : nous avons
-        veillé à ce que la défaillance du backend optionnel n'impacte jamais
-        l'utilisation du backend de production.
+        bifurque vers la sandbox. En l'absence de préfixe, le routeur retombe sur
+        Ollama, ce qui préserve les conversations sauvegardées avant l'ajout de
+        LocalAI. La route \texttt{/\allowbreak{}chat/\allowbreak{}models} fusionne les deux catalogues dans le
+        même menu de l'interface ; si la sandbox est arrêtée, seuls les modèles
+        Ollama apparaissent, de sorte que la défaillance du backend optionnel
+        n'affecte jamais celui de production.
 
         \subsubsection{Découverte et résolution d'un bug de \og cold-load \fg{}}
 
-        Le premier essai grandeur réelle a échoué. Après
-        avoir sélectionné le modèle \texttt{localai/\allowbreak{}phi-4} et envoyé une simple
-        question dans l'interface de chat, le flux SSE s'est interrompu après
-        exactement cent-vingt secondes avec le message d'erreur suivant :
+        Le premier essai réel a échoué : après sélection du modèle
+        \texttt{localai/\allowbreak{}phi-4}, le flux SSE s'interrompait après exactement
+        cent vingt secondes. Le client \texttt{ChatOpenAI} de la bibliothèque
+        \texttt{langchain\_\allowbreak{}openai} embarque en effet un chien de garde par chunk de
+        cent vingt secondes, indépendant du timeout global de la requête. Or, sur un
+        CPU sans GPU, le chargement à froid d'un modèle 15B quantisé comme Phi-4
+        (8,5 Go sur disque), suivi du traitement d'un prompt système d'environ
+        1\,900 tokens, dépasse régulièrement ce délai avant que le premier token ne
+        soit produit : le chien de garde tuait le flux pendant que le modèle
+        finissait de se charger en RAM.
 
-        \begin{lstlisting}[basicstyle=\footnotesize\ttfamily, breaklines=true, breakatwhitespace=false, frame=none, numbers=none, xleftmargin=1.5em]
-No streaming chunk received for 120.0s (model=phi-4, chunks_received=1).
-The connection may be alive at the TCP layer but is not producing
-content. Tune or disable via the `stream_chunk_timeout` constructor
-kwarg or the LANGCHAIN_OPENAI_STREAM_CHUNK_TIMEOUT_S env var.
-\end{lstlisting}
-
-        L'analyse a révélé que le client \texttt{ChatOpenAI} de la bibliothèque
-        \texttt{langchain\_\allowbreak{}openai} embarque un chien de garde par chunk de cent-vingt
-        secondes, indépendant du timeout global de la requête (réglé à quinze
-        minutes dans notre configuration). Or, sur notre VPS douze cœurs sans GPU,
-        le chargement d'un modèle 15 B quantisé en Q4\_K\_M comme Phi-4 (8,5 Go sur
-        disque), suivi du traitement du \textit{prompt} système de l'agent qui pèse
-        environ 1\,900 tokens, dépasse régulièrement les cent-vingt secondes avant
-        que le premier token utile ne soit produit. Le chien de garde tuait donc le
-        flux pendant que le modèle finissait de se charger en RAM.
-
-        La correction tient en trois ajustements complémentaires. Le plus direct a
-        été de désactiver le chien de garde par chunk en passant
-        \texttt{stream\_\allowbreak{}chunk\_\allowbreak{}timeout=None} au constructeur \texttt{ChatOpenAI} :
-        sur un backend local situé sur le même \textit{bridge} Docker que l'agent,
-        le \textit{keepalive} TCP du noyau suffit à détecter une connexion morte,
-        et le chien de garde applicatif ne fait que tuer prématurément des requêtes
-        longues mais légitimes. Le deuxième ajustement a été d'ajouter un
-        \textit{prime} explicite du modèle avant le démarrage du streaming. Une
-        petite requête synchrone \texttt{POST /\allowbreak{}v1/\allowbreak{}chat/\allowbreak{}completions} avec
-        \texttt{max\_\allowbreak{}tokens=4} et un message \og hi \fg{} suffit à forcer LocalAI à
-        charger le GGUF en mémoire avant que LangChain ne commence à attendre des
-        tokens. Quand la requête réelle arrive ensuite, le moteur est déjà chaud.
-
-        \begin{lstlisting}[language=Python, caption={Aide-mémoire de \og pre-warm \fg{} pour le backend LocalAI}, label={lst:localai_prime}]
-async def _prime_localai_model(model: str) -> None:
-    """Force LocalAI a charger `model` avant que LangChain
-    ne commence le streaming."""
-    base = get_settings().localai_base_url
-    payload = {"model": model,
-               "messages": [{"role": "user", "content": "hi"}],
-               "max_tokens": 4}
-    start = _time.time()
-    try:
-        async with httpx.AsyncClient(timeout=600.0) as client:
-            await client.post(f"{base}/v1/chat/completions", json=payload)
-        log.info("localai_prime_done", model=model,
-                 ms=int((_time.time() - start) * 1000))
-    except Exception as exc:
-        log.warning("localai_prime_failed", model=model, error=str(exc))
-        \end{lstlisting}
-
-        Le troisième ajustement est cosmétique mais important. Pendant les soixante
-        à cent-vingt secondes du chargement à froid, l'interface n'avait aucun signe
-        de progression et restait figée sur \og Loading\ldots{} \fg{}, ce qui avait
-        été la première remontée du test utilisateur. Nous avons ajouté deux
-        événements SSE intermédiaires, \og Warming up phi-4\ldots{} \fg{} puis
-        \og Generating\ldots{} \fg{}, qui remplacent successivement le bandeau de
-        statut au fur et à mesure que la requête avance.
+        La correction combine trois ajustements. Le chien de garde a été désactivé
+        (\texttt{stream\_\allowbreak{}chunk\_\allowbreak{}timeout=None}) : entre deux conteneurs du même
+        \textit{bridge} Docker, le \textit{keepalive} TCP du noyau suffit à détecter
+        une connexion morte. Un pré-chargement explicite du modèle a été ajouté avant
+        le démarrage du streaming, sous la forme d'une petite requête synchrone qui
+        force LocalAI à amener le GGUF en mémoire. Enfin, deux événements SSE
+        intermédiaires (\og Warming up\ldots{} \fg{} puis \og Generating\ldots{} \fg{})
+        renseignent l'utilisateur pendant le chargement à froid, durant lequel
+        l'interface restait auparavant figée.
 
         \subsubsection{Benchmark croisé sur modèle identique}
 
@@ -1123,32 +952,6 @@ async def _prime_localai_model(model: str) -> None:
         HuggingFace absents de la bibliothèque Ollama et pour préparer une comparaison
         future, le jour où un nouveau moteur d'inférence deviendra pertinent.
 
-        \begin{table}[H]
-        \centering
-        \begin{tabular}{|m{6cm}|m{8cm}|}
-        \hline
-        \textbf{Fichier} & \textbf{Modification} \\
-        \hline
-        \texttt{agent/\allowbreak{}app/\allowbreak{}routers/\allowbreak{}chat.\allowbreak{}py} & Fonction \texttt{\_\allowbreak{}parse\_\allowbreak{}backend()}, \texttt{\_\allowbreak{}prime\_\allowbreak{}localai\_\allowbreak{}model()}, \texttt{stream\_\allowbreak{}chunk\_\allowbreak{}timeout=None}, deux événements SSE supplémentaires, table \texttt{LOCALAI\_\allowbreak{}MODEL\_\allowbreak{}META} \\
-        \hline
-        \texttt{agent/\allowbreak{}app/\allowbreak{}config.\allowbreak{}py} & Nouveau champ \texttt{localai\_\allowbreak{}base\_\allowbreak{}url} \\
-        \hline
-        \texttt{docker-compose.\allowbreak{}localai.\allowbreak{}yml} & Nouveau Compose autonome pour la sandbox LocalAI \\
-        \hline
-        \texttt{localai/\allowbreak{}config/\allowbreak{}qwen2.\allowbreak{}5-coder-7b.\allowbreak{}yaml} & Nouveau — pointe sur le même GGUF HuggingFace qu'Ollama \\
-        \hline
-        \texttt{scripts/\allowbreak{}benchmark-backends.\allowbreak{}sh} & Nouveau — comparaison head-to-head des deux backends \\
-        \hline
-        \end{tabular}
-        \caption{Fichiers modifiés ou créés lors du Post-Sprint~8}
-        \label{tab:phase9_files}
-        \end{table}
-
-        \textbf{Livrable Post-Sprint 8 :} la sandbox LocalAI tourne en parallèle
-        d'Ollama, le routeur de chat accepte les deux backends, le bug de
-        \textit{cold-load} est corrigé, et le choix initial d'Ollama est désormais
-        appuyé par une mesure (22\,\% de débit en plus sur modèle identique).
-
     \subsection{Sprint 8.1 — Expansion de l'observabilité et correction du \textit{template} Phi-4}
 
         \begin{description}
@@ -1170,50 +973,29 @@ async def _prime_localai_model(model: str) -> None:
                 explicite du \textit{prompt} de génération.
         \end{description}
 
-        Au lendemain du micro-sprint Post-Sprint 8, l'évaluation des backends LocalAI
-        a soulevé une nouvelle question : comment mesurer la qualité
-        d'exécution de chaque modèle de chat au-delà du benchmark hors-ligne ? Le
-        \textit{stack} d'observabilité hérité des sprints précédents couvrait l'agent
-        et Ollama, mais n'offrait aucune visibilité par conteneur, aucune métrique
-        spécifique à LocalAI, et aucun comparatif en production entre les deux backends.
-        L'objectif du sprint 8.1 a donc été triple : (i) instrumenter chaque conteneur
-        du VPS pour disposer d'une vue complète des ressources consommées ; (ii) ajouter
-        une télémétrie A/B au routeur de chat afin de mesurer en direct la latence du
-        premier token, la durée totale et le débit en sortie par couple
-        \texttt{backend}~$\times$~\texttt{model} ; (iii) profiter de cette nouvelle
-        instrumentation pour diagnostiquer et corriger le bug latent du modèle Phi-4
-        qui retournait silencieusement zéro token à chaque requête.
+        Le micro-sprint précédent a laissé une question ouverte : comment suivre en
+        production, et non plus seulement au banc d'essai, le comportement de chaque
+        modèle de chat ? La couverture d'observabilité héritée des sprints précédents
+        s'arrêtait à l'agent et à Ollama, sans visibilité par conteneur ni comparatif
+        entre les deux backends. Le sprint 8.1 a donc instrumenté chaque conteneur du
+        VPS, ajouté une télémétrie A/B au routeur de chat, et mis à profit cette
+        instrumentation pour corriger un bug latent du modèle Phi-4.
 
         \subsubsection{Tentative de déploiement de cAdvisor et pivot architectural}
 
-        La voie évidente pour obtenir des métriques par conteneur consistait à déployer
-        \textit{cAdvisor}, le projet de référence de Google pour ce type de collecte.
-        Après quarante-cinq minutes de tests sur deux versions successives
-        (v0.49.1 puis v0.52.1) et trois combinaisons de \textit{flags}, le constat a
-        été clair : cAdvisor est architecturalement incompatible avec la
-        configuration Docker de notre VPS. Le démon Docker 29.4 utilise le
+        La voie naturelle pour obtenir des métriques par conteneur était
+        \textit{cAdvisor}, le projet de référence de Google pour cette collecte. Les
+        essais menés sur deux versions et trois combinaisons de \textit{flags} ont
+        abouti à un constat sans appel : le démon Docker 29.4 utilise le
         \textit{containerd snapshotter} comme magasin d'images, qui ne maintient pas
-        la base \texttt{/\allowbreak{}var/\allowbreak{}lib/\allowbreak{}docker/\allowbreak{}image/\allowbreak{}overlayfs/\allowbreak{}layerdb/\allowbreak{}mounts/} dont cAdvisor
-        a besoin pour résoudre l'identifiant de couche par conteneur. Tous les
-        \textit{cgroups} \texttt{/\allowbreak{}system.\allowbreak{}slice/\allowbreak{}docker-<hash>.\allowbreak{}scope} étaient découverts
-        par cAdvisor mais immédiatement écartés avec le message
-        \texttt{failed to identify the read-write layer ID}. L'usage des \textit{flags}
-        \texttt{--containerd=/\allowbreak{}run/\allowbreak{}containerd/\allowbreak{}containerd.\allowbreak{}sock} et
-        \texttt{--raw\_\allowbreak{}cgroup\_\allowbreak{}prefix\_\allowbreak{}whitelist=/\allowbreak{}system.\allowbreak{}slice/\allowbreak{}docker-} n'a pas permis
-        de résoudre le problème : la factory Docker de cAdvisor revendique en premier
-        les \textit{cgroups} et empêche la factory \textit{raw} de prendre le relais.
-
-        Plutôt que de poursuivre l'effort de configuration de cAdvisor, nous avons
-        pivoté vers une solution beaucoup plus simple, déjà rendue possible par
-        l'infrastructure existante : l'agent monte déjà le socket
-        \texttt{/\allowbreak{}var/\allowbreak{}run/\allowbreak{}docker.\allowbreak{}sock} pour les besoins de ses outils d'introspection
-        opérationnels. Une centaine de lignes Python suffisent pour interroger
-        directement l'API Docker Engine toutes les trente secondes et exposer le
-        résultat sous forme de \textit{gauges} Prometheus, sans aucun conteneur
-        \textit{sidecar} additionnel. Cette approche présente plusieurs avantages :
-        elle est indépendante du pilote de stockage Docker, elle ne consomme pas de
-        privilèges supplémentaires, et elle réutilise les pollers asynchrones déjà
-        instanciés dans le cycle de vie de l'application FastAPI.
+        la base de couches dont cAdvisor a besoin, et chaque \textit{cgroup}
+        découvert était aussitôt écarté avec l'erreur \texttt{failed to identify the
+        read-write layer ID}. Plutôt que d'insister, nous avons exploité une
+        ressource déjà disponible : l'agent monte le socket Docker pour ses outils
+        d'introspection. Une centaine de lignes Python suffisent à interroger l'API
+        Docker Engine toutes les trente secondes et à exposer le résultat en jauges
+        Prometheus, sans conteneur supplémentaire, indépendamment du pilote de
+        stockage et sans privilège nouveau.
 
         \begin{lstlisting}[language=Python, caption={Cœur du \textit{poller} docker-stats — calcul CPU\% relatif à un cœur}, label={lst:docker_stats_poller}]
 async def _poll_docker_stats():
@@ -1259,65 +1041,19 @@ async def _poll_docker_stats():
         à \texttt{/\allowbreak{}chat/\allowbreak{}stream} : la latence avant le premier \textit{token} émis
         (\textit{Time-To-First-Token}), la durée totale du \textit{stream}, et le
         nombre de \textit{chunks} effectivement renvoyés à l'interface. Chaque
-        observation est labellisée par le couple \texttt{(backend, model)} de sorte
+        observation est labellisée par le couple \texttt{(backend, model)}, de sorte
         que Grafana peut tracer côte à côte la performance d'Ollama et de LocalAI sur
         la même question. L'instrumentation est strictement passive : aucune branche
         logique de la boucle ReAct n'a été modifiée, et le chemin de revue de Pull
-        Request, qui n'emprunte pas \texttt{\_\allowbreak{}stream\_\allowbreak{}react()}, reste totalement
-        inchangé.
-
-        \begin{lstlisting}[language=Python, caption={Instrumentation A/B du \textit{stream} de chat — observation pure}, label={lst:chat_ab_telemetry}]
-async def _stream_react(req: ChatRequest):
-    backend, raw_model = _parse_backend(req.model)
-    _t_start = _time.perf_counter()
-    _first_token_at: float | None = None
-    _token_count = 0
-    _status = "ok"
-    try:
-        async for chunk in llm.astream(messages):
-            tok = chunk.content
-            if not tok:
-                continue
-            if _first_token_at is None:                # TTFT (premier token)
-                _first_token_at = _time.perf_counter()
-                chat_first_token_seconds.labels(
-                    backend=backend, model=raw_model
-                ).observe(_first_token_at - _t_start)
-            _token_count += 1                           # debit (par chunk)
-            ...
-    except Exception:
-        _status = "error"
-        raise
-    finally:
-        chat_request_seconds.labels(backend=backend, model=raw_model)\
-            .observe(_time.perf_counter() - _t_start)
-        chat_requests_total.labels(
-            backend=backend, model=raw_model, status=_status).inc()
-        if _token_count:
-            chat_tokens_streamed_total.labels(backend=backend, model=raw_model)\
-                .inc(_token_count)
-        \end{lstlisting}
-
-        Une seconde modification de moindre ampleur a accompagné cette
-        instrumentation : le dictionnaire \texttt{LOCALAI\_\allowbreak{}MODEL\_\allowbreak{}META}, qui décrit la
-        taille en gigaoctets et le débit moyen mesuré pour chaque modèle LocalAI,
-        était jusqu'alors défini à l'intérieur de la \textit{route}
-        \texttt{/\allowbreak{}chat/\allowbreak{}models}. Il a été déplacé à la portée du module pour que le
-        \textit{poller} LocalAI puisse l'importer et alimenter la jauge
-        \texttt{localai\_\allowbreak{}model\_\allowbreak{}size\_\allowbreak{}gb} à partir de la même source de vérité,
-        évitant ainsi toute divergence entre l'affichage de l'interface et la valeur
-        exposée à Prometheus.
+        Request, qui n'emprunte pas \texttt{\_\allowbreak{}stream\_\allowbreak{}react()}, reste inchangé.
 
         \subsubsection{Cinq nouvelles \textit{rows} sur le dashboard Grafana}
 
-        Entre le Sprint~5 (trente-trois panneaux, cf. figure~\ref{fig:grafana_agent})
-        et ce micro-sprint, le dashboard avait déjà été enrichi jusqu'à quarante-cinq
-        panneaux. Le Sprint~8.1 y ajoute cinq \textit{rows} supplémentaires : le total
-        passe de quarante-cinq à soixante-six \textit{panels}, sans aucune
-        collision d'identifiant (vérification programmatique via l'API REST de
-        Grafana). Un indicateur \og LocalAI \fg{} UP/DOWN a également été ajouté à
-        la bande d'en-tête, juste à côté de l'indicateur Ollama existant. Le tableau
-        \ref{tab:grafana_rows_8_1} récapitule l'organisation visuelle.
+        Le Sprint~8.1 ajoute cinq \textit{rows} au dashboard de l'agent (soixante-six
+        panneaux au total, contre trente-trois lors du Sprint~5), ainsi qu'un
+        indicateur LocalAI UP/DOWN dans la bande d'en-tête, à côté de l'indicateur
+        Ollama existant. Le tableau \ref{tab:grafana_rows_8_1} récapitule
+        l'organisation visuelle.
 
         \begin{table}[H]
         \centering
@@ -1342,14 +1078,12 @@ async def _stream_react(req: ChatRequest):
         \end{table}
 
         Les onze indicateurs de la \textit{row} \og Service Health \fg{} agrègent
-        trois sources de signal complémentaires : la métrique \texttt{up\{job=...\}}
-        de Prometheus pour les cibles qu'il scrute directement (agent, prometheus,
-        alertmanager, node-exporter), les jauges \texttt{ollama\_\allowbreak{}reachable} et
-        \texttt{localai\_\allowbreak{}reachable} émises par leurs \textit{pollers} respectifs, et
-        la jauge \texttt{container\_\allowbreak{}running\{name=.\allowbreak{}.\allowbreak{}.\allowbreak{}\}} du nouveau \textit{poller}
-        Docker pour les services qui ne sont pas instrumentés Prometheus (postgres,
-        redis, nginx, grafana, victoriametrics). L'opérateur dispose ainsi
-        d'un \og tableau vert/rouge \fg{} immédiat à l'ouverture du \textit{dashboard}.
+        trois sources de signal : la métrique \texttt{up\{job=...\}} de Prometheus
+        pour les cibles scrutées directement, les jauges \texttt{ollama\_\allowbreak{}reachable}
+        et \texttt{localai\_\allowbreak{}reachable} émises par leurs \textit{pollers}, et la jauge
+        \texttt{container\_\allowbreak{}running} du nouveau \textit{poller} Docker pour les
+        services non instrumentés Prometheus. L'opérateur dispose ainsi d'un tableau
+        vert/rouge immédiat à l'ouverture du \textit{dashboard}.
 
         \subsubsection{Découverte et correction du bug du \textit{template} Phi-4}
 
@@ -1387,28 +1121,19 @@ template:
     {{.Input}}
         \end{lstlisting}
 
-        La persistance du correctif est assurée par un nouveau \textit{bind-mount}
-        dans \texttt{docker-compose.\allowbreak{}localai.\allowbreak{}yml} qui projette le fichier de l'hôte
-        sur le chemin attendu par LocalAI à l'intérieur du conteneur, exactement
-        comme pour le YAML de Qwen2.5-Coder. Le fichier survit ainsi à un cycle
-        complet de \texttt{docker compose down/\allowbreak{}up} sans recourir à une intervention
-        manuelle via \texttt{docker exec}.
-
-        \textbf{Validation expérimentale.} Un appel direct à l'endpoint
-        \texttt{/\allowbreak{}v1/\allowbreak{}chat/\allowbreak{}completions} de LocalAI, en contournant l'agent, retourne
-        désormais le contenu \texttt{Pong} avec \texttt{completion\_\allowbreak{}tokens = 3},
-        valeur strictement positive là où elle valait 0 avant le correctif. Par le
-        chemin du routeur de chat de l'agent, le compteur
-        \texttt{chat\_\allowbreak{}tokens\_\allowbreak{}streamed\_\allowbreak{}total\{model="phi-4"\}} est passé de 0 à 51
-        \textit{tokens}. Le \textit{stream} fonctionne donc aussi bien en appel
-        direct qu'à travers la pile complète.
+        Le fichier corrigé est projeté dans le conteneur par un \textit{bind-mount}
+        déclaré dans \texttt{docker-compose.\allowbreak{}localai.\allowbreak{}yml}, ce qui le fait survivre
+        à un cycle complet de \texttt{docker compose down/\allowbreak{}up}. La validation a porté
+        sur les deux chemins : en appel direct à LocalAI, \texttt{completion\_\allowbreak{}tokens}
+        vaut désormais 3 là où il valait 0 ; à travers le routeur de chat de l'agent,
+        le compteur \texttt{chat\_\allowbreak{}tokens\_\allowbreak{}streamed\_\allowbreak{}total\{model="phi-4"\}} est passé
+        de 0 à 51 \textit{tokens}.
 
         \subsubsection{Synthèse de la couverture observabilité}
 
         Le tableau \ref{tab:metrics_8_1_summary} récapitule la couverture de
-        monitoring obtenue à l'issue du sprint 8.1, en distinguant clairement les
-        métriques héritées des sprints antérieurs des quinze nouvelles ajoutées
-        cette semaine.
+        monitoring obtenue à l'issue du sprint 8.1, en distinguant les métriques
+        héritées des sprints antérieurs des quinze nouvelles.
 
         \begin{table}[H]
         \centering
@@ -1431,14 +1156,6 @@ template:
         \caption{Inventaire consolidé des métriques Prometheus à l'issue du sprint 8.1}
         \label{tab:metrics_8_1_summary}
         \end{table}
-
-        \textbf{Livrable Sprint 8.1 :} expansion de la couverture observabilité de
-        treize à vingt-huit métriques personnalisées, instrumentation A/B des deux
-        backends de chat (Ollama et LocalAI) sans modification du chemin de revue de
-        PR, \textit{poller} Docker autonome contournant l'incompatibilité de cAdvisor
-        avec le \textit{containerd snapshotter}, ajout de cinq nouvelles \textit{rows}
-        sur le \textit{dashboard} Grafana de l'agent, et correction du bug latent du
-        modèle Phi-4 rendue possible par l'instrumentation elle-même.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Tests de validation}
@@ -1698,7 +1415,7 @@ template:
         \hline
         Gardien disque actif & Jauge agent\_disk\_used\_percent Prometheus & \checkmark \\
         \hline
-        Health digest Slack quotidien & Message reçu à 09:00 UTC & \checkmark \\
+        Health digest Slack quotidien & Message reçu à 09h00 UTC & \checkmark \\
         \hline
         Métriques host node-exporter & PromQL node\_memory\_MemAvailable & \checkmark \\
         \hline
