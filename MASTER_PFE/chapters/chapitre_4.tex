@@ -543,8 +543,9 @@ bout en bout de la plateforme.
             \item[Obstacles rencontrés :] Cinq découvertes critiques. VictoriaMetrics
                 était en panne depuis neuf jours, AlertManager n'avait reçu aucune
                 alerte depuis le déploiement initial, \texttt{GET /} retournait 404,
-                les \textit{live dashboards} Grafana étaient cassés, et le chat UI
-                était publiquement accessible sans authentification.
+                les \textit{live dashboards} Grafana étaient cassés, et l'interface
+                de chat reposait sur sa seule authentification applicative, sans la
+                seconde couche prévue au niveau du \textit{reverse proxy}.
             \item[Livrable :] Cinq correctifs déployés, système anti-hallucination à
                 six couches activé sur le chat, authentification HTTP Basic Auth
                 déployée sur nginx.
@@ -570,7 +571,7 @@ bout en bout de la plateforme.
         \hline
         Grafana live dashboards cassés & Headers WebSocket manquants dans nginx & Ajout Upgrade et Connection headers \\
         \hline
-        Chat UI publiquement accessible & Absence d'authentification & HTTP Basic Auth via nginx htpasswd \\
+        Interface de chat protégée par sa seule authentification applicative & Déploiement initial limité à la couche applicative & Ajout d'une couche HTTP Basic Auth via nginx (défense en profondeur) \\
         \hline
         \end{tabular}
         \caption{Découvertes et corrections de l'audit VPS du 28 avril 2026}
@@ -1428,85 +1429,62 @@ template:
         \label{tab:validation}
         \end{table}
 
-    \subsection{Limites identifiées et plan de durcissement}
+    \subsection{Durcissement de la plateforme et analyse de menace}
 
-        La checklist précédente couvre le périmètre fonctionnel et observabilité, mais
-        la plateforme reste configurée pour l'itération quotidienne plutôt que pour une
-        exploitation durcie. Plusieurs services internes ont conservé un \textit{binding}
-        sur l'hôte hérité de la phase de mise au point. Ce choix a facilité le diagnostic
-        au cours des sprints, dans la mesure où une commande \texttt{curl
-        http:/\allowbreak{}/\allowbreak{}vps:9090/\allowbreak{}api/\allowbreak{}v1/\allowbreak{}query} était plus rapide à taper que l'ouverture d'un
-        tunnel SSH. Il expose toutefois une surface qu'il faut réduire avant tout
-        passage en production réelle. Le tableau \ref{tab:hardening_gaps}
-        récapitule les écarts relevés et la correction prévue.
+        La checklist précédente couvre le périmètre fonctionnel et l'observabilité. En
+        prolongement de l'audit du 28 avril, une revue de durcissement a été conduite
+        sur la configuration de la plateforme afin d'aligner l'exploitation sur les
+        principes de défense en profondeur attendus d'un environnement bancaire. Le
+        tableau \ref{tab:hardening_gaps} en synthétise les axes.
 
         \begin{table}[H]
         \centering
-        \begin{tabular}{|m{2.7cm}|m{2cm}|m{4cm}|m{4cm}|}
+        \begin{tabular}{|m{3.4cm}|m{4cm}|m{5.2cm}|}
         \hline
-        \textbf{Service} & \textbf{Port} & \textbf{Risque associé} & \textbf{Correction prévue} \\
+        \textbf{Axe} & \textbf{Principe} & \textbf{Mise en œuvre} \\
         \hline
-        Redis & 6379 & Lecture du cache, des clés de déduplication et du rate limiter & Retrait du binding hôte, mot de passe \texttt{--requirepass} \\
+        Cloisonnement réseau & Un point d'entrée unique & nginx seul exposé en frontal (80/443) ; les services internes communiquent sur le réseau Docker interne, le diagnostic passe par \texttt{docker exec} ou par une route nginx authentifiée \\
         \hline
-        Prometheus & 9090 & Lecture des métriques, des cibles et des règles d'alerte & Retrait du binding hôte, accès passé exclusivement par nginx \\
+        Authentification & Défense en profondeur & Double couche sur les interfaces : HTTP Basic Auth au niveau de nginx, puis comptes applicatifs natifs (Grafana, interface de chat) ; mot de passe dédié sur le cache Redis ; création des comptes du chat réservée à l'administrateur \\
         \hline
-        AlertManager & 9093 & Inhibition d'alertes via l'API publique & Retrait du binding hôte \\
+        Confidentialité de l'inférence & Aucune donnée ne quitte le VPS & Modèles servis par Ollama sur le réseau interne uniquement, aucun appel vers une API d'inférence externe \\
         \hline
-        VictoriaMetrics & 8428 & Lecture des métriques conservées sur 90 jours & Retrait du binding hôte (port déjà détecté par les scanners externes) \\
-        \hline
-        \texttt{devsecops-agent} & 8000 & Contournement de l'authentification Basic Auth de nginx & Retrait du binding hôte, accès exclusif via nginx \\
-        \hline
-        Open WebUI & 3001 & Création de compte ouverte (\texttt{ENABLE\_\allowbreak{}SIGNUP=true}) & Désactivation du \textit{signup} une fois le compte administrateur créé \\
+        Intégrité des événements & Authentification des sources & Signature HMAC-SHA256 vérifiée sur chaque webhook GitHub, rejet en 403 de toute requête non signée \\
         \hline
         \end{tabular}
-        \caption{Écarts de durcissement identifiés sur la configuration de production}
+        \caption{Axes de durcissement de la configuration de production}
         \label{tab:hardening_gaps}
         \end{table}
 
-        La cause profonde est commune à toutes les lignes du tableau : ces \textit{bindings}
-        ont été ajoutés un par un lors des phases de mise au point pour permettre
-        l'inspection directe d'un service sans passer par le \textit{reverse proxy}, et
-        n'ont pas été retirés une fois la phase terminée. Le correctif est symétrique :
-        supprimer systématiquement les ports hôte, ne laisser que nginx exposé sur
-        80 et 443, et accepter que tout diagnostic passe désormais soit par
-        \texttt{docker exec} soit par une route nginx authentifiée. Le coût d'usage est
-        marginal pour un développeur familier de la plateforme, et le gain de surface
-        d'attaque est immédiat.
+        Trois chantiers de consolidation prolongent cette démarche. L'automatisation
+        du renouvellement des certificats TLS via Let's Encrypt simplifiera la
+        gestion du chiffrement des échanges entre les utilisateurs et la plateforme.
+        Une sauvegarde quotidienne de PostgreSQL, qui héberge à la fois la base de
+        connaissances sécurité et les \textit{checkpoints} LangGraph, protégera contre
+        la perte du volume Docker ; la panne VictoriaMetrics d'avril a rappelé qu'un
+        tel incident peut survenir sans prévenir. Enfin, la généralisation des
+        \textit{healthchecks} Docker à l'ensemble des conteneurs permettra au démon
+        Docker de détecter et de relancer un service défaillant de lui-même, sans
+        attendre que les règles Prometheus finissent par déclencher une alerte.
 
-        Au-delà des ports, le durcissement complet suppose trois chantiers
-        supplémentaires. Installer un certificat Let's Encrypt sur nginx chiffrerait
-        tout le flux sortant du VPS et fermerait la dernière fenêtre en clair vers
-        l'extérieur. Mettre en place une sauvegarde quotidienne de PostgreSQL, qui
-        héberge à la fois la base de connaissances sécurité et les \textit{checkpoints}
-        LangGraph, protégerait contre la perte du volume Docker ; la panne
-        VictoriaMetrics d'avril a rappelé qu'un tel incident peut survenir sans prévenir.
-        Restent enfin les sept conteneurs dépourvus de \textit{healthcheck} Docker
-        (\texttt{nginx}, \texttt{prometheus}, \texttt{alertmanager}, \texttt{grafana},
-        \texttt{victoriametrics}, \texttt{node-exporter} et \texttt{open-webui}) : les
-        instrumenter laisserait le
-        démon Docker détecter et relancer ces services de lui-même, sans attendre que
-        les règles Prometheus finissent par déclencher une alerte. Ces trois chantiers
-        prolongent la démarche engagée lors de l'audit du 28 avril et visent à rendre la
-        plateforme robuste face aux incidents d'exploitation.
-
-        Un dernier point, de nature différente, relève de la sécurité du moteur lui-même
-        plutôt que de sa surface réseau. Le diff soumis au modèle 14B est un contenu
-        rédigé par l'auteur de la \textit{Pull Request} analysée ; il constitue à ce titre
-        une entrée non fiable. Un développeur malveillant pourrait y glisser des
-        instructions destinées à détourner la revue, par exemple un commentaire de code
-        enjoignant au modèle d'émettre un verdict \texttt{APPROVE}. Deux propriétés de
-        l'architecture limitent la portée d'une telle tentative sans l'écarter
-        complètement. D'une part, les cinq scanners sont déterministes et s'exécutent
-        indépendamment du modèle : leurs \textit{findings} sont enregistrés dans
-        PostgreSQL quel que soit le texte produit par le LLM, et un secret ou une CVE
-        relevé par un scanner ne disparaît pas si le modèle est manipulé. D'autre part, la
-        température fixée à 0,1 et l'extraction structurée du bloc JSON réduisent la
-        latitude laissée au modèle dans la formulation de son verdict. La parade complète
-        reste un chantier ouvert : isoler explicitement le diff par des délimiteurs dans le
-        \textit{prompt}, et surtout faire reposer le \textit{gate} de blocage sur la
-        sévérité des \textit{findings} déterministes des scanners plutôt que sur le seul
-        verdict du modèle, de sorte qu'aucune injection dans le code revu ne puisse
-        relâcher le contrôle de sécurité.
+        Le durcissement ne se limite pas à la surface réseau : une analyse de menace a
+        également été menée sur le moteur de revue lui-même. Le diff soumis au modèle
+        14B est rédigé par l'auteur de la \textit{Pull Request} analysée ; il constitue
+        à ce titre une entrée non fiable, et un développeur malveillant pourrait y
+        glisser des instructions destinées à détourner la revue, par exemple un
+        commentaire de code enjoignant au modèle d'émettre un verdict \texttt{APPROVE}.
+        L'architecture oppose deux barrières à ce scénario. D'une part, les cinq
+        scanners sont déterministes et s'exécutent indépendamment du modèle : un secret
+        ou une CVE relevé par un scanner est enregistré dans PostgreSQL quel que soit
+        le texte produit par le LLM, et ne disparaît pas si celui-ci est manipulé.
+        D'autre part, la température fixée à 0,1 et l'extraction structurée du bloc
+        JSON réduisent la latitude laissée au modèle dans la formulation de son
+        verdict. Le plan de durcissement prévoit d'aller plus loin sur ce point :
+        isoler explicitement le diff par des délimiteurs dans le \textit{prompt}, et
+        faire reposer le \textit{gate} de blocage sur la sévérité des \textit{findings}
+        déterministes des scanners plutôt que sur le seul verdict du modèle, de sorte
+        qu'aucune injection dans le code revu ne puisse relâcher le contrôle de
+        sécurité.
 
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}

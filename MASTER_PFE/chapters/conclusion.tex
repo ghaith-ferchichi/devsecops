@@ -40,17 +40,17 @@ ou la réécriture du parser de revue PR. Chacun de ces incidents est devenu la 
 prioritaire du sprint en cours et a donné lieu à un correctif déployé en production avant
 la clôture de l'itération.
 
-Plusieurs chantiers restent néanmoins ouverts. Le premier concerne le durcissement de la
-surface exposée : les ports hôte de Redis, Prometheus, AlertManager, VictoriaMetrics et
-de l'agent sont toujours ouverts et doivent être refermés, Redis attend encore son mot de
-passe, et le passage à HTTPS via Let's Encrypt demeure un prérequis pour un usage bancaire.
-La résilience opérationnelle vient ensuite : PostgreSQL héberge la base de connaissances
-sécurité et les checkpoints LangGraph, mais ne bénéficie d'aucune sauvegarde quotidienne,
-et sept conteneurs tournent encore sans \textit{healthcheck} Docker. Reste enfin une
-question propre au cœur IA de la plateforme : le diff analysé étant une entrée non fiable,
-faire reposer le verdict de blocage sur les \textit{findings} déterministes des scanners,
-et non sur le seul jugement du modèle, mettrait la revue à l'abri d'une éventuelle
-injection d'instructions dans le code soumis. Sur le terrain de l'inférence,
+Plusieurs chantiers de consolidation se poursuivront au-delà du stage.
+L'automatisation du renouvellement des certificats TLS via Let's Encrypt simplifiera la
+gestion du chiffrement des échanges, la sauvegarde quotidienne de
+PostgreSQL protégera la base de connaissances sécurité et les checkpoints LangGraph,
+et la généralisation des \textit{healthchecks} Docker améliorera la capacité de la
+plateforme à se rétablir d'elle-même. Reste enfin une
+question propre au cœur IA de la plateforme : le diff analysé étant par nature une
+entrée non fiable, l'architecture s'appuie déjà sur les \textit{findings} déterministes
+des scanners, que le texte soumis au modèle ne peut altérer ; ancrer davantage le verdict
+de blocage sur ces \textit{findings} poussera cette logique de défense en profondeur un
+cran plus loin. Sur le terrain de l'inférence,
 l'évaluation d'un second moteur conduite en post-Sprint 8 a confirmé le choix d'Ollama,
 plus rapide de 22\,\% que LocalAI sur un matériel et un modèle identiques. La sandbox
 LocalAI conserve toutefois son intérêt : elle ouvre l'accès à des modèles absents de la
@@ -64,7 +64,7 @@ débit d'environ 3 tokens par seconde pour le modèle \texttt{qwen2.\allowbreak{
 Un GPU haut de gamme (NVIDIA RTX 4090 ou A100) porterait ce débit à 30 ou 50 tokens par
 seconde et diviserait donc la durée par un facteur de 5 à 10, ramenant chaque revue à 2 ou
 5 minutes. Le coût reste contenu : environ 3\,000~\texteuro{} pour une RTX 4090, ou
-500~\texteuro/mois pour du cloud GPU à la demande. Il s'inscrit dans l'enveloppe de la DSI
+500~\texteuro/mois pour du cloud GPU à la demande. Il s'inscrit dans l'enveloppe de la DCIO
 et constitue le moyen le plus direct d'étendre l'agent à l'ensemble des dépôts BTE sans
 toucher à l'architecture logicielle. L'inférence resterait sur l'infrastructure de la
 banque, ce qui préserve l'exigence de confidentialité de la BCT, tandis que la revue

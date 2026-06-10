@@ -15,14 +15,20 @@ sur cinq mois.
 
     \subsection{Présentation générale}
 
-        La Banque de Tunisie et des Emirats (BTE) \cite{BTE} est née d'une convention
-        signée entre le gouvernement tunisien et l'Abu Dhabi Investment Authority (ADIA),
-        un actionnariat binational qui en fait un acteur singulier du paysage financier
-        tunisien. Conçue à l'origine comme banque d'investissement, elle est passée en
-        2004 au statut de banque universelle et propose désormais une gamme complète de
-        produits et services financiers. Sa plateforme digitale \textbf{NEO BTE} traduit
-        son orientation actuelle vers la modernisation des canaux client, accompagnée
-        d'une extension continue de son réseau d'agences.
+        La Banque de Tunisie et des Emirats (BTE) \cite{BTE} est une structure bancaire
+        tunisienne travaillant dans le secteur financier. Ses domaines d'intervention
+        couvrent le financement personnel, le financement d'entreprises et les services
+        bancaires traditionnels.
+
+        La banque BTE a été créée en 1982 à la suite d'une convention signée entre
+        l'ADIA (Abu Dhabi Investment Authority) et l'État tunisien. Elle portait alors
+        le nom de Banque de Tunisie et des Emirats d'Investissement (BTEI), avant
+        d'évoluer vers une banque de vocation plus large.
+
+        La BTE est une société anonyme dotée d'une grande capitalisation boursière et
+        enregistrée au registre du commerce de Tunis. Son centre administratif se situe
+        au Centre Urbain Nord de Tunis. Avec le temps, la BTE a développé une activité
+        importante dans le secteur bancaire en Tunisie et diversifié sa clientèle.
 
         Ses principaux éléments d'identité sont récapitulés dans le tableau
         \ref{tab:bte_fiche}.
@@ -54,41 +60,71 @@ sur cinq mois.
         \label{tab:bte_fiche}
         \end{table}
 
-        Pour conduire cette modernisation, la BTE s'appuie sur une Direction des Systèmes
-        d'Information (DSI), chargée d'assurer la disponibilité, la sécurité et l'évolution
-        continue de ses infrastructures. C'est dans cette direction que s'est déroulé notre
-        stage, autour d'une mission claire : renforcer les pratiques DevSecOps de la banque,
-        et en particulier la sécurité de sa chaîne de développement logiciel.
+    \subsection{Organisation de la société}
 
-    \subsection{Secteur d'activité}
+        La BTE est organisée en plusieurs directions et services qui assurent le bon
+        fonctionnement de ses activités. Chaque direction prend en charge un domaine
+        spécifique, comme les opérations bancaires, la gestion des risques, l'organisation
+        interne ou encore les systèmes d'information.
 
-        L'activité de la BTE se structure autour de deux grands domaines, soutenus par une
-        dynamique de transformation digitale. Le premier est la banque de détail : comptes
-        courants, épargne, crédits à la consommation, cartes bancaires et packs dédiés
-        (Packs Professionnels, Médecins, etc.). Le second est le financement des entreprises,
-        à travers des crédits d'investissement, des lignes de crédit, des opérations de
-        leasing, le financement de projets structurants pour l'économie nationale et des
-        services de commerce international (lettres de crédit, remises documentaires,
-        transferts SWIFT) ; sur ce dernier point, la banque a construit une expertise
-        reconnue sur le marché tunisien grâce à son actionnariat binational. Ces deux
-        métiers s'appuient de plus en plus sur la plateforme \textbf{NEO BTE}, qui porte
-        la transformation digitale de la banque.
-
-    \subsection{Organigramme}
+        Dans le cadre de notre stage, l'attention est portée principalement sur la
+        Direction Centrale de l'Informatique et de l'Organisation (DCIO). Cette direction
+        joue un rôle important dans la gestion, la maintenance et l'évolution du système
+        d'information de la banque.
 
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.85\columnwidth]{organigramme_dsi}}
-            \caption{Organigramme de la Direction des Systèmes d'Information}
+            \caption{Organigramme de la Direction Centrale de l'Informatique et de
+                     l'Organisation (DCIO)}
             \label{fig:organigramme}
         \end{figure}
 
-        La figure \ref{fig:organigramme} présente l'organigramme de cette direction,
-        organisée en plusieurs pôles fonctionnels : développement applicatif, infrastructure
-        et réseaux, sécurité informatique et support utilisateurs. C'est au sein du pôle
-        Sécurité Informatique que notre stage s'est déroulé, en collaboration avec les
-        équipes de développement et d'infrastructure, la solution DevSecOps mise en place
-        ayant vocation à être transversale à l'ensemble de la DSI.
+        L'organigramme présenté dans la figure \ref{fig:organigramme} illustre la
+        structure de la Direction Centrale de l'Informatique et de l'Organisation.
+        Cette direction est composée de plusieurs entités principales :
+        \begin{itemize}
+            \item la direction informatique,
+            \item la direction organisation,
+            \item la direction sécurité opérationnelle et système de production.
+        \end{itemize}
+
+        Chaque direction est subdivisée en départements spécialisés, tels que :
+        \begin{itemize}
+            \item le département support informatique,
+            \item le département développement informatique,
+            \item le département sécurité opérationnelle,
+            \item le département réseaux et sécurité opérationnelle.
+        \end{itemize}
+
+        Ces départements regroupent à leur tour plusieurs services techniques,
+        notamment :
+        \begin{itemize}
+            \item les services de développement,
+            \item les services de maintenance,
+            \item les services d'administration des bases de données,
+            \item les services d'administration des serveurs d'applications,
+            \item les services réseaux et sécurité.
+        \end{itemize}
+
+        C'est au sein de cette direction, auprès des équipes en charge de la sécurité
+        opérationnelle, que notre stage s'est déroulé, autour d'une mission claire :
+        renforcer les pratiques DevSecOps de la banque, et en particulier la sécurité
+        de sa chaîne de développement logiciel.
+
+    \subsection{Services et activités principales}
+
+        La BTE propose différents services bancaires adaptés aux besoins de ses clients.
+        Ses activités principales concernent :
+        \begin{itemize}
+            \item la gestion des comptes bancaires,
+            \item l'octroi de crédits aux particuliers et aux entreprises,
+            \item le financement de projets,
+            \item les services de paiement et les cartes bancaires.
+        \end{itemize}
+
+        La banque offre également des services en ligne permettant aux clients de
+        consulter leurs comptes et d'effectuer certaines opérations à distance.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Présentation du projet}
