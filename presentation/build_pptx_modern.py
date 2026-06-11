@@ -342,7 +342,7 @@ txt(s, 0.7, 2.62, 7.3, 1.5, [
     [P("BTE Security", 36, INK, False, HEAD)],
     [P("AI Agent", 36, VIOLET_D, False, HEAD)],
 ])
-txt(s, 0.7, 3.98, 7.3, 0.6, [[P("Agent IA agentique pour la revue automatisée de sécurité du code",
+txt(s, 0.7, 3.98, 7.3, 0.6, [[P("Agent IA pour la revue automatisée de code",
                                 14, BODY, False, BODY_F)]])
 txt(s, 0.7, 4.55, 7.4, 0.7, [
     [P("Diplôme National de Mastère Professionnel", 12.5, INK, True, HEAD)],
