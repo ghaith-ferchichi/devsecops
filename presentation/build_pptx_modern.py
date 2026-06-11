@@ -152,6 +152,20 @@ def img(name):
         if os.path.exists(p): return p
     raise FileNotFoundError(name)
 
+def rounded_pic(s, path, x, y, w, h, adj=9000):
+    """Insère une image découpée en rectangle à coins arrondis (adj = rayon, 1/1000 %)."""
+    pic = s.shapes.add_picture(path, Inches(x), Inches(y), Inches(w), Inches(h))
+    spPr = pic._element.spPr
+    for g in spPr.findall(qn('a:prstGeom')):
+        spPr.remove(g)
+    geom = parse_xml(
+        '<a:prstGeom xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+        f'prst="roundRect"><a:avLst><a:gd name="adj" fmla="val {adj}"/></a:avLst></a:prstGeom>')
+    xfrm = spPr.find(qn('a:xfrm'))
+    if xfrm is not None: xfrm.addnext(geom)
+    else: spPr.insert(0, geom)
+    return pic
+
 def gif_box(s, gif_name, bx, by, bw, bh, fallback=None, caption=None, label=None):
     """GIF animé (auto-loop en mode Présentation) cadré dans une carte.
     À défaut : image statique de repli + badge « ▶ GIF à venir » ; sinon placeholder."""
@@ -327,7 +341,18 @@ s = slide()
 rect(s, 0, 0, 13.333, 7.5, fill=WHITE)
 # bandeau hero (dégradé) + image, à droite
 panel = rect(s, 8.25, 0, 5.083, 7.5, fill=VIOLET); set_gradient(panel, VIOLET, TEAL, 60)
-fit_image(s, img("solution_overview.png"), 8.5, 2.6, 4.6, 2.6, card=True)
+# hero visuel : image aux coins arrondis, dans une carte au rayon assorti
+_hero = img("solution_overview.png")
+_bx, _by, _bw, _bh = 8.62, 2.3, 4.35, 2.95
+_iw, _ih = Image.open(_hero).size
+if _iw/_ih > _bw/_bh: _w = _bw; _h = _bw*_ih/_iw
+else: _h = _bh; _w = _bh*_iw/_ih
+_x = _bx+(_bw-_w)/2; _y = _by+(_bh-_h)/2
+_pad = 0.13
+_card = rect(s, _x-_pad, _y-_pad, _w+2*_pad, _h+2*_pad, fill=WHITE,
+             shape=MSO_SHAPE.ROUNDED_RECTANGLE, shadow=True)
+_card.adjustments[0] = 0.10
+rounded_pic(s, _hero, _x, _y, _w, _h, adj=8000)
 chevron(s, 8.6, 5.85, 0.45, WHITE, n=3, gap=0.4)
 # logos institutionnels : BTE · ISI · UTM
 def _logo(nm, x, y, h):
@@ -837,7 +862,7 @@ SPEECH = [
 "Je m'appelle Ghaith Ferchichi et j'ai l'honneur de vous présenter mon projet de fin d'études, "
 "réalisé au sein de la Banque de Tunisie et des Émirats, sous l'encadrement de Monsieur Kamel "
 "Kaouech, côté banque, et de Madame Ghayet El Mouna Zhioua, côté ISI. Il s'intitule BTE Security "
-"AI Agent : un agent d'intelligence artificielle pour la revue automatisée de sécurité du code.",
+"AI Agent : un agent d'intelligence artificielle pour la revue automatisée de code.",
 # 2 — Sommaire (≈ 10 s)
 "(≈ 10 s) Mon exposé suit la structure du rapport : le contexte général, l'état de l'art et les "
 "choix technologiques, la conception de l'agent, sa réalisation et ses résultats, puis la "

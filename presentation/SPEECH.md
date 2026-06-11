@@ -48,7 +48,7 @@ Les marqueurs `[clic]` correspondent aux animations des diapositives 7, 18, 19 e
 
 ### 1. BTE Security — ≈ 30 s
 
-Monsieur le Président du jury, Madame, Messieurs les membres du jury, bonjour. Je m'appelle Ghaith Ferchichi et j'ai l'honneur de vous présenter mon projet de fin d'études, réalisé au sein de la Banque de Tunisie et des Émirats, sous l'encadrement de Monsieur Kamel Kaouech, côté banque, et de Madame Ghayet El Mouna Zhioua, côté ISI. Il s'intitule BTE Security AI Agent : un agent d'intelligence artificielle pour la revue automatisée de sécurité du code.
+Monsieur le Président du jury, Madame, Messieurs les membres du jury, bonjour. Je m'appelle Ghaith Ferchichi et j'ai l'honneur de vous présenter mon projet de fin d'études, réalisé au sein de la Banque de Tunisie et des Émirats, sous l'encadrement de Monsieur Kamel Kaouech, côté banque, et de Madame Ghayet El Mouna Zhioua, côté ISI. Il s'intitule BTE Security AI Agent : un agent d'intelligence artificielle pour la revue automatisée de code.
 
 ### 2. Sommaire — ≈ 10 s
 
