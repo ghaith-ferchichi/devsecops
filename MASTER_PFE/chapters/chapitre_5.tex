@@ -1,0 +1,361 @@
+\chapter{Tests et validation}
+
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+La plateforme décrite au chapitre précédent doit maintenant faire la preuve de son bon
+fonctionnement. Ce chapitre commence par une série de tests ciblés sur les mécanismes de
+sécurité et de résilience : signature HMAC, déduplication, circuit breaker et gardien
+disque. Il présente ensuite les résultats obtenus sur des \textit{Pull Requests}
+réelles, dont la revue de bout en bout de la PR de démonstration, avant de conclure sur
+la validation globale de la plateforme, de la checklist de mise en production au
+durcissement de la configuration et à l'analyse de menace du moteur de revue.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Tests de validation}
+
+    Pour vérifier le bon fonctionnement de chaque mécanisme de sécurité et de résilience
+    de la solution, nous avons conduit une série de tests unitaires sur les composants
+    critiques de la plateforme. Ces tests reproduisent des conditions réelles d'erreur ou
+    d'attaque pour valider les comportements attendus.
+
+    \subsection{Test de la validation HMAC-SHA256}
+
+        Le premier test vérifie que l'agent rejette correctement les webhooks dont la
+        signature est invalide ou absente. La figure \ref{fig:test_hmac} présente le
+        résultat du test : un webhook avec une signature incorrecte reçoit un code HTTP
+        403 Forbidden, tandis qu'un webhook correctement signé est accepté avec un code 202.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{test_hmac_validation}}
+            \caption{Test de la validation HMAC-SHA256 — rejet 403 d'une signature invalide}
+            \label{fig:test_hmac}
+        \end{figure}
+
+    \subsection{Test de la déduplication Redis}
+
+        Le deuxième test vérifie que deux webhooks identiques (même dépôt, même numéro
+        de PR, même SHA de commit) ne déclenchent qu'un seul pipeline. La figure
+        \ref{fig:test_dedup} montre que le second webhook retourne un code 202 mais que
+        l'agent l'ignore silencieusement grâce à la clé de déduplication Redis
+        \texttt{SET NX} ; le premier pipeline se termine alors sans interruption.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{test_deduplication}}
+            \caption{Test de la déduplication Redis — un seul pipeline pour deux webhooks identiques}
+            \label{fig:test_dedup}
+        \end{figure}
+
+    \subsection{Test du circuit breaker LLM}
+
+        Le troisième test vérifie le comportement de l'agent lorsque Ollama est
+        indisponible. Après trois échecs consécutifs d'appels LLM, le circuit breaker
+        passe en état OPEN et active le fallback de classification regex. La figure
+        \ref{fig:test_circuit} montre que le pipeline continue de fonctionner avec une
+        classification basée sur les extensions de fichiers, sans bloquer sur
+        l'indisponibilité du modèle.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{test_circuit_breaker}}
+            \caption{Test du circuit breaker LLM — bascule sur le fallback de classification}
+            \label{fig:test_circuit}
+        \end{figure}
+
+    \subsection{Test du gardien disque}
+
+        Le quatrième test vérifie le déclenchement automatique du nettoyage Docker
+        lorsque l'utilisation du disque dépasse 90\%. En simulant un seuil critique via
+        la jauge Prometheus \texttt{agent\_\allowbreak{}disk\_\allowbreak{}used\_\allowbreak{}percent}, nous avons vérifié que
+        la commande \texttt{docker builder prune -f} est exécutée automatiquement et
+        que le résultat est transmis sur Slack, comme le montre la figure
+        \ref{fig:test_disk_guard}.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.75\columnwidth]{test_disk_guard}}
+            \caption{Test du gardien disque — nettoyage automatique au-delà du seuil critique}
+            \label{fig:test_disk_guard}
+        \end{figure}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Résultats}
+
+    Cette section rassemble les résultats obtenus une fois la plateforme en service. Elle
+    part d'une revue de démonstration détaillée, l'élargit à un corpus de
+    \textit{Pull Requests} réelles, la confronte à la revue manuelle, puis présente les
+    vérifications de conformité, d'observabilité et de durcissement de la plateforme.
+
+    \subsection{Résultat de la revue sur une Pull Request de démonstration}
+
+        Le pipeline a été validé de bout en bout sur la PR~\#18 du dépôt
+        \texttt{GhaiethFerchichi/\allowbreak{}Vunl-application}, ouverte le 28~mai~2026 pour
+        un module bancaire de démonstration contenant cinq vulnérabilités types.
+        Les figures~\ref{fig:pr_full_result}, \ref{fig:pr_full_result_2}
+        et~\ref{fig:pr_full_result_3} en donnent la vue d'ensemble, scindée en
+        trois parties pour la lisibilité : commentaires de revue, suggestions
+        \textit{inline}, verdict \texttt{BLOCK} et échec du check
+        \texttt{security-ai-agent}.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[trim=0 5109 0 0, clip, width=0.82\columnwidth]{pr_review_full_result}}
+            \caption{PR~\#18 — vue d'ensemble de la revue sur GitHub (1/3) :
+                     en-tête de la \textit{Pull Request} et premiers commentaires de revue}
+            \label{fig:pr_full_result}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[trim=0 2554 0 2555, clip, width=0.82\columnwidth]{pr_review_full_result}}
+            \caption{PR~\#18 — vue d'ensemble de la revue sur GitHub (2/3) :
+                     suite des commentaires \textit{inline} sur le diff}
+            \label{fig:pr_full_result_2}
+        \end{figure}
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[trim=0 0 0 5109, clip, width=0.82\columnwidth]{pr_review_full_result}}
+            \caption{PR~\#18 — vue d'ensemble de la revue sur GitHub (3/3) :
+                     revue de sécurité consolidée et verdict \texttt{BLOCK}}
+            \label{fig:pr_full_result_3}
+        \end{figure}
+
+        Le tableau~\ref{tab:pr_results} synthétise le résultat de cette revue.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        \textbf{PR} & \textbf{Risque} & \textbf{Verdict} & \textbf{Classification} & \textbf{Durée} & \textbf{Commentaires} \\
+        \hline
+        \#18 & HIGH & BLOCK & feature & \textasciitilde15 min & 5 inline \\
+        \hline
+        \end{tabular}
+        \caption[Résultat de la revue PR de démonstration]{Résultat de la revue PR de démonstration — dépôt GhaiethFerchichi/Vunl-application}
+        \label{tab:pr_results}
+        \end{table}
+
+        Le fichier de démonstration contenait cinq vulnérabilités volontairement
+        introduites, ce qui fournit une vérité terrain explicite. Le tableau
+        \ref{tab:pr18_detection} confronte ces cinq failles aux \textit{findings}
+        effectivement produits par l'agent.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{5.2cm}|c|c|m{3.2cm}|}
+        \hline
+        \textbf{Vulnérabilité plantée} & \textbf{Ligne} & \textbf{Détectée} & \textbf{Source} \\
+        \hline
+        Injection SQL & 6 & \checkmark & Analyse LLM \\
+        \hline
+        Secrets en dur (clés AWS, mot de passe BD) & 11--13 & \checkmark & Analyse LLM \\
+        \hline
+        Path traversal & 17 & \checkmark & LLM + Semgrep \\
+        \hline
+        Injection de commande & 22 & \checkmark & LLM + Semgrep \\
+        \hline
+        Hachage faible (MD5) & 27 & \checkmark & Analyse LLM \\
+        \hline
+        \end{tabular}
+        \caption{Détection sur la PR~\#18 : cinq vulnérabilités plantées, cinq détectées}
+        \label{tab:pr18_detection}
+        \end{table}
+
+        Sur ce jeu contrôlé, l'agent a détecté les cinq vulnérabilités plantées (rappel
+        de 5/5), sans \textit{finding} erroné dans le fichier modifié. Deux observations
+        en découlent. D'abord, les secrets codés
+        en dur (lignes 11 à 13) ont été repérés par le modèle alors que Gitleaks ne les
+        avait pas signalés : le LLM et les scanners spécialisés se complètent plutôt
+        qu'ils ne se recouvrent. Ensuite, ces chiffres portent sur des vulnérabilités
+        introduites à dessein et de facture classique ; ils valident la chaîne de
+        détection de bout en bout, sans préjuger du comportement de l'agent face à des
+        failles plus subtiles ou inédites.
+
+    \subsection{Revues produites sur un corpus de Pull Requests}
+
+        La base de connaissances a accumulé huit revues réelles au fil des sprints,
+        toutes conservées dans la table \texttt{pr\_\allowbreak{}reviews}. La figure
+        \ref{fig:pr_reviews_corpus} en présente les cinq revues de PRs applicatives
+        (classification \textit{feature}), celles pour lesquelles le moteur Semgrep entre
+        en jeu : pour chacune, le score de risque, le verdict rendu et le nombre de
+        \textit{findings} remontés par Semgrep.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=\textwidth]{pr_reviews_corpus}}
+            \caption{Revues de PRs applicatives — risque, verdict et \textit{findings} SAST (table \texttt{pr\_reviews})}
+            \label{fig:pr_reviews_corpus}
+        \end{figure}
+
+        Semgrep a relevé entre 28 et 37 \textit{findings} de niveau ERROR par PR, et le
+        verdict suit le risque : \texttt{REQUEST\_\allowbreak{}CHANGES} pour les deux PRs classées
+        \textsc{medium}, \texttt{BLOCK} pour les trois classées \textsc{high}. La PR~\#18,
+        détaillée plus haut, en est le cas le plus net : cinq vulnérabilités plantées,
+        toutes détectées, verdict \texttt{BLOCK}. Sur CPU, l'inférence du modèle 14B (environ
+        3 tokens par seconde) reste le principal facteur de durée d'une revue ; c'est là que
+        la migration GPU évoquée en conclusion changerait l'échelle.
+
+    \subsection{Comparaison avec la revue manuelle}
+
+        Le tableau \ref{tab:baseline} met en regard le processus manuel décrit au
+        chapitre~1 et la chaîne automatisée mise en place.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{3.2cm}|m{4.7cm}|m{4.7cm}|}
+        \hline
+        \textbf{Critère} & \textbf{Revue manuelle} & \textbf{BTE Security AI Agent} \\
+        \hline
+        Délai de revue & Jusqu'à 24~heures, selon la disponibilité et l'expertise du relecteur & 15 à 25 minutes selon la PR \\
+        \hline
+        Couverture & Variable selon la disponibilité et l'expertise du relecteur & Cinq scanners et analyse LLM, OWASP Top 10 systématique \\
+        \hline
+        Gate CI/CD & Aucun blocage technique & Verdict \texttt{APPROVE} / \texttt{REQUEST\_\allowbreak{}CHANGES} / \texttt{BLOCK} \\
+        \hline
+        Secrets et dépendances & Souvent manqués à l'œil nu & Gitleaks et OSV-Scanner systématiques \\
+        \hline
+        Disponibilité & Tributaire du relecteur du jour & Automatique, à chaque \textit{Pull Request} \\
+        \hline
+        Traçabilité & Fil de discussion GitHub & Base PostgreSQL et tableaux de bord \\
+        \hline
+        \end{tabular}
+        \caption{Revue de sécurité manuelle vs automatisée}
+        \label{tab:baseline}
+        \end{table}
+
+        L'automatisation ne remplace pas le relecteur humain : elle lui retire le travail
+        répétitif de détection systématique et le recentre sur les décisions
+        d'architecture et sur les cas que l'agent remonte en \texttt{BLOCK}.
+
+    \subsection{Résultats de l'analyse de conformité et observabilité}
+
+        La figure \ref{fig:prom_alerts_ok} présente l'état des quinze règles d'alerte
+        Prometheus, toutes inactives, ce qui confirme l'absence d'incident en production lors
+        de la validation finale.
+
+        \begin{figure}[H]
+            \centering
+            \frame{\includegraphics[width=0.88\columnwidth]{prometheus_alerts_inactive}}
+            \caption{Prometheus — 15 règles d'alerte inactives}
+            \label{fig:prom_alerts_ok}
+        \end{figure}
+
+    \subsection{Validation de la plateforme}
+
+        Le tableau \ref{tab:validation} présente la checklist de validation complète
+        effectuée sur la plateforme avant la présentation finale.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{6cm}|m{5cm}|c|}
+        \hline
+        \textbf{Vérification} & \textbf{Méthode} & \textbf{Statut} \\
+        \hline
+        Pipeline PR end-to-end & PR réelle → commentaire en 15–25 min & \checkmark \\
+        \hline
+        5 scanners exécutés & Artefacts dans ./artifacts/scans/ & \checkmark \\
+        \hline
+        LLM local (aucune fuite) & Port 11434 interne uniquement & \checkmark \\
+        \hline
+        4 cibles Prometheus vertes & /prometheus/targets & \checkmark \\
+        \hline
+        15 règles d'alerte inactives & /prometheus/alerts & \checkmark \\
+        \hline
+        AlertManager → Slack fonctionnel & Test alert → message Slack reçu & \checkmark \\
+        \hline
+        3 dashboards Grafana chargés & Données réelles dans chaque panneau & \checkmark \\
+        \hline
+        VictoriaMetrics données 90j & Requête Grafana > 30 jours & \checkmark \\
+        \hline
+        Anti-hallucination chat validé & "CPU usage?" → appel outil + valeur réelle & \checkmark \\
+        \hline
+        Gardien disque actif & Jauge agent\_disk\_used\_percent Prometheus & \checkmark \\
+        \hline
+        Health digest Slack quotidien & Message reçu à 09h00 UTC & \checkmark \\
+        \hline
+        Métriques host node-exporter & PromQL node\_memory\_MemAvailable & \checkmark \\
+        \hline
+        nginx Basic Auth /ui protégé & Accès refusé sans credentials & \checkmark \\
+        \hline
+        Base de données PR reviews & SELECT pr\_reviews — 8 revues (PR~\#11 à \#18) & \checkmark \\
+        \hline
+        \end{tabular}
+        \caption{Checklist de validation complète de la plateforme}
+        \label{tab:validation}
+        \end{table}
+
+    \subsection{Durcissement de la plateforme et analyse de menace}
+
+        La checklist précédente couvre le périmètre fonctionnel et l'observabilité. En
+        prolongement de l'audit du 28 avril, une revue de durcissement a été conduite
+        sur la configuration de la plateforme afin d'aligner l'exploitation sur les
+        principes de défense en profondeur attendus d'un environnement bancaire. Le
+        tableau \ref{tab:hardening_gaps} en synthétise les axes.
+
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{|m{3.4cm}|m{4cm}|m{5.2cm}|}
+        \hline
+        \textbf{Axe} & \textbf{Principe} & \textbf{Mise en œuvre} \\
+        \hline
+        Cloisonnement réseau & Un point d'entrée unique & nginx seul exposé en frontal (80/443) ; les services internes communiquent sur le réseau Docker interne, le diagnostic passe par \texttt{docker exec} ou par une route nginx authentifiée \\
+        \hline
+        Authentification & Défense en profondeur & Double couche sur les interfaces : HTTP Basic Auth au niveau de nginx, puis comptes applicatifs natifs (Grafana, interface de chat) ; mot de passe dédié sur le cache Redis ; création des comptes du chat réservée à l'administrateur \\
+        \hline
+        Confidentialité de l'inférence & Aucune donnée ne quitte le VPS & Modèles servis par Ollama sur le réseau interne uniquement, aucun appel vers une API d'inférence externe \\
+        \hline
+        Intégrité des événements & Authentification des sources & Signature HMAC-SHA256 vérifiée sur chaque webhook GitHub, rejet en 403 de toute requête non signée \\
+        \hline
+        \end{tabular}
+        \caption{Axes de durcissement de la configuration de production}
+        \label{tab:hardening_gaps}
+        \end{table}
+
+        Trois chantiers de consolidation prolongent cette démarche. L'automatisation
+        du renouvellement des certificats TLS via Let's Encrypt simplifiera la
+        gestion du chiffrement des échanges entre les utilisateurs et la plateforme.
+        Une sauvegarde quotidienne de PostgreSQL, qui héberge à la fois la base de
+        connaissances sécurité et les \textit{checkpoints} LangGraph, protégera contre
+        la perte du volume Docker ; la panne VictoriaMetrics d'avril a rappelé qu'un
+        tel incident peut survenir sans prévenir. Enfin, la généralisation des
+        \textit{healthchecks} Docker à l'ensemble des conteneurs permettra au démon
+        Docker de détecter et de relancer un service défaillant de lui-même, sans
+        attendre que les règles Prometheus finissent par déclencher une alerte.
+
+        Le durcissement ne se limite pas à la surface réseau : une analyse de menace a
+        également été menée sur le moteur de revue lui-même. Le diff soumis au modèle
+        14B est rédigé par l'auteur de la \textit{Pull Request} analysée ; il constitue
+        à ce titre une entrée non fiable, et un développeur malveillant pourrait y
+        glisser des instructions destinées à détourner la revue, par exemple un
+        commentaire de code enjoignant au modèle d'émettre un verdict \texttt{APPROVE}.
+        L'architecture oppose deux barrières à ce scénario. D'une part, les cinq
+        scanners sont déterministes et s'exécutent indépendamment du modèle : un secret
+        ou une CVE relevé par un scanner est enregistré dans PostgreSQL quel que soit
+        le texte produit par le LLM, et ne disparaît pas si celui-ci est manipulé.
+        D'autre part, la température fixée à 0,1 et l'extraction structurée du bloc
+        JSON réduisent la latitude laissée au modèle dans la formulation de son
+        verdict. Le plan de durcissement prévoit d'aller plus loin sur ce point :
+        isoler explicitement le diff par des délimiteurs dans le \textit{prompt}, et
+        faire reposer le \textit{gate} de blocage sur la sévérité des \textit{findings}
+        déterministes des scanners plutôt que sur le seul verdict du modèle, de sorte
+        qu'aucune injection dans le code revu ne puisse relâcher le contrôle de
+        sécurité.
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+Ce chapitre a soumis la plateforme à l'épreuve des faits. Les tests des
+mécanismes critiques ont confirmé les comportements attendus : rejet en 403 des webhooks
+non signés, déduplication des notifications répétées, bascule du circuit breaker sur le
+fallback de classification et déclenchement automatique du gardien disque. Sur la PR de
+démonstration~\#18, l'agent a détecté les cinq vulnérabilités plantées et rendu un
+verdict \texttt{BLOCK} en une quinzaine de minutes, commentaires \textit{inline} et
+suggestions de correction publiés directement sur GitHub ; le corpus de huit revues
+réelles confirme la cohérence des verdicts avec les scores de risque. Rapportée au
+processus manuel décrit au chapitre~1, la chaîne automatisée ramène le délai de revue de
+près de vingt-quatre heures à moins d'une demi-heure, avec une couverture systématique.
+La checklist de validation, les axes de durcissement et l'analyse de menace du moteur de
+revue complètent ce bilan ; la conclusion générale en dresse maintenant la synthèse.

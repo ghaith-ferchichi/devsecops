@@ -3,16 +3,95 @@
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
-Ce chapitre rassemble les notions sur lesquelles notre solution s'appuie : le DevOps
-et son extension DevSecOps à travers la chaîne CI/CD, les grands modèles de langage et
-l'inférence locale, l'orchestration des workflows IA, les outils d'analyse de sécurité
-statique et la stack applicative. Pour chaque composant, nous comparons les
-technologies disponibles avant de justifier celle que nous avons retenue. Nous situons
-ensuite la solution par rapport aux outils de revue de sécurité existants. La définition
-des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
+Ce chapitre s'ouvre sur l'analyse des besoins fonctionnels et non fonctionnels du
+projet, qui fixe ce que la plateforme doit accomplir et sous quelles contraintes. Il
+rassemble ensuite les notions sur lesquelles notre solution s'appuie : le DevOps et son
+extension DevSecOps à travers la chaîne CI/CD, les grands modèles de langage et
+l'inférence locale, l'orchestration des workflows IA et les outils d'analyse de
+sécurité statique. Pour chaque composant, nous comparons les technologies disponibles
+avant de justifier celle que nous avons retenue. Le positionnement de la solution par
+rapport aux outils de revue de sécurité existants referme le chapitre.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Analyse et définition des besoins}
+
+    L'expression des besoins découle directement de la problématique posée au chapitre
+    précédent : automatiser la revue de sécurité des \textit{Pull Requests} sans
+    qu'aucune ligne de code ne quitte l'infrastructure de la banque. Elle distingue les
+    fonctions que la plateforme doit rendre des contraintes de qualité qui pèsent sur
+    leur exécution.
+
+    \subsection{Besoins fonctionnels}
+
+        La plateforme assure six fonctions principales. Les cinq premières suivent le
+        parcours d'une \textit{Pull Request}, de son ouverture jusqu'à son archivage ;
+        la sixième protège la plateforme elle-même.
+
+        \begin{itemize}
+            \item \textbf{Détection automatisée des vulnérabilités.} À l'ouverture ou à la
+            mise à jour d'une \textit{Pull Request}, l'agent clone le dépôt et lance en
+            parallèle les scanners adaptés à sa classification.
+
+            \item \textbf{Revue de sécurité combinée.} Un seul appel au modèle 14B produit
+            l'analyse OWASP Top 10, le score de risque (de \textsc{info} à \textsc{critical}),
+            le verdict (\textsc{approve}, \textsc{request\_changes} ou \textsc{block}) et les
+            commentaires \textit{inline} accompagnés de suggestions de correction.
+
+            \item \textbf{Publication sur GitHub.} Le résultat est publié sous trois formes :
+            un commentaire global dans l'onglet \textit{Conversation}, des commentaires
+            \textit{inline} dans l'onglet \textit{Files Changed} et un statut de commit qui
+            sert de \textit{gate} au CI/CD.
+
+            \item \textbf{Persistance dans PostgreSQL.} Une fois la \textit{Pull Request}
+            clôturée, la revue, les sorties brutes des scanners et la liste des fichiers
+            touchés sont enregistrées en base, ce qui alimente les analyses de tendance par
+            dépôt et les requêtes ultérieures depuis le chat.
+
+            \item \textbf{Chat opérationnel en temps réel.} Servi en SSE, il pilote
+            dix-neuf outils qui couvrent l'hôte, Docker, Ollama, Redis, Prometheus,
+            PostgreSQL et les artefacts SAST.
+
+            \item \textbf{Sécurité de la plateforme elle-même.} Trois traitements y
+            concourent : la vérification de la signature HMAC-SHA256 de chaque webhook
+            entrant, l'authentification des interfaces exposées et le retrait, avant tout
+            envoi au LLM, des secrets repérés par Gitleaks.
+        \end{itemize}
+
+    \subsection{Besoins non fonctionnels}
+
+        Au-delà des fonctions elles-mêmes, la plateforme doit satisfaire cinq contraintes
+        de qualité de service.
+
+        \begin{itemize}
+            \item \textbf{Confidentialité.} La totalité de l'inférence LLM s'exécute en
+            local : aucun code source ni diff ne quitte l'infrastructure de la BTE. C'est
+            la condition de conformité réglementaire imposée par le secteur bancaire.
+
+            \item \textbf{Performance.} Le pipeline complet, de la réception du webhook à
+            la publication de la revue, doit tenir dans une fourchette de 15 à 25 minutes
+            pour ne pas peser sur les cycles de livraison.
+
+            \item \textbf{Résilience.} Le système doit continuer à fonctionner lorsqu'un
+            scanner ou le modèle LLM devient temporairement injoignable, ce que prennent en
+            charge le circuit breaker et les fallbacks.
+
+            \item \textbf{Fiabilité.} Un pipeline en cours d'exécution doit survivre au
+            redémarrage de son conteneur, grâce à la persistance des checkpoints LangGraph
+            dans PostgreSQL.
+
+            \item \textbf{Observabilité.} Les métriques critiques (durée du pipeline, taux
+            d'erreur, usage disque, état d'Ollama) remontent à Prometheus et restent
+            consultables dans Grafana.
+        \end{itemize}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{DevOps, CI/CD et DevSecOps}
+
+    Cette section pose les fondements méthodologiques du projet. Elle part des pratiques
+    DevOps, présente la chaîne d'intégration et de déploiement continus, puis montre
+    comment l'intégration de la sécurité conduit au DevSecOps. Elle se termine par deux
+    briques techniques directement mobilisées par l'agent : l'OWASP Top 10 et les
+    webhooks GitHub signés.
 
     \subsection{Le DevOps}
 
@@ -26,6 +105,11 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         itérations suivantes.
 
     \subsection{L'approche CI/CD}
+
+        L'intégration et le déploiement continus forment l'épine dorsale d'une chaîne
+        DevOps. Après en avoir donné une définition, nous en distinguons les deux phases :
+        l'intégration continue, centrée sur le code, et le déploiement continu, tourné vers
+        la mise en production.
 
         \subsubsection{Définition}
 
@@ -46,7 +130,7 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         \subsubsection{Déploiement continu (CD)}
 
         Le déploiement continu automatise l'étape suivante du pipeline après l'intégration
-        continue, en permettant la mise en production des modifications validées sans
+        continue : les modifications validées passent en production sans
         intervention manuelle. Dans notre contexte, le verdict de l'agent (APPROVE /
         REQUEST\_CHANGES / BLOCK) est publié comme statut de commit et sert de gate de
         qualité et de sécurité : il conditionne l'aptitude de la \textit{Pull Request} à
@@ -90,7 +174,7 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         périodiquement ; il fait aujourd'hui figure de standard international pour évaluer
         le niveau d'exposition d'une base de code.
 
-        L'édition 2025 constitue la grille d'analyse du moteur LLM de notre solution :
+        L'édition 2025 est la grille d'analyse du moteur LLM de notre solution :
         chaque \textit{finding} produit par l'agent est rattaché à l'une de ses dix
         catégories au moyen d'une référence explicite, par exemple
         {\NoAutoSpacing A01:2025} --- Broken Access Control ou
@@ -150,6 +234,11 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Les grands modèles de langage (LLM)}
 
+    Les modèles de langage sont le moteur d'analyse de l'agent. Cette section rappelle leur
+    principe de fonctionnement, compare l'inférence locale aux API cloud du point de vue de
+    la confidentialité, et présente le mécanisme de \textit{tool calling} sur lequel
+    s'appuie l'assistant de chat.
+
     \subsection{Fonctionnement général}
 
         Les grands modèles de langage (Large Language Models, LLM) sont des réseaux de
@@ -170,18 +259,20 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         consiste à héberger le modèle sur l'infrastructure de l'organisation : le code
         soumis au modèle ne quitte jamais le périmètre interne, mais les performances
         dépendent du matériel disponible. L'\textbf{API cloud} consiste à invoquer un
-        modèle exposé par un fournisseur tiers (OpenAI, Anthropic, etc.) : la puissance
+        modèle exposé par un fournisseur tiers tel qu'OpenAI \cite{OpenAI} ou
+        Anthropic \cite{Anthropic} : la puissance
         de calcul est déléguée, mais chaque requête transmet le code à des serveurs
         externes. Pour un établissement bancaire soumis aux exigences de confidentialité
         de la Banque Centrale de Tunisie, ce choix est imposé : seule l'inférence
         locale est envisageable. Cette garantie porte sur l'inférence elle-même : aucun
         diff ni fragment de code source n'est soumis à un service d'inférence tiers.
         L'hébergement du dépôt sur GitHub, antérieur au projet, relève de la gestion de
-        versions de la banque et constitue une question distincte.
+        versions de la banque et n'entre pas dans le périmètre du projet.
 
     \subsection{Tool calling}
 
-        Le \textit{tool calling} (ou \textit{function calling}) désigne la capacité d'un
+        Le \textit{tool calling} (ou \textit{function calling}), popularisé par les API
+        d'OpenAI \cite{OpenAI}, désigne la capacité d'un
         LLM à émettre, en sortie, une demande structurée d'invocation d'une fonction
         externe au lieu d'une simple réponse textuelle. Le modèle reçoit en entrée la
         description d'un ensemble d'outils (nom, paramètres attendus, format de retour)
@@ -202,8 +293,9 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
     script devient rapidement difficile à écrire et à maintenir.
 
     L'orchestration modélise alors le traitement sous forme de \textbf{graphe d'état
-    dirigé} : chaque nœud représente une étape (souvent un appel LLM ou un outil) et chaque
-    arête une transition, éventuellement conditionnée par l'état courant. Comparé à un
+    dirigé} \cite{LangGraph} : chaque nœud représente une étape (souvent un appel LLM ou
+    un outil) et chaque arête une transition, éventuellement conditionnée par l'état
+    courant. Comparé à un
     script classique qui enchaîne ses instructions, ce paradigme apporte trois capacités.
     La \textbf{persistance d'état} sauvegarde un \textit{checkpoint} après chaque nœud, si
     bien que l'exécution reprend exactement là où elle s'était arrêtée après une
@@ -222,6 +314,11 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Outils d'analyse de sécurité statique (SAST)}
+
+    L'analyse statique est le second pilier de la revue, aux côtés du modèle de langage.
+    Cette section présente le principe des outils SAST, les cinq catégories de risques
+    qu'ils couvrent et la manière dont leurs résultats sont condensés avant d'être transmis
+    au modèle.
 
     \subsection{Présentation générale}
 
@@ -286,6 +383,11 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Choix technologiques}
 
+    Cette section justifie les principales décisions techniques du projet. Chaque choix —
+    moteur d'inférence, modèle de langage, orchestrateur, outils SAST, stack applicative et
+    stack d'observabilité — est mis en regard de ses alternatives, avant une synthèse
+    d'ensemble.
+
     \subsection{Choix du moteur d'inférence LLM}
 
         Pour un établissement bancaire, le choix entre inférence locale et API cloud est
@@ -318,13 +420,20 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         Au vu de cette comparaison, nous avons retenu Ollama
         \cite{Ollama} pour l'inférence locale. La confidentialité du code source bancaire
         et la conformité réglementaire vis-à-vis de la Banque Centrale de Tunisie imposent
-        que les diffs de code ne quittent jamais l'infrastructure interne.
+        que les diffs de code ne quittent jamais l'infrastructure interne. Parmi les
+        moteurs d'inférence locaux, Ollama l'a emporté sur LocalAI \cite{LocalAI} :
+        nos mesures sur le même matériel ont montré un débit de génération supérieur
+        d'environ 22\,\%, pour une gestion des modèles plus simple (téléchargement,
+        quantification et chargement gérés par le moteur).
 
     \subsection{Choix du modèle LLM}
 
-        Afin de choisir le modèle le mieux adapté à notre infrastructure (12 cœurs Intel
-        Haswell AVX2, sans GPU), nous avons conduit un benchmark sur une suite de cinq
-        requêtes représentatives avec le prompt système complet de 7 577 caractères. Les
+        Les modèles candidats sont distribués au format quantifié GGUF \cite{GGUF},
+        publiés sur le Hugging Face Hub \cite{HuggingFaceHub} et repris par le registre
+        d'Ollama. Afin de choisir le modèle le mieux adapté à notre infrastructure
+        (12 cœurs Intel Haswell AVX2, sans GPU), nous avons conduit un benchmark sur une
+        suite de cinq requêtes représentatives avec le prompt système complet de
+        7 577 caractères. Les
         résultats sont présentés dans le tableau \ref{tab:llm_benchmark}.
 
         \begin{table}[H]
@@ -353,7 +462,8 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         s'appuie sur le schéma propriétaire IBM \texttt{\{"tool\_\allowbreak{}name": .\allowbreak{}.\allowbreak{}.\allowbreak{}\}}, que
         notre format d'appel d'outils ne sait pas interpréter. Restent
         \texttt{qwen2.\allowbreak{}5-coder:7b} et \texttt{14b}, à égalité de précision (80\%), le 7b
-        étant 43\% plus rapide par token. D'où le choix d'une architecture à deux modèles :
+        produisant environ 5 tokens par seconde contre 3,2 pour le 14b. D'où le choix
+        d'une architecture à deux modèles :
         le 7b pour la classification rapide de la \textit{Pull Request} (environ
         30 secondes) et le 14b pour l'analyse de sécurité approfondie (15 à 25 minutes
         sur CPU sans GPU).
@@ -457,6 +567,12 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
         gestion native des TTL convient au cache des résultats de scanners (TTL d'une
         heure) comme au rate limiting qui plafonne à trois les pipelines simultanés
         par dépôt et protège le moteur d'inférence de la surcharge.
+
+        L'ensemble de ces services est conteneurisé avec \textbf{Docker} \cite{Docker}
+        et orchestré par Docker Compose, ce qui rend le déploiement reproductible sur
+        le VPS de la banque. Un reverse proxy \textbf{Nginx} \cite{NGINX} est
+        l'unique point d'entrée de la plateforme : il termine le TLS et route les
+        requêtes vers les services internes.
 
     \subsection{Choix de la stack d'observabilité}
 
@@ -587,67 +703,17 @@ des besoins fonctionnels et non fonctionnels du projet referme le chapitre.
     banque tout en ajoutant, au-dessus des scanners, une consolidation et une
     explication des résultats par un modèle de langage.
 
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Analyse et définition des besoins}
-
-    \subsection{Besoins fonctionnels}
-
-        La plateforme couvre cinq fonctions principales, qui suivent le parcours naturel
-        d'une \textit{Pull Request} depuis son ouverture jusqu'à son archivage.
-
-        La première est la \textbf{détection automatisée des vulnérabilités} : à l'ouverture
-        ou à la mise à jour d'une PR, l'agent clone le dépôt et lance en parallèle les
-        scanners retenus pour la classification observée. Sur cette base, il produit une
-        \textbf{revue de sécurité combinée} en un unique appel au modèle 14B, structurée en
-        quatre éléments : analyse OWASP Top 10, score de risque
-        (\textsc{info} → \textsc{critical}), verdict
-        (\textsc{approve} / \textsc{request\_changes} / \textsc{block}) et commentaires
-        \textit{inline} porteurs de suggestions de correction. Le résultat est ensuite
-        \textbf{publié sur GitHub} sous trois formes : un commentaire global dans
-        l'onglet \textit{Conversation}, des commentaires \textit{inline} dans l'onglet
-        \textit{Files Changed} et un statut de commit positionné pour servir de
-        \textit{gate} au CI/CD. Une fois la PR clôturée, la revue, les sorties brutes des scanners et la
-        liste des fichiers touchés sont \textbf{persistés dans PostgreSQL}, ce qui alimente
-        les analyses de tendance par dépôt et les requêtes ultérieures depuis le chat.
-        Cette dernière fonction est précisément le \textbf{chat opérationnel en temps réel} :
-        servi en SSE, il pilote dix-neuf outils qui couvrent l'hôte, Docker, Ollama, Redis,
-        Prometheus, PostgreSQL et les artefacts SAST.
-
-    \subsection{Besoins non fonctionnels}
-
-        Au-delà des fonctionnalités elles-mêmes, plusieurs contraintes pèsent sur la
-        qualité de service attendue de la plateforme.
-
-        La première contrainte, et la plus forte, est la \textbf{confidentialité} : la totalité
-        de l'inférence LLM doit s'exécuter en local, sans qu'aucun code source ni diff
-        ne quitte l'infrastructure BTE. Il s'agit de la condition de conformité
-        réglementaire imposée par le secteur bancaire. Vient ensuite la \textbf{performance} : le
-        pipeline complet, de la réception du webhook à la publication de la revue, doit
-        tenir dans une fourchette de 15 à 25 minutes pour ne pas
-        peser sur les cycles de livraison. La
-        \textbf{résilience} et la \textbf{fiabilité} sont deux exigences proches mais
-        distinctes. La première impose que le système continue à fonctionner si un
-        scanner ou le modèle LLM devient temporairement injoignable, ce que prennent en
-        charge le circuit breaker et les fallbacks. La seconde impose qu'un pipeline en
-        cours d'exécution survive à un redémarrage du conteneur, ce qui repose sur la
-        persistance des checkpoints LangGraph dans PostgreSQL. L'\textbf{observabilité}
-        demande que toutes les métriques critiques (durée du pipeline, taux d'erreur,
-        usage disque, état d'Ollama) remontent à Prometheus et soient consultables dans
-        Grafana. Enfin, la \textbf{sécurité de la plateforme elle-même} couvre trois
-        points concrets : signature HMAC-SHA256 des webhooks, authentification sur les
-        interfaces exposées, et exclusion des secrets détectés par Gitleaks de la charge
-        utile envoyée au LLM.
-
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-Ce chapitre a posé les bases conceptuelles du projet. Nous sommes revenus sur le DevOps
-et son extension DevSecOps, qui intègre la sécurité à chaque étape du cycle, sur le
-fonctionnement des grands modèles de langage et l'enjeu de l'inférence locale en contexte
-bancaire, ainsi que sur l'orchestration de workflows IA et les cinq familles de risques
-couvertes par les outils SAST. L'étude comparative menée ensuite a permis d'arrêter les
-choix technologiques : Ollama \cite{Ollama} pour la confidentialité bancaire, LangGraph
+Ce chapitre a posé les bases conceptuelles du projet. L'analyse des besoins, menée en
+ouverture, a précisé les six fonctions attendues de la plateforme et les contraintes de
+qualité qui pèsent sur elles. Nous sommes ensuite revenus sur le DevOps et son extension
+DevSecOps, qui intègre la sécurité à chaque étape du cycle, sur le fonctionnement des
+grands modèles de langage et l'enjeu de l'inférence locale en contexte bancaire, ainsi
+que sur l'orchestration de workflows IA et les cinq familles de risques couvertes par
+les outils SAST. L'étude comparative a permis d'arrêter des choix technologiques alignés
+sur ces besoins : Ollama \cite{Ollama} pour la confidentialité bancaire, LangGraph
 \cite{LangGraph} pour la persistance native de l'état, et l'assemblage Trivy / Gitleaks /
-Semgrep / Checkov / OSV-Scanner pour la couverture SAST. Les besoins fonctionnels et non
-fonctionnels recensés en fin de chapitre cadrent la conception détaillée du chapitre
-suivant.
+Semgrep / Checkov / OSV-Scanner pour la couverture SAST. Ces fondations cadrent la
+conception détaillée du chapitre suivant.

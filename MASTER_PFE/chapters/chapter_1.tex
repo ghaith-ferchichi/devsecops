@@ -13,6 +13,10 @@ sur cinq mois.
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Présentation de l'organisme d'accueil}
 
+    Cette section présente la Banque de Tunisie et des Emirats, organisme d'accueil du
+    stage. Elle en rappelle l'identité et l'histoire, décrit son organisation interne et
+    en particulier la direction informatique, puis ses principaux services et activités.
+
     \subsection{Présentation générale}
 
         La Banque de Tunisie et des Emirats (BTE) \cite{BTE} est une structure bancaire
@@ -29,36 +33,6 @@ sur cinq mois.
         enregistrée au registre du commerce de Tunis. Son centre administratif se situe
         au Centre Urbain Nord de Tunis. Avec le temps, la BTE a développé une activité
         importante dans le secteur bancaire en Tunisie et diversifié sa clientèle.
-
-        Ses principaux éléments d'identité sont récapitulés dans le tableau
-        \ref{tab:bte_fiche}.
-
-        \begin{table}[H]
-        \centering
-        \begin{tabular}{|m{4.5cm}|m{8.5cm}|}
-        \hline
-        \textbf{Dénomination} & Banque de Tunisie et des Emirats (BTE) \\
-        \hline
-        \textbf{Date de création} & 10 août 1982 \\
-        \hline
-        \textbf{Forme juridique} & Société anonyme cotée en bourse \\
-        \hline
-        \textbf{Actionnariat} & Partenariat entre l'État Tunisien et l'Abu Dhabi
-                                Investment Authority (ADIA) \\
-        \hline
-        \textbf{Siège social} & Boulevard Béji Caïed Essebsi, Centre Urbain Nord,
-                                1082 Tunis \\
-        \hline
-        \textbf{Secteur d'activité} & Banque universelle (Particuliers, Professionnels,
-                                      Entreprises) \\
-        \hline
-        \textbf{Produits clés} & Crédits, épargne, e-banking (NEO BTE), services
-                                 internationaux, leasing \\
-        \hline
-        \end{tabular}
-        \caption{Fiche d'identité de la Banque de Tunisie et des Emirats}
-        \label{tab:bte_fiche}
-        \end{table}
 
     \subsection{Organisation de la société}
 
@@ -183,10 +157,17 @@ sur cinq mois.
         outil, en particulier les secrets accidentellement commités et les dépendances
         vulnérables introduites en transitif.
 
+        La figure \ref{fig:asis_workflow} schématise ce processus existant :
+        de l'ouverture de la \textit{Pull Request} à la fusion manuelle, chaque
+        étape de contrôle repose sur le relecteur humain, sans qu'aucune analyse
+        automatisée ne vienne appuyer la revue ; les points faibles relevés
+        ci-dessus (attente du relecteur, couverture variable, absence de
+        \textit{gate}) en découlent directement.
+
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=\columnwidth,height=0.80\textheight,keepaspectratio]{asis_workflow}}
-            \caption{Processus \textit{AS-IS}}
+            \caption{Processus de revue de sécurité existant}
             \label{fig:asis_workflow}
         \end{figure}
 
@@ -217,10 +198,16 @@ sur cinq mois.
         L'ensemble de l'inférence s'exécute localement, si bien qu'aucun code source ne
         quitte l'infrastructure de la BTE.
 
+        La figure \ref{fig:tobe_workflow} présente le processus cible
+        correspondant : la revue automatisée s'insère entre l'ouverture de la
+        \textit{Pull Request} et la décision de fusion, publie son verdict comme
+        statut de commit et laisse au relecteur humain la décision finale, désormais
+        appuyée sur une analyse systématique.
+
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=\columnwidth,height=0.85\textheight,keepaspectratio]{tobe_workflow}}
-            \caption{Processus \textit{TO-BE}}
+            \caption{Processus cible de revue automatisée avec le BTE Security AI Agent}
             \label{fig:tobe_workflow}
         \end{figure}
 % ─────────────────────────────────────────────────────────────────────────────
@@ -446,7 +433,7 @@ sur cinq mois.
         en parallèle des sprints 6 à 10, à raison d'une heure par jour
         bloquée en fin d'après-midi.
 
-        Six jalons rythment cette progression et constituent les points d'engagement
+        Six jalons rythment cette progression et marquent les points d'engagement
         pris vis-à-vis de l'encadrement. Le tableau \ref{tab:jalons} en récapitule la
         portée.
 
@@ -498,6 +485,6 @@ cadence et les jalons hérités de Scrum au pilotage par le flux de Kanban, ce q
 la visibilité sur les jalons attendue par l'encadrement et la souplesse nécessaire à la
 gestion quotidienne lorsque des incidents surviennent sans prévenir.
 
-Le chapitre suivant porte sur la présentation des différentes technologies sur lesquelles
-repose notre solution, avec une étude comparative entre les alternatives disponibles pour
-chaque composant, ainsi que la spécification des besoins fonctionnels et non fonctionnels.
+Le chapitre suivant spécifie d'abord les besoins fonctionnels et non fonctionnels de la
+solution, puis présente les technologies sur lesquelles elle repose, avec une étude
+comparative entre les alternatives disponibles pour chaque composant.

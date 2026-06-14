@@ -222,20 +222,36 @@
     \field{title}{{Qwen2.5-Coder Technical Report}}
   \endentry
 
-  \entry{Ollama}{misc}{}{}
+  \entry{OpenAI}{misc}{}{}
     \name{author}{1}{}{%
       {{hash=O}{%
-         family={{Ollama}},
+         family={{OpenAI}},
          familyi={O\bibinitperiod},
       }}%
     }
-    \strng{namehash}{O1}
-    \strng{fullhash}{O1}
+    \strng{namehash}{O2}
+    \strng{fullhash}{O2}
     \field{labelnamesource}{author}
     \field{labeltitlesource}{title}
-    \field{howpublished}{\url{https://ollama.com}}
-    \field{note}{[Accès le 15-Mai-2026]}
-    \field{title}{{Ollama — Run Large Language Models locally}}
+    \field{howpublished}{\url{https://platform.openai.com/docs/api-reference}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{OpenAI Platform — API Reference}}
+  \endentry
+
+  \entry{Anthropic}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=A}{%
+         family={{Anthropic}},
+         familyi={A\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{A3}
+    \strng{fullhash}{A3}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.anthropic.com}}
+    \field{note}{[Accès le 18-Mai-2026]}
+    \field{title}{{Anthropic Claude API Documentation}}
   \endentry
 
   \entry{LangGraph}{misc}{}{}
@@ -253,6 +269,71 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{LangGraph — Build stateful, multi-actor applications with
   LLMs}}
+  \endentry
+
+  \entry{Ollama}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=O}{%
+         family={{Ollama}},
+         familyi={O\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{O1}
+    \strng{fullhash}{O1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://ollama.com}}
+    \field{note}{[Accès le 15-Mai-2026]}
+    \field{title}{{Ollama — Run Large Language Models locally}}
+  \endentry
+
+  \entry{LocalAI}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=L}{%
+         family={{LocalAI Community}},
+         familyi={L\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{L2}
+    \strng{fullhash}{L2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://localai.io}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{LocalAI — Open Source, OpenAI-compatible inference
+  server}}
+  \endentry
+
+  \entry{GGUF}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=G}{%
+         family={{Georgi Gerganov and contributors}},
+         familyi={G\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{G1}
+    \strng{fullhash}{G1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+  \field{howpublished}{\url{https://github.com/ggerganov/ggml/blob/master/docs/gguf.md}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{GGUF — File format for quantised language models}}
+  \endentry
+
+  \entry{HuggingFaceHub}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=H}{%
+         family={{Hugging Face}},
+         familyi={H\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{H1}
+    \strng{fullhash}{H1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://huggingface.co}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{The Hugging Face Hub — Models, Datasets and Spaces}}
   \endentry
 
   \entry{LangChain}{misc}{}{}
@@ -404,6 +485,38 @@
     \field{howpublished}{\url{https://redis.io/docs/}}
     \field{note}{[Accès le 15-Mai-2026]}
     \field{title}{{Redis Documentation}}
+  \endentry
+
+  \entry{Docker}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=D}{%
+         family={{Docker Inc.}},
+         familyi={D\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{D2}
+    \strng{fullhash}{D2}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://docs.docker.com}}
+    \field{note}{[Accès le 12-Mai-2026]}
+    \field{title}{{Docker Documentation}}
+  \endentry
+
+  \entry{NGINX}{misc}{}{}
+    \name{author}{1}{}{%
+      {{hash=F}{%
+         family={{F5 Networks}},
+         familyi={F\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{F1}
+    \strng{fullhash}{F1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{howpublished}{\url{https://nginx.org/en/docs/}}
+    \field{note}{[Accès le 15-Mai-2026]}
+    \field{title}{{NGINX Documentation}}
   \endentry
 
   \entry{Prometheus}{misc}{}{}
@@ -569,119 +682,6 @@
     \field{note}{[Accès le 18-Mai-2026]}
     \field{title}{{GitHub Copilot Autofix — AI-powered remediation for code
   scanning}}
-  \endentry
-
-  \entry{NGINX}{misc}{}{}
-    \name{author}{1}{}{%
-      {{hash=F}{%
-         family={{F5 Networks}},
-         familyi={F\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{F1}
-    \strng{fullhash}{F1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{howpublished}{\url{https://nginx.org/en/docs/}}
-    \field{note}{[Accès le 15-Mai-2026]}
-    \field{title}{{NGINX Documentation}}
-  \endentry
-
-  \entry{Docker}{misc}{}{}
-    \name{author}{1}{}{%
-      {{hash=D}{%
-         family={{Docker Inc.}},
-         familyi={D\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{D2}
-    \strng{fullhash}{D2}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{howpublished}{\url{https://docs.docker.com}}
-    \field{note}{[Accès le 12-Mai-2026]}
-    \field{title}{{Docker Documentation}}
-  \endentry
-
-  \entry{LocalAI}{misc}{}{}
-    \name{author}{1}{}{%
-      {{hash=L}{%
-         family={{LocalAI Community}},
-         familyi={L\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{L2}
-    \strng{fullhash}{L2}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{howpublished}{\url{https://localai.io}}
-    \field{note}{[Accès le 12-Mai-2026]}
-    \field{title}{{LocalAI — Open Source, OpenAI-compatible inference
-  server}}
-  \endentry
-
-  \entry{GGUF}{misc}{}{}
-    \name{author}{1}{}{%
-      {{hash=G}{%
-         family={{Georgi Gerganov and contributors}},
-         familyi={G\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{G1}
-    \strng{fullhash}{G1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-  \field{howpublished}{\url{https://github.com/ggerganov/ggml/blob/master/docs/gguf.md}}
-    \field{note}{[Accès le 12-Mai-2026]}
-    \field{title}{{GGUF — File format for quantised language models}}
-  \endentry
-
-  \entry{HuggingFaceHub}{misc}{}{}
-    \name{author}{1}{}{%
-      {{hash=H}{%
-         family={{Hugging Face}},
-         familyi={H\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{H1}
-    \strng{fullhash}{H1}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{howpublished}{\url{https://huggingface.co}}
-    \field{note}{[Accès le 12-Mai-2026]}
-    \field{title}{{The Hugging Face Hub — Models, Datasets and Spaces}}
-  \endentry
-
-  \entry{OpenAI}{misc}{}{}
-    \name{author}{1}{}{%
-      {{hash=O}{%
-         family={{OpenAI}},
-         familyi={O\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{O2}
-    \strng{fullhash}{O2}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{howpublished}{\url{https://platform.openai.com/docs/api-reference}}
-    \field{note}{[Accès le 18-Mai-2026]}
-    \field{title}{{OpenAI Platform — API Reference}}
-  \endentry
-
-  \entry{Anthropic}{misc}{}{}
-    \name{author}{1}{}{%
-      {{hash=A}{%
-         family={{Anthropic}},
-         familyi={A\bibinitperiod},
-      }}%
-    }
-    \strng{namehash}{A3}
-    \strng{fullhash}{A3}
-    \field{labelnamesource}{author}
-    \field{labeltitlesource}{title}
-    \field{howpublished}{\url{https://docs.anthropic.com}}
-    \field{note}{[Accès le 18-Mai-2026]}
-    \field{title}{{Anthropic Claude API Documentation}}
   \endentry
 
   \entry{MistralAI}{misc}{}{}

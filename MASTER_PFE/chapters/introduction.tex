@@ -30,18 +30,20 @@ parallèle cinq outils d'analyse de sécurité et produit une revue complète en
 25 minutes selon la complexité de la \textit{Pull Request}, sans qu'aucun
 code source ne quitte l'infrastructure interne de la banque.
 
-Le rapport s'organise en quatre chapitres. Le \textbf{premier chapitre} présente
+Le rapport s'organise en cinq chapitres. Le \textbf{premier chapitre} présente
 l'organisme d'accueil et le cadre général du projet, pose la problématique et expose
 la solution retenue ; il revient également sur la méthodologie Scrumban et sur le
 déroulement du travail, réparti en dix sprints sur cinq mois. Le \textbf{deuxième
-chapitre} pose les bases théoriques (DevSecOps, inférence locale par grands modèles
-de langage, outils d'analyse statique), puis justifie les technologies retenues et
-spécifie les besoins fonctionnels et non fonctionnels. Le \textbf{troisième chapitre}
-détaille l'architecture logicielle : le workflow LangGraph à neuf nœuds, l'architecture
-à deux modèles LLM, le schéma de la base de données et l'assistant de chat opérationnel
-doté de son système anti-hallucination. Le \textbf{quatrième chapitre} décrit
-l'environnement de déploiement et le travail mené phase par phase, de la configuration
-des services Docker à la mise en place de l'observabilité, en passant par l'intégration
-des outils de sécurité et l'implémentation du pipeline LLM. Une conclusion générale
-referme le document : elle récapitule le travail accompli et trace les perspectives
-d'amélioration.
+chapitre} spécifie d'abord les besoins fonctionnels et non fonctionnels, pose ensuite
+les bases théoriques (DevSecOps, inférence locale par grands modèles de langage,
+outils d'analyse statique), puis justifie les technologies retenues. Le
+\textbf{troisième chapitre} détaille l'architecture logicielle : le workflow LangGraph
+à neuf nœuds, l'architecture à deux modèles LLM, le schéma de la base de données et
+l'assistant de chat opérationnel doté de son système anti-hallucination. Le
+\textbf{quatrième chapitre} décrit l'environnement de déploiement et l'implémentation
+menée sprint par sprint, de la configuration des services Docker à la mise en place de
+l'observabilité, en passant par l'intégration des outils de sécurité et le pipeline
+LLM. Le \textbf{cinquième chapitre} valide la plateforme : tests des mécanismes
+critiques, résultats sur des \textit{Pull Requests} réelles et durcissement de la
+configuration de production. Une conclusion générale referme le document : elle
+récapitule le travail accompli et trace les perspectives d'amélioration.

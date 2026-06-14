@@ -1,83 +1,48 @@
-\chapter*{Conclusion générale et Perspectives}
-\addcontentsline{toc}{chapter}{Conclusion générale et Perspectives}
-\markboth{Conclusion générale et Perspectives}{}
+\chapter*{Conclusion générale}
+\addcontentsline{toc}{chapter}{Conclusion générale}
+\markboth{Conclusion générale}{}
 
-Ce projet a abouti à la conception et au déploiement du BTE Security AI Agent, un
-moteur DevSecOps autonome reposant sur une intelligence artificielle locale. Le point
-de départ était un VPS Ubuntu vierge ; la plateforme livrée compte onze conteneurs de
-production, auxquels s'ajoute une douzième \textit{sandbox} LocalAI, activable à la
-demande pour évaluer des moteurs d'inférence concurrents. L'objectif fixé au départ a
-été atteint, puis vérifié sur une \textit{Pull Request} de démonstration instrumentée
-en fin de stage (PR~\#18) ainsi que sur plusieurs exécutions intermédiaires du pipeline
-au fil des sprints. Il consistait à automatiser la détection des vulnérabilités
-dans les \textit{Pull Requests} en 15 à 25 minutes environ, sans externaliser le code
-source et en couvrant l'intégralité de l'OWASP Top 10.
+Ce projet de fin d'études a abouti à la conception et au déploiement
+du BTE Security AI Agent, un moteur DevSecOps autonome reposant sur une intelligence
+artificielle exécutée localement. Partie d'un VPS Ubuntu vierge, la plateforme livrée
+compte onze conteneurs de production : un pipeline de revue de sécurité orchestré par
+LangGraph en neuf nœuds, deux modèles \texttt{qwen2.\allowbreak{}5-coder} (7B pour la
+classification, 14B pour l'analyse approfondie) servis par Ollama, cinq scanners SAST
+exécutés en parallèle selon la classification de la \textit{Pull Request}, un assistant
+de chat opérationnel doté de dix-neuf outils de monitoring, et une stack d'observabilité
+complète, soit vingt-huit métriques personnalisées, quinze règles d'alerte et trois
+\textit{dashboards} Grafana. La réalisation s'est déroulée sur dix sprints Scrumban
+répartis sur cinq mois, au sein de la DCIO de la Banque de Tunisie et des Emirats.
 
-Exécutés tous deux localement via Ollama, les modèles \texttt{qwen2.\allowbreak{}5-coder:7b}
-(classification rapide) et \texttt{qwen2.\allowbreak{}5-coder:14b} (analyse de sécurité
-approfondie) ont permis de tenir les exigences de confidentialité bancaire sans sacrifier
-la qualité des revues. Fusionner en un seul appel les deux requêtes LLM jusque-là
-séquentielles a réduit de moitié la durée du pipeline : d'une fourchette de trente à
-cinquante minutes, elle est tombée à quinze ou vingt-cinq minutes. Nettoyer les sorties
-SAST avant de les transmettre au modèle, soit 52\% de tokens en moins, a libéré de la
-fenêtre de contexte et amélioré les analyses. Le système anti-hallucination à six couches
-a, par ailleurs, mis fin à la fabrication de métriques d'infrastructure dans l'assistant
-de chat.
+Les résultats valident l'objectif fixé au départ : automatiser la détection des
+vulnérabilités sans qu'aucune ligne de code ne quitte l'infrastructure de la banque.
+Chaque \textit{Pull Request} reçoit désormais en 15 à 25 minutes une revue alignée sur
+l'OWASP Top 10, assortie d'un verdict opposable au CI/CD et de suggestions de correction
+publiées directement sur GitHub, là où la revue manuelle pouvait demander jusqu'à
+vingt-quatre heures. Sur la \textit{Pull Request} de démonstration, l'agent a détecté
+les cinq vulnérabilités plantées et rendu un verdict \texttt{BLOCK} ; le corpus de huit
+revues réelles confirme la cohérence des verdicts avec les scores de risque. Parmi les
+points forts du stage figurent la fusion des deux appels LLM, qui a réduit de moitié la
+durée du pipeline, le nettoyage des sorties SAST (52\,\% de tokens en moins), le système
+anti-hallucination à six couches qui a mis fin à l'invention de métriques dans le chat,
+et le benchmark croisé qui a confirmé le choix d'Ollama, 22\,\% plus rapide que LocalAI
+à modèle identique. Surtout, la mise en conditions réelles a forgé l'essentiel de
+l'apprentissage : l'urgence disque, la réécriture du parser de revue ou le bug de
+\textit{cold-load} de LocalAI ont tous été résolus en production, chaque incident
+devenant la carte prioritaire du sprint en cours.
 
-Plusieurs briques techniques concourent à la sécurité, à la fiabilité et à
-l'observabilité de la plateforme. L'orchestration LangGraph, adossée à une persistance
-PostgreSQL, garantit que le pipeline survit aux redémarrages ; le circuit breaker et les
-\textit{fallbacks} le maintiennent opérationnel lorsqu'un service devient ponctuellement
-indisponible. Côté supervision, quinze règles d'alerte Prometheus, vingt-huit métriques
-personnalisées et trois \textit{dashboards} Grafana donnent une vue complète de
-l'infrastructure ; quinze de ces métriques ont été ajoutées au sprint 8.1 pour suivre la
-consommation par conteneur, la santé de la sandbox LocalAI et la télémétrie A/B du routeur
-de chat. Quant à la méthodologie Scrumban, qui combine la cadence de sprints à durée fixe
-héritée de Scrum et une discipline Kanban plafonnée à un seul élément en cours (WIP de 1),
-elle a permis, sur dix sprints, d'absorber les imprévus de production : l'urgence disque,
-l'AlertManager silencieusement cassé depuis le déploiement, la panne de VictoriaMetrics
-ou la réécriture du parser de revue PR. Chacun de ces incidents est devenu la carte
-prioritaire du sprint en cours et a donné lieu à un correctif déployé en production avant
-la clôture de l'itération.
-
-Plusieurs chantiers de consolidation se poursuivront au-delà du stage.
-L'automatisation du renouvellement des certificats TLS via Let's Encrypt simplifiera la
-gestion du chiffrement des échanges, la sauvegarde quotidienne de
-PostgreSQL protégera la base de connaissances sécurité et les checkpoints LangGraph,
-et la généralisation des \textit{healthchecks} Docker améliorera la capacité de la
-plateforme à se rétablir d'elle-même. Reste enfin une
-question propre au cœur IA de la plateforme : le diff analysé étant par nature une
-entrée non fiable, l'architecture s'appuie déjà sur les \textit{findings} déterministes
-des scanners, que le texte soumis au modèle ne peut altérer ; ancrer davantage le verdict
-de blocage sur ces \textit{findings} poussera cette logique de défense en profondeur un
-cran plus loin. Sur le terrain de l'inférence,
-l'évaluation d'un second moteur conduite en post-Sprint 8 a confirmé le choix d'Ollama,
-plus rapide de 22\,\% que LocalAI sur un matériel et un modèle identiques. La sandbox
-LocalAI conserve toutefois son intérêt : elle ouvre l'accès à des modèles absents de la
-bibliothèque Ollama, tel Qwen3-Coder MoE 30B/3B-actifs, et un \textit{fine-tuning} sur
-des CVE bancaires reste une piste à explorer.
-
-L'évolution la plus déterminante pour la suite serait la \textbf{migration vers une
-inférence GPU}. Sur le matériel actuel (CPU Haswell 12 cœurs, sans GPU), une revue de
-\textit{Pull Request} demande 15 à 25 minutes selon sa complexité, ce qui correspond à un
-débit d'environ 3 tokens par seconde pour le modèle \texttt{qwen2.\allowbreak{}5-coder:14B}.
-Un GPU haut de gamme (NVIDIA RTX 4090 ou A100) porterait ce débit à 30 ou 50 tokens par
-seconde et diviserait donc la durée par un facteur de 5 à 10, ramenant chaque revue à 2 ou
-5 minutes. Le coût reste contenu : environ 3\,000~\texteuro{} pour une RTX 4090, ou
-500~\texteuro/mois pour du cloud GPU à la demande. Il s'inscrit dans l'enveloppe de la DCIO
-et constitue le moyen le plus direct d'étendre l'agent à l'ensemble des dépôts BTE sans
-toucher à l'architecture logicielle. L'inférence resterait sur l'infrastructure de la
-banque, ce qui préserve l'exigence de confidentialité de la BCT, tandis que la revue
-deviendrait quasi instantanée pour le développeur.
-
-À plus longue échéance, l'agent a vocation à couvrir l'ensemble des dépôts de la BTE, et
-les revues accumulées à alimenter un tableau de bord de risques destiné au RSSI.
-
-Sur le plan personnel, ce stage aura été l'occasion de mettre en pratique l'automatisation
-de la sécurité d'une chaîne CI/CD, le déploiement et l'exploitation de grands modèles de
-langage en local, et la construction d'un système d'observabilité capable de repérer ses
-propres pannes. Plusieurs des difficultés rencontrées (l'urgence disque, le parser de revue
-PR à réécrire, le bug de cold-load de LocalAI) ne seraient jamais apparues sans une mise en
-conditions réelles ; s'il fallait retenir une leçon de ce travail, ce serait sans doute
-celle-là. La plateforme remise à la BTE dépasse le cadre du stage : elle met entre les mains
-de la banque un outil concret pour appuyer sa transformation DevSecOps.
+Plusieurs perspectives prolongent ce travail. À court terme, trois chantiers de
+consolidation sont engagés : l'automatisation du renouvellement des certificats TLS via
+Let's Encrypt, la sauvegarde quotidienne de PostgreSQL et la généralisation des
+\textit{healthchecks} Docker ; s'y ajoute l'ancrage du verdict de blocage sur les
+\textit{findings} déterministes des scanners, qui poussera la logique de défense en
+profondeur un cran plus loin. Le gain le plus net viendrait de la migration vers
+une inférence GPU : en portant le débit du modèle 14B d'environ 3 à 30--50 tokens par
+seconde, elle ramènerait chaque revue à deux à cinq minutes, pour un coût qui tient
+dans l'enveloppe de la DCIO et sans rien changer à l'architecture logicielle ni à la
+confidentialité exigée par la BCT. À plus longue échéance, l'agent a vocation à couvrir
+l'ensemble des dépôts de la banque, les revues accumulées alimentant un tableau de bord
+de risques destiné au RSSI, et un \textit{fine-tuning} des modèles sur des CVE bancaires
+reste une piste à explorer. La plateforme remise à la BTE dépasse ainsi le cadre du
+stage : elle met entre les mains de la banque un outil concret pour appuyer sa
+transformation DevSecOps.

@@ -12,6 +12,10 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Présentation de l'architecture logicielle}
 
+    Cette section décrit l'architecture de déploiement de la plateforme. Elle présente
+    d'abord son organisation en couches fonctionnelles, puis l'inventaire détaillé des
+    conteneurs et enfin les règles de routage qui régissent son point d'entrée unique.
+
     \subsection{Architecture en couches}
 
         La plateforme BTE Security AI Agent est déployée sous forme de onze conteneurs
@@ -59,11 +63,11 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
         \hline
         \texttt{ollama} & \texttt{ollama/\allowbreak{}ollama:latest} & interne & \textasciitilde10 Go & Inférence LLM \\
         \hline
-        \texttt{postgres} & \texttt{postgres:16-alpine} & interne & \textasciitilde33 Mo & BD + checkpoints \\
+        \texttt{postgres} & \texttt{postgres:\allowbreak{}16-alpine} & interne & \textasciitilde33 Mo & BD + checkpoints \\
         \hline
-        \texttt{redis} & \texttt{redis:7-alpine} & interne & \textasciitilde5 Mo & Cache + dédup \\
+        \texttt{redis} & \texttt{redis:\allowbreak{}7-alpine} & interne & \textasciitilde5 Mo & Cache + dédup \\
         \hline
-        \texttt{nginx} & \texttt{nginx:alpine} & 80, 443 & \textasciitilde3 Mo & Reverse proxy \\
+        \texttt{nginx} & \texttt{nginx:\allowbreak{}alpine} & 80, 443 & \textasciitilde3 Mo & Reverse proxy \\
         \hline
         \texttt{prometheus} & \texttt{prom/\allowbreak{}prometheus} & interne & \textasciitilde26 Mo & Métriques \\
         \hline
@@ -71,11 +75,11 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
         \hline
         \texttt{grafana} & \texttt{grafana/\allowbreak{}grafana} & interne & \textasciitilde96 Mo & Dashboards \\
         \hline
-        \texttt{victoriametrics} & \texttt{victoria-metrics} & interne & \textasciitilde97 Mo & Stockage 90j \\
+        \texttt{victoriametrics} & \texttt{victoria-\allowbreak{}metrics} & interne & \textasciitilde97 Mo & Stockage 90j \\
         \hline
         \texttt{node-exporter} & \texttt{prom/\allowbreak{}node-exporter} & \texttt{host:9100} & \textasciitilde10 Mo & Métriques host \\
         \hline
-        \texttt{open-webui} & \texttt{open-webui:main} & 3001 & \textasciitilde300 Mo & UI Ollama \\
+        \texttt{open-webui} & \texttt{open-\allowbreak{}webui:\allowbreak{}main} & 3001 & \textasciitilde300 Mo & UI Ollama \\
         \hline
         \end{tabular}
         \caption{Inventaire des 11 conteneurs — ports, mémoire et rôles}
@@ -113,7 +117,17 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Description de la conception du logiciel}
 
+    La conception de l'agent se décompose en sous-systèmes faiblement couplés, chacun
+    responsable d'une fonction précise. Les sous-sections qui suivent détaillent tour à
+    tour l'inférence LLM, la revue de \textit{Pull Request}, l'analyse du diff,
+    l'assistant de chat, la persistance des données et l'observabilité.
+
     \subsection{Sous-système d'inférence LLM}
+
+        Le sous-système d'inférence fournit les modèles de langage exploités par le reste
+        de la plateforme, du pipeline de revue jusqu'à l'assistant de chat. Sa logique
+        d'ensemble est décrite ci-après, suivie de la configuration retenue pour chaque
+        fonction de fabrique de modèle.
 
         \subsubsection{Architecture logique}
 
@@ -145,8 +159,8 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
         Haswell 12 cœurs sans GPU), soit un gain de près de cinquante pourcent
         sur la durée totale.
 
-        \paragraph{Contrainte matérielle.}
-        La durée d'analyse de 15 à 25 minutes par \textit{Pull Request} découle directement
+        Cette durée traduit une contrainte matérielle assumée : l'analyse de 15 à
+        25 minutes par \textit{Pull Request} découle directement
         du choix d'inférence locale sur CPU sans GPU, imposé par les exigences de
         confidentialité de la BCT. Sur ce matériel, le modèle 14B produit environ 3 tokens
         par seconde. Une migration vers un GPU dédié, qui resterait sur l'infrastructure BTE
@@ -176,6 +190,12 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
     \subsection{Sous-système de revue de Pull Request}
 
+        Le sous-système de revue de \textit{Pull Request} orchestre l'enchaînement complet
+        des étapes d'analyse, de la réception de l'événement GitHub jusqu'à la publication
+        du verdict. Sa logique repose sur un graphe d'états présenté ci-après, avant les
+        diagrammes d'interaction qui détaillent la réception du webhook puis le déroulé du
+        pipeline.
+
         \subsubsection{Architecture logique}
 
         Le workflow de revue de \textit{Pull Request} est modélisé comme un
@@ -185,7 +205,7 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=\columnwidth,height=0.80\textheight,keepaspectratio]{langgraph_state_graph}}
+            \frame{\includegraphics[width=\columnwidth,height=0.88\textheight,keepaspectratio]{langgraph_state_graph}}
             \caption{Graphe d'état LangGraph}
             \label{fig:langgraph_graph}
         \end{figure}
@@ -269,7 +289,7 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{inter_webhook}}
+            \frame{\includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{inter_webhook}}
             \caption{Diagramme d'interaction — Réception et validation du webhook GitHub}
             \label{fig:inter_webhook}
         \end{figure}
@@ -284,12 +304,17 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=\textwidth]{inter_pipeline}}
+            \frame{\includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{inter_pipeline}}
             \caption{Diagramme d'interaction — Pipeline LangGraph de revue de sécurité}
             \label{fig:inter_pipeline}
         \end{figure}
 
     \subsection{Sous-système d'analyse du diff}
+
+        Le sous-système d'analyse du diff prépare les données transmises au modèle et
+        fiabilise les commentaires publiés sur la \textit{Pull Request}. Sa logique interne
+        est décrite ci-après, suivie du format de diff annoté fourni au modèle pour qu'il
+        cible précisément les lignes concernées.
 
         \subsubsection{Architecture logique}
 
@@ -301,7 +326,7 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=\columnwidth,height=0.78\textheight,keepaspectratio]{diff_parser_state_machine}}
+            \frame{\includegraphics[width=\columnwidth,height=0.7\textheight,keepaspectratio]{diff_parser_state_machine}}
             \caption{Machine à états du diff parser}
             \label{fig:diff_parser}
         \end{figure}
@@ -330,6 +355,11 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
     \subsection{Sous-système d'assistant de chat opérationnel}
 
+        Le sous-système d'assistant de chat donne à l'équipe sécurité un accès en langage
+        naturel à l'état de la plateforme et à la base de connaissances. Son architecture,
+        fondée sur une boucle ReAct, est présentée ci-après puis illustrée par un diagramme
+        d'interaction.
+
         \subsubsection{Architecture logique}
 
         L'assistant de chat BTE Security AI Agent utilise une boucle ReAct
@@ -340,7 +370,7 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=\columnwidth,height=0.80\textheight,keepaspectratio]{react_loop_architecture}}
+            \frame{\includegraphics[width=\columnwidth,height=0.88\textheight,keepaspectratio]{react_loop_architecture}}
             \caption{Boucle ReAct personnalisée}
             \label{fig:react_loop_arch}
         \end{figure}
@@ -365,13 +395,15 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
         \begin{figure}[H]
             \centering
             \frame{\includegraphics[width=0.85\columnwidth]{anti_hallucination_layers}}
-            \caption{Système anti-hallucination}
+            \caption{Système anti-hallucination (conception personnelle)}
             \label{fig:anti_hallucination_layers}
         \end{figure}
 
         Les trois premières couches agissent sur la configuration du modèle :
         \texttt{temperature=0.\allowbreak{}0} rend la génération déterministe et supprime toute
-        invention probabiliste de valeurs ; \texttt{num\_ctx} porté à 6 144 tokens laisse
+        invention probabiliste de valeurs ; \texttt{num\_ctx}, porté à 6 144 tokens dans
+        la configuration propre au chat (contre 4 096 pour la fabrique de
+        classification du pipeline), laisse
         environ 4 100 tokens libres pour les observations des outils ; et
         \texttt{num\_predict} plafonné à 800 tokens garantit des réponses complètes. Les trois
         suivantes relèvent du contrôle applicatif : la garde sans-outil déjà évoquée, un bloc
@@ -418,12 +450,17 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{inter_react}}
+            \frame{\includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{inter_react}}
             \caption{Diagramme d'interaction — Boucle ReAct du chat opérationnel}
             \label{fig:inter_react}
         \end{figure}
 
     \subsection{Sous-système de persistance}
+
+        Le sous-système de persistance conserve l'ensemble des données produites par la
+        plateforme, des revues archivées jusqu'à l'état interne du pipeline. Son
+        organisation logique est présentée ci-après, avant la description détaillée des
+        tables qui la composent.
 
         \subsubsection{Architecture logique}
 
@@ -434,7 +471,7 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{database_er_diagram}}
+            \frame{\includegraphics[width=\textwidth]{database_er_diagram}}
             \caption{Diagramme E-A de la base de données PostgreSQL}
             \label{fig:db_er}
         \end{figure}
@@ -463,15 +500,13 @@ diff, l'assistant de chat opérationnel, la persistance et l'observabilité.
 
     \subsection{Sous-système d'observabilité}
 
-        \subsubsection{Architecture logique}
-
         La stack d'observabilité centralise la surveillance de la plateforme. La figure
         \ref{fig:monitoring_stack} présente le flux de métriques depuis les sources de collecte
         jusqu'aux dashboards Grafana et aux alertes Slack.
 
         \begin{figure}[H]
             \centering
-            \frame{\includegraphics[width=0.88\columnwidth]{monitoring_stack}}
+            \frame{\includegraphics[width=\textwidth]{monitoring_stack}}
             \caption{Architecture de la stack d'observabilité}
             \label{fig:monitoring_stack}
         \end{figure}
