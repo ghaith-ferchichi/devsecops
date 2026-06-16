@@ -1,0 +1,120 @@
+================================================================================
+JOURNAL DE STAGE SFE/PFE — GSP-FR-11
+Proposition de remplissage — BTE Security AI Agent
+================================================================================
+
+Remarque : seuls les champs de DATES (entre [ ]) restent à compléter ; ils ne
+figurent pas dans les sources du rapport. Les cases de signature restent vides :
+elles sont signées à la main par les encadrants (au minimum à la mi-période et à
+la fin du stage).
+
+
+--------------------------------------------------------------------------------
+EN-TÊTE — IDENTITÉ
+--------------------------------------------------------------------------------
+Année Universitaire                              : 2025 – 2026
+L'étudiant-Stagiaire                             : Ghaith FERCHICHI
+Spécialité/Filière                               : Mastère Professionnel — Sécurité des
+                                                   Systèmes d'Information et des Infrastructures
+Organisme d'Accueil                              : Banque de Tunisie et des Émirats (BTE)
+Lieu du Stage (Pays/Ville)                       : Tunisie / Tunis
+Nature du stage (Présentiel/En ligne/Hybride)    : Présentiel
+Période de Stage : du [JJ/MM/AAAA] au [JJ/MM/AAAA]
+
+Encadrant professionnel : Monsieur Kamel KAOUECH (Expert Infrastructure)
+Encadrant académique    : Madame Ghayet El Mouna ZHIOUA (Maître Assistant(e))
+
+
+--------------------------------------------------------------------------------
+B - PLANNING DU STAGE (à établir par l'Entreprise dès le 1er jour)
+--------------------------------------------------------------------------------
+Date (approximative) | Travail demandé
+---------------------+----------------------------------------------------------
+Semaine 1            | Prise de connaissance de l'environnement DevSecOps de la
+                     | BTE et cadrage du sujet
+---------------------+----------------------------------------------------------
+Semaines 2 – 3       | Étude de l'existant et état de l'art (DevOps, CI/CD,
+                     | modèles de langage, outils SAST)
+---------------------+----------------------------------------------------------
+Semaines 4 – 6       | Conception de l'architecture de l'agent (conteneurs,
+                     | pipeline LangGraph, modèles LLM)
+---------------------+----------------------------------------------------------
+Semaines 7 – 11      | Développement du pipeline de revue de Pull Request et
+                     | intégration des scanners de sécurité
+---------------------+----------------------------------------------------------
+Semaines 12 – 14     | Mise en place de la persistance, des webhooks GitHub et
+                     | de l'observabilité
+---------------------+----------------------------------------------------------
+Semaines 15 – 16     | Tests, validation et rédaction du rapport
+---------------------+----------------------------------------------------------
+
+Date, Signature & Cachet de l'Organisme d'accueil : __________________________
+
+
+--------------------------------------------------------------------------------
+C - TÂCHES JOURNALIÈRES (à remplir par l'étudiant)
+--------------------------------------------------------------------------------
+
+PREMIÈRE PARTIE (jusqu'à la mi-période)
+Date         | Travail réalisé
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Analyse du processus de revue de sécurité existant à la BTE
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Recherche bibliographique : DevSecOps, CI/CD, modèles de langage
+             | et analyse statique de code (SAST)
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Choix de la stack technologique (LangGraph, FastAPI, Ollama,
+             | Trivy, Gitleaks, Semgrep, Checkov, OSV-Scanner)
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Conception de l'architecture à onze conteneurs Docker et du
+             | graphe d'états LangGraph
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Mise en place de l'inférence LLM à deux modèles
+             | (qwen2.5-coder:7b pour la classification, qwen2.5-coder:14b
+             | pour la revue de sécurité)
+-------------+------------------------------------------------------------------
+
+
+SUIVI MI-PÉRIODE (signatures manuscrites)
+Date et Signature de l'encadrant académique — Mme Ghayet El Mouna ZHIOUA   : ________
+Date et Signature de l'encadrant Professionnel — M. Kamel KAOUECH          : ________
+Suivi/Remarques de l'encadrant académique                                  : ________
+Suivi/Remarques de l'encadrant Professionnel                               : ________
+
+
+DEUXIÈME PARTIE (jusqu'à la fin de la période)
+Date         | Travail réalisé
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Développement du parseur de diff et du pipeline de revue de
+             | Pull Request
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Intégration des webhooks GitHub avec validation HMAC-SHA256
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Persistance PostgreSQL (base de connaissances et checkpoints
+             | LangGraph) et cache Redis (déduplication, rate limiting)
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Développement de l'assistant de chat opérationnel
+             | (boucle ReAct, dix-neuf outils)
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Mise en place de l'observabilité : Prometheus, Grafana,
+             | AlertManager, VictoriaMetrics et node-exporter (15 règles d'alerte)
+-------------+------------------------------------------------------------------
+[JJ/MM/AAAA] | Tests de validation, publication des revues OWASP Top 10 sur
+             | GitHub et rédaction du rapport de PFE
+-------------+------------------------------------------------------------------
+
+
+SUIVI FIN DE PÉRIODE (signatures manuscrites)
+Date et Signature de l'encadrant académique — Mme Ghayet El Mouna ZHIOUA   : ________
+Date et Signature de l'encadrant Professionnel — M. Kamel KAOUECH          : ________
+Appréciation globale de l'encadrant académique                             : ________
+Appréciation Globale de l'encadrant Professionnel                          : ________
+
+
+================================================================================
+SEUL ÉLÉMENT À COMPLÉTER À LA MAIN
+================================================================================
+- Dates de début et de fin du stage, et date de chaque ligne des tâches
+  journalières (non enregistrées dans les sources du rapport).
+- Signatures manuscrites des encadrants (mi-période et fin).
+================================================================================
