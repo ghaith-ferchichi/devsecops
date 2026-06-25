@@ -1,0 +1,148 @@
+================================================================================
+JOURNAL DE STAGE SFE/PFE — GSP-FR-11
+Remplissage — BTE Security AI Agent
+================================================================================
+
+Dates alignées sur le déroulement du projet décrit dans le rapport (stage du
+2 février au 30 juin 2026, dix sprints Scrumban de deux semaines). Les cases de
+signature restent vides : elles sont signées à la main par les encadrants (au
+minimum à la mi-période et à la fin du stage).
+
+
+--------------------------------------------------------------------------------
+EN-TÊTE — IDENTITÉ
+--------------------------------------------------------------------------------
+Année Universitaire                              : 2025 – 2026
+L'étudiant-Stagiaire                             : Ghaith FERCHICHI
+Spécialité/Filière                               : Mastère Professionnel — Sécurité des
+                                                   Systèmes d'Information et des Infrastructures
+Organisme d'Accueil                              : Banque de Tunisie et des Émirats (BTE)
+Lieu du Stage (Pays/Ville)                       : Tunisie / Tunis
+Nature du stage (Présentiel/En ligne/Hybride)    : Présentiel
+Période de Stage : du 02/02/2026 au 30/06/2026
+
+Encadrant professionnel : Monsieur Kamel KAOUECH (Expert Infrastructure)
+Encadrant académique    : Madame Ghayet El Mouna ZHIOUA (Maître Assistant(e))
+
+
+--------------------------------------------------------------------------------
+B - PLANNING DU STAGE (à établir par l'Entreprise dès le 1er jour)
+--------------------------------------------------------------------------------
+Date (approximative)      | Travail demandé
+--------------------------+-----------------------------------------------------
+02/02 – 15/02 (Sprint 1)  | Fondations : déploiement de l'infrastructure Docker
+                          | et réception du premier webhook GitHub (jalon M1 :
+                          | pipeline vivant de bout en bout)
+--------------------------+-----------------------------------------------------
+16/02 – 15/03 (Spr. 2-3)  | Intelligence du système : intégration des cinq
+                          | scanners et de la revue LLM publiée sur GitHub
+                          | (jalon M2)
+--------------------------+-----------------------------------------------------
+16/03 – 29/03 (Sprint 4)  | Autonomie opérationnelle : alertes, publication
+                          | Slack et scheduler autonome (jalon M3)
+--------------------------+-----------------------------------------------------
+30/03 – 12/04 (Sprint 5)  | Observabilité de la plateforme : Prometheus et
+                          | Grafana (jalon M4)
+--------------------------+-----------------------------------------------------
+13/04 – 24/05 (Spr. 6-8)  | Audit, durcissement de production, anti-hallucination
+                          | et robustesse du parser de revue (jalon M5)
+--------------------------+-----------------------------------------------------
+25/05 – 21/06 (Post-S8,   | Évaluation d'un second backend d'inférence et
+8.1)                      | extension de la couche d'observabilité (jalon M6 :
+                          | robustesse sur quatre semaines de fonctionnement)
+--------------------------+-----------------------------------------------------
+22/06 – 30/06             | Tests finaux, rédaction du rapport et préparation
+                          | de la soutenance
+--------------------------+-----------------------------------------------------
+
+Date, Signature & Cachet de l'Organisme d'accueil : __________________________
+
+
+--------------------------------------------------------------------------------
+C - TÂCHES JOURNALIÈRES (à remplir par l'étudiant)
+--------------------------------------------------------------------------------
+
+PREMIÈRE PARTIE (jusqu'à la mi-période)
+Date         | Travail réalisé
+-------------+------------------------------------------------------------------
+02/02/2026   | Sprint 1 — Fondations : déploiement de l'infrastructure Docker
+             | (onze conteneurs), configuration d'Ollama en CPU-only, correctif
+             | nginx HTTP/1.1 et réception du premier webhook GitHub validé
+             | HMAC-SHA256
+-------------+------------------------------------------------------------------
+16/02/2026   | Sprint 2 — Pipeline de sécurité : intégration des cinq scanners
+             | SAST en parallèle (asyncio.gather), génération du diff local
+             | (-U15) et mise en cache Redis des résultats
+-------------+------------------------------------------------------------------
+02/03/2026   | Sprint 3 — Revue combinée : fusion des deux appels LLM 14B en un
+             | appel combiné et publication des commentaires inline sur GitHub
+             | (durée du pipeline ramenée à 15-25 min)
+-------------+------------------------------------------------------------------
+16/03/2026   | Sprint 4 — Opérations autonomes : scheduler asyncio, gardien
+             | disque (surveillance toutes les 30 min) et health digest
+             | quotidien publié sur Slack
+-------------+------------------------------------------------------------------
+30/03/2026   | Sprint 5 — Monitoring : déploiement de la stack Prometheus +
+             | Grafana et provisioning de trois dashboards opérationnels
+-------------+------------------------------------------------------------------
+
+
+SUIVI MI-PÉRIODE (signatures manuscrites, vers le 13/04/2026)
+Date et Signature de l'encadrant académique — Mme Ghayet El Mouna ZHIOUA   : ________
+Date et Signature de l'encadrant Professionnel — M. Kamel KAOUECH          : ________
+Suivi/Remarques de l'encadrant académique                                  : ________
+Suivi/Remarques de l'encadrant Professionnel                               : ________
+
+
+DEUXIÈME PARTIE (jusqu'à la fin de la période)
+Date         | Travail réalisé
+-------------+------------------------------------------------------------------
+13/04/2026   | Sprint 6 — Monitoring host : déploiement de node-exporter en
+             | pid:host / network_mode:host pour les métriques réelles du
+             | système hôte
+-------------+------------------------------------------------------------------
+20/04/2026   | Sprint 6 — Optimisation du chat : bascule sur qwen2.5-coder:7b
+             | et compression de 36 % du prompt système
+-------------+------------------------------------------------------------------
+27/04/2026   | Sprint 7 — Audit complet du VPS (28/04/2026) et correction de
+             | cinq découvertes critiques (VictoriaMetrics, AlertManager, route
+             | par défaut, dashboards live, double authentification)
+-------------+------------------------------------------------------------------
+04/05/2026   | Sprint 7 — Système anti-hallucination à six couches sur le chat
+             | et déploiement de l'authentification HTTP Basic via nginx
+-------------+------------------------------------------------------------------
+11/05/2026   | Sprint 8 — Robustesse du parser : investigation des trois bugs
+             | cumulatifs du parser de revue (PR #14 et PR #15)
+-------------+------------------------------------------------------------------
+18/05/2026   | Sprint 8 — Réécriture du parser (regex tolérant, walker
+             | brace-depth, fallback markdown) et restructuration du prompt
+             | combiné
+-------------+------------------------------------------------------------------
+25/05/2026   | Post-Sprint 8 — Évaluation d'un second backend d'inférence :
+             | sandbox LocalAI et routeur de chat dual-backend (Ollama / LocalAI)
+-------------+------------------------------------------------------------------
+01/06/2026   | Post-Sprint 8 — Correction du bug cold-load et benchmark croisé
+             | sur modèle identique (Ollama +22 % de débit)
+-------------+------------------------------------------------------------------
+08/06/2026   | Sprint 8.1 — Extension de la couche d'observabilité (15 règles
+             | d'alerte Prometheus, panneaux Grafana additionnels)
+-------------+------------------------------------------------------------------
+22/06/2026   | Tests de validation sur Pull Requests réelles, publication des
+             | revues OWASP Top 10, rédaction du rapport et préparation de la
+             | soutenance
+-------------+------------------------------------------------------------------
+
+
+SUIVI FIN DE PÉRIODE (signatures manuscrites, vers le 30/06/2026)
+Date et Signature de l'encadrant académique — Mme Ghayet El Mouna ZHIOUA   : ________
+Date et Signature de l'encadrant Professionnel — M. Kamel KAOUECH          : ________
+Appréciation globale de l'encadrant académique                             : ________
+Appréciation Globale de l'encadrant Professionnel                          : ________
+
+
+================================================================================
+SEUL ÉLÉMENT À COMPLÉTER À LA MAIN
+================================================================================
+- Signatures manuscrites des encadrants (mi-période vers le 13/04/2026 et fin
+  vers le 30/06/2026), avec leurs remarques et appréciations.
+================================================================================

@@ -81,9 +81,10 @@ LOCALAI_MODEL_META: dict[str, dict] = {
 
 # Matches a fenced code block wrapping JSON
 _FENCE_RE = re.compile(r'^```(?:json)?\s*([\s\S]*?)\s*```\s*$')
-# Matches a JSON tool call anywhere in text (last occurrence wins)
+# Matches a JSON tool call anywhere in text (last occurrence wins).
+# "arguments" is optional: no-parameter tools are often emitted as {"name": "x"}.
 _EMBEDDED_TC_RE = re.compile(
-    r'\{[^{}]*"name"\s*:\s*"([^"]+)"[^{}]*"arguments"\s*:\s*(\{[^{}]*\})[^{}]*\}',
+    r'\{[^{}]*"name"\s*:\s*"([^"]+)"(?:[^{}]*"arguments"\s*:\s*(\{[^{}]*\}))?[^{}]*\}',
     re.DOTALL,
 )
 
@@ -115,7 +116,10 @@ def _try_parse_json_tc(t: str) -> dict | None:
     """Try to JSON-parse a string as a tool call dict."""
     try:
         d = json.loads(t)
-        if isinstance(d, dict) and "name" in d and "arguments" in d:
+        if isinstance(d, dict) and "name" in d:
+            # Tools that take no parameters are often emitted by smaller models
+            # as {"name": "x"} with no "arguments" key — treat that as args={}.
+            d.setdefault("arguments", {})
             return d
     except Exception:
         pass

@@ -20,6 +20,32 @@ from app.config import get_settings
 
 
 # ───────────────────────────────────────────────────────────
+# /proc helpers — read system state without external binaries
+# (the slim image ships no `ps` / `ss`; /proc is always present)
+# ───────────────────────────────────────────────────────────
+
+def _total_cpu_jiffies() -> int:
+    """Sum of all jiffies across CPUs from the first line of /proc/stat."""
+    line = Path("/proc/stat").read_text().splitlines()[0]
+    return sum(int(x) for x in line.split()[1:])
+
+
+def _hex_to_addr(s: str) -> str:
+    """Convert a /proc/net/tcp 'HEXIP:HEXPORT' field to 'a.b.c.d:port'."""
+    ip_hex, port_hex = s.split(":")
+    port = int(port_hex, 16)
+    if len(ip_hex) == 8:                       # IPv4, little-endian
+        b = bytes.fromhex(ip_hex)
+        return f"{b[3]}.{b[2]}.{b[1]}.{b[0]}:{port}"
+    return f"[ipv6]:{port}"                     # IPv6 — port is what matters here
+
+
+# /proc/net/tcp connection-state codes (hex)
+_TCP_LISTEN = "0A"
+_TCP_ESTABLISHED = "01"
+
+
+# ───────────────────────────────────────────────────────────
 # VPS / HOST TOOLS
 # ───────────────────────────────────────────────────────────
 
@@ -107,34 +133,92 @@ def top_processes(sort_by: str = "cpu") -> str:
     Args:
         sort_by: 'cpu' to sort by CPU usage, 'memory' to sort by RAM usage
     """
-    sort_flag = "--sort=-%cpu" if sort_by == "cpu" else "--sort=-%mem"
-    result = subprocess.run(
-        ["ps", "aux", sort_flag],
-        capture_output=True, text=True, timeout=10,
-    )
-    lines = result.stdout.strip().splitlines()
-    return "\n".join(lines[:21])  # header + top 20
+    import os
+    import time as _time
+    proc = Path("/proc")
+
+    try:
+        if sort_by == "memory":
+            rows = []
+            for p in proc.iterdir():
+                if not p.name.isdigit():
+                    continue
+                try:
+                    name, rss_kb = "", 0
+                    for line in (p / "status").read_text().splitlines():
+                        if line.startswith("Name:"):
+                            name = line.split(":", 1)[1].strip()
+                        elif line.startswith("VmRSS:"):
+                            rss_kb = int(line.split()[1])
+                    if rss_kb:
+                        rows.append((rss_kb, p.name, name))
+                except Exception:
+                    continue
+            rows.sort(reverse=True)
+            out = [f"{'PID':>7}  {'RSS_MB':>8}  COMMAND"]
+            out += [f"{pid:>7}  {rss / 1024:8.1f}  {name}" for rss, pid, name in rows[:20]]
+            return "\n".join(out)
+
+        # CPU: sample process jiffies twice and diff against total CPU jiffies
+        def snapshot() -> dict:
+            data = {}
+            for p in proc.iterdir():
+                if not p.name.isdigit():
+                    continue
+                try:
+                    stat = (p / "stat").read_text()
+                    comm = stat[stat.find("(") + 1: stat.rfind(")")]
+                    f = stat[stat.rfind(")") + 2:].split()
+                    data[p.name] = (comm, int(f[11]) + int(f[12]))  # utime + stime
+                except Exception:
+                    continue
+            return data
+
+        ncpu = os.cpu_count() or 1
+        s0, t0 = snapshot(), _total_cpu_jiffies()
+        _time.sleep(0.3)
+        s1, t1 = snapshot(), _total_cpu_jiffies()
+        dtotal = max(1, t1 - t0)
+
+        rows = []
+        for pid, (comm, j1) in s1.items():
+            if pid in s0:
+                pct = (j1 - s0[pid][1]) / dtotal * ncpu * 100
+                rows.append((pct, pid, comm))
+        rows.sort(reverse=True)
+        out = [f"{'PID':>7}  {'CPU%':>6}  COMMAND"]
+        out += [f"{pid:>7}  {pct:6.1f}  {comm}" for pct, pid, comm in rows[:20]]
+        return "\n".join(out)
+    except Exception as exc:
+        return f"Error reading /proc: {exc}"
 
 
 @tool
 def network_stats() -> str:
     """Show listening ports and active TCP connections inside this container."""
-    out = []
-    try:
-        ss = subprocess.run(["ss", "-tlnp"], capture_output=True, text=True, timeout=5)
-        out.append("=== Listening sockets ===")
-        out.append(ss.stdout.strip())
-    except Exception as e:
-        out.append(f"ss error: {e}")
-    try:
-        conn = subprocess.run(
-            ["ss", "-tnp", "state", "established"],
-            capture_output=True, text=True, timeout=5,
-        )
-        out.append("\n=== Established connections ===")
-        out.append("\n".join(conn.stdout.strip().splitlines()[:30]))
-    except Exception as e:
-        out.append(f"connections error: {e}")
+    listening, established = [], []
+    for path in ("/proc/net/tcp", "/proc/net/tcp6"):
+        try:
+            lines = Path(path).read_text().splitlines()[1:]
+        except Exception:
+            continue
+        for line in lines:
+            f = line.split()
+            if len(f) < 4:
+                continue
+            local, rem, st = f[1], f[2], f[3].upper()
+            try:
+                if st == _TCP_LISTEN:
+                    listening.append(_hex_to_addr(local))
+                elif st == _TCP_ESTABLISHED:
+                    established.append(f"{_hex_to_addr(local)} → {_hex_to_addr(rem)}")
+            except Exception:
+                continue
+
+    out = ["=== Listening sockets ==="]
+    out += sorted(set(listening)) or ["(none)"]
+    out.append("\n=== Established connections ===")
+    out += established[:30] or ["(none)"]
     return "\n".join(out)
 
 
@@ -539,7 +623,13 @@ def list_scan_artifacts(repo: str = "", pr_number: int = 0) -> str:
     settings = get_settings()
     base     = Path(settings.artifacts_path) / "scans"
 
-    if not base.exists() or not any(base.iterdir()):
+    # Only directories are repos/PRs — ignore stray files like .gitkeep
+    repo_dirs = sorted(
+        (p for p in base.iterdir() if p.is_dir()),
+        key=lambda p: p.stat().st_mtime, reverse=True,
+    ) if base.exists() else []
+
+    if not repo_dirs:
         return "No scan artifacts saved yet. Artifacts are created after the first PR review."
 
     if repo and pr_number:
@@ -557,16 +647,21 @@ def list_scan_artifacts(repo: str = "", pr_number: int = 0) -> str:
         repo_dir = base / repo.replace("/", "-")
         if not repo_dir.exists():
             return f"No artifacts found for {repo}."
-        prs = sorted(repo_dir.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
+        prs = sorted(
+            (p for p in repo_dir.iterdir() if p.is_dir()),
+            key=lambda p: p.stat().st_mtime, reverse=True,
+        )
         return "\n".join(
             f"  {p.name}  ({len(list(p.glob('*.json')))} files)" for p in prs[:20]
         )
 
     # List all repos + their latest PRs
-    repos = sorted(base.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
     lines = []
-    for repo_dir in repos[:10]:
-        prs = sorted(repo_dir.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
+    for repo_dir in repo_dirs[:10]:
+        prs = sorted(
+            (p for p in repo_dir.iterdir() if p.is_dir()),
+            key=lambda p: p.stat().st_mtime, reverse=True,
+        )
         for pr in prs[:3]:
             files = list(pr.glob("*.json"))
             lines.append(f"  {repo_dir.name}/{pr.name}  ({len(files)} files)")
