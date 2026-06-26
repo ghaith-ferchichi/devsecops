@@ -15,6 +15,7 @@ Ce dossier contient tout le nécessaire pour préparer la réunion technique en 
 | **`03_OBSERVABILITE.md`** | Acte 5 (monitoring) | Prometheus / VictoriaMetrics / Grafana / AlertManager / node-exporter, les 15 alertes, la boucle autonome |
 | **`04_COMMANDES_LIVE.md`** | **Pendant** la démo, ouvert en permanence | Toutes les commandes à copier-coller, dans l'ordre, avec ce qu'il faut dire |
 | **`05_QUESTIONS_REPONSES.md`** | La veille + filet pendant les questions | ~30 questions anticipées avec réponses solides et honnêtes |
+| **`06_DEMO_PR_LIVE.md`** | Acte 4 (le moment clé) | Le scénario d'une **vraie revue de PR** de bout en bout : commande → explication → sortie réelle → ce que ça prouve (testé sur PR #19) |
 
 ---
 
