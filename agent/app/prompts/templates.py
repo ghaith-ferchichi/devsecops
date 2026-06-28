@@ -104,7 +104,7 @@ def format_semgrep_findings(scan_results: dict) -> str:
     for f in findings:
         if f["severity"] == "INFO":
             continue
-        if shown >= 15:
+        if shown >= 10:
             break
         cwe = f.get("metadata", {}).get("cwe", [])
         cwe_str = f" (CWE: {', '.join(cwe[:2])})" if cwe else ""
@@ -155,7 +155,7 @@ def format_osv_findings(scan_results: dict) -> str:
 
     parts = [f"### Dependency Vulnerabilities (OSV-Scanner) — {count} finding(s)"]
 
-    for v in vulns[:15]:
+    for v in vulns[:8]:
         aliases = ", ".join(v.get("aliases", []))
         alias_str = f" ({aliases})" if aliases else ""
         fixed = v.get("fixed_version", "")

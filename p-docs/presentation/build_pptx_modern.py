@@ -15,9 +15,10 @@ from pptx.oxml.ns import qn
 from pptx.oxml import parse_xml
 from PIL import Image
 
-IMG = "/opt/devsecops/MASTER_PFE/img"
-OUT = "/opt/devsecops/presentation/BTE_Security_AI_Agent_Soutenance.pptx"
-GIFS = "/opt/devsecops/presentation/gifs"   # GIFs animés (auto-loop en mode Présentation)
+_HERE = os.path.dirname(os.path.abspath(__file__))
+IMG = os.path.normpath(os.path.join(_HERE, "..", "MASTER_PFE", "img"))
+OUT = os.path.join(_HERE, "BTE_Security_AI_Agent_Soutenance.pptx")
+GIFS = os.path.join(_HERE, "gifs")   # GIFs animés (auto-loop en mode Présentation)
 
 # ---------- Palette : Modern Light Tech ----------
 WHITE   = RGBColor(0xFF, 0xFF, 0xFF)
@@ -458,7 +459,7 @@ card_text(s, 0.7, 1.95, 11.93, 1.75, [
 ], fill=PANEL, line=None, anchor=MSO_ANCHOR.MIDDLE)
 rect(s, 0.7, 1.95, 0.13, 1.75, fill=VIOLET, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
 stats = [("24 h → 15 min", "délai de revue", VIOLET_D),
-         ("5 / 5", "vulnérabilités détectées", GREEN),
+         ("7 / 7", "vulnérabilités détectées", GREEN),
          ("0", "ligne de code ne sort du VPS", TEAL_D)]
 cards = []
 for i,(big_t,lab,c) in enumerate(stats):
@@ -709,14 +710,14 @@ card_text(s, 8.4, 5.05, 4.25, 1.55, [
     [P("le LLM a détecté des secrets en dur que Gitleaks n'avait pas signalés — scanners et IA se renforcent.",
        12, BODY, False, BODY_F)]], fill=T_VIOLET, line=None)
 
-# ---- Démonstration PR #18 (BLOCK animé) ----
-s = slide(); header(s, "04 · Réalisation", "Démonstration — Pull Request #18", 15)
+# ---- Démonstration PR #19 (BLOCK animé) ----
+s = slide(); header(s, "04 · Réalisation", "Démonstration — Pull Request #19", 15)
 gif_box(s, "demo_pr18.gif", 0.7, 1.85, 7.0, 4.95,
         fallback="pr_comment-security-review_0.png",
         caption="Revue scrollée automatiquement jusqu'au verdict BLOCK")
 txt(s, 8.0, 2.05, 4.6, 0.5, [[P("Le déroulement, sans intervention humaine", 15, INK, True, HEAD)]])
 yy=2.65
-for t in ["Réception du webhook","Cinq scanners et LLM","Commentaires inline publiés","Suggestions de correction"]:
+for t in ["Réception du webhook","Cinq scanners et LLM","Sept commentaires inline publiés","Suggestions de correction"]:
     rect(s, 8.0, yy+0.04, 0.16,0.16, fill=TEAL, shape=MSO_SHAPE.OVAL)
     txt(s, 8.3, yy-0.02, 4.5, 0.4, [[P(t, 13, BODY, False, BODY_F)]]); yy+=0.55
 badge = rect(s, 8.0, 5.2, 4.6, 0.7, fill=RED, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
@@ -750,9 +751,9 @@ for r in range(len(rows)):
             if c==0: run.font.color.rgb=INK; run.font.bold=True
             if c==2: run.font.color.rgb=RGBColor(0x12,0x7A,0x46); run.font.bold=True
 card_text(s, 8.6, 1.95, 4.03, 3.7, [
-    [P("5 / 5", 54, GREEN, True, HEAD)],
+    [P("7 / 7", 54, GREEN, True, HEAD)],
     [P("vulnérabilités plantées", 14, INK, True, HEAD)],
-    [P("détectées sur la PR #18", 12, SLATE, False, BODY_F)],
+    [P("détectées sur la PR #19", 12, SLATE, False, BODY_F)],
     [P("", 6, BODY)],
     [P("+ corpus de huit revues réelles", 12, BODY, False, BODY_F)],
 ], anchor=MSO_ANCHOR.MIDDLE)
@@ -843,7 +844,7 @@ txt(s, 0.9, 2.15, 11.6, 1.8, [
     [P("qui sécurise chaque Pull Request ", 25, INK, False, HEAD),
      P("sans qu'aucun code ne quitte la banque.", 25, VIOLET_D, False, HEAD)],
 ])
-for i,(b,l,c) in enumerate([("24 h → 15 min","délai",VIOLET_D),("5 / 5","détection",GREEN),("100 % local","conformité BCT",TEAL_D)]):
+for i,(b,l,c) in enumerate([("24 h → 15 min","délai",VIOLET_D),("7 / 7","détection",GREEN),("100 % local","conformité BCT",TEAL_D)]):
     x=0.9+i*4.0
     card_text(s, x, 4.2, 3.7, 1.3, [[P(b,22,c,True,HEAD)],[P(l,12,SLATE,False,BODY_F)]], anchor=MSO_ANCHOR.MIDDLE)
     for pp in s.shapes[-1].text_frame.paragraphs: pp.alignment=PP_ALIGN.CENTER
@@ -895,7 +896,7 @@ SPEECH = [
 "qui revoit chaque Pull Request selon la grille OWASP Top 10, publie ses correctifs directement "
 "sur GitHub, et s'exécute intégralement en local — aucun code ne quitte la banque. Trois chiffres "
 "résument le résultat. [clic] Le délai de revue passe de vingt-quatre heures à une quinzaine de "
-"minutes. [clic] Sur la validation contrôlée, cinq vulnérabilités sur cinq sont détectées, sans "
+"minutes. [clic] Sur la validation contrôlée, sept vulnérabilités sur sept sont détectées, sans "
 "faux positif dans le fichier modifié. [clic] Et cent pour cent de l'inférence reste sur le VPS "
 "de la banque, conformément aux exigences de la Banque Centrale de Tunisie.",
 # 8 — Solution TO-BE (≈ 30 s)
@@ -997,17 +998,19 @@ SPEECH = [
 "que Gitleaks n'avait pas signalés. Et les findings des scanners sont déterministes : ils sont "
 "persistés en base quel que soit le texte produit par le modèle.",
 # 24 — Démonstration (GIF + build BLOCK) (≈ 50 s)
-"(≈ 50 s) Voici la démonstration, sur la Pull Request numéro dix-huit : un module bancaire en PHP "
-"contenant cinq vulnérabilités types — injection SQL, secrets en dur, path traversal, injection "
-"de commande et hachage MD5. À l'écran, la revue publiée par l'agent défile : l'analyse de chaque "
-"faille, puis les recommandations. [clic] Le verdict tombe : BLOCK. Cinq commentaires inline, "
-"chacun avec une suggestion de correction applicable en un clic depuis GitHub, et le statut de "
+"(≈ 50 s) Voici la démonstration, sur la Pull Request numéro dix-neuf : un module de virement "
+"bancaire en PHP contenant sept vulnérabilités types — injection SQL, injection de commande, "
+"SSRF, désérialisation non sécurisée, XSS réfléchi, hachage MD5 et mot de passe transmis dans "
+"l'URL — ainsi que des secrets codés en dur. À l'écran, la revue publiée par l'agent défile : "
+"l'analyse de chaque faille, puis les recommandations. [clic] Le verdict tombe : BLOCK, risque "
+"élevé. Sept commentaires inline, chacun pointant une ligne précise du diff, et le statut de "
 "commit passe en échec : la fusion est techniquement bloquée tant que les corrections ne sont pas "
-"poussées. Durée totale pour cette revue : une quinzaine de minutes, notification Slack comprise.",
+"poussées. Fait notable : Gitleaks n'avait pas signalé les secrets — c'est le modèle qui les a "
+"rattrapés. Durée totale pour cette revue : dix-sept minutes, notification Slack comprise.",
 # 25 — Bénéfices & résultats (≈ 25 s)
 "(≈ 25 s) Le tableau résume le passage du manuel à l'agent : un délai divisé par près de cent, "
 "une couverture OWASP systématique, un gate effectif là où rien ne bloquait, une traçabilité "
-"complète en base. Sur le jeu contrôlé, cinq sur cinq, sans faux positif dans le fichier modifié. "
+"complète en base. Sur le jeu contrôlé, sept sur sept, sans faux positif dans le fichier modifié. "
 "Au-delà de la démonstration, huit revues réelles sont persistées en base, et leurs verdicts "
 "suivent le risque.",
 # 26 — Observabilité (≈ 35 s)

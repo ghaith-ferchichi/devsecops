@@ -10,9 +10,12 @@ async def scan_lockfiles(repo_path: str) -> dict:
     """Run OSV-Scanner on the repository to find dependency vulnerabilities."""
     log.info("scanning_dependencies", path=repo_path)
 
+    # OSV-Scanner v2 reorganised the CLI: dependency scanning moved under the
+    # "scan source" subcommand and JSON is now selected with "--format json".
     proc = await asyncio.create_subprocess_exec(
         "osv-scanner",
-        "--json",
+        "scan", "source",
+        "--format", "json",
         "-r", repo_path,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,

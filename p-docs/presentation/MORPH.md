@@ -13,7 +13,7 @@ cinématique sur 2–3 moments, (3) options & rappels.
 
 - **Transition *Fade* sur les 26 slides** — enchaînement fluide et pro.
 - **Entrées *Fade-in* au clic** sur 4 slides clés (révélation élément par élément) :
-  - **Slide 3** — les 3 cartes de stats (24 h→15 min · 5/5 · 0) apparaissent une par une.
+  - **Slide 3** — les 3 cartes de stats (24 h→15 min · 7/7 · 0) apparaissent une par une.
   - **Slide 13** — les 6 cartes du manifeste agentique, une par une.
   - **Slide 14** — les 7 étapes du pipeline, une par une (l'auditoire « voit le cerveau s'assembler »).
   - **Slide 18** — le badge **`VERDICT : BLOCK`** apparaît en dernier (effet de chute).

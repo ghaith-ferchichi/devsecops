@@ -1,5 +1,7 @@
 import asyncio
 import json
+import os
+import tempfile
 
 import structlog
 
@@ -10,24 +12,44 @@ async def scan_repo(repo_path: str) -> dict:
     """Run Gitleaks secret detection on the repo."""
     log.info("scanning_secrets", path=repo_path)
 
-    proc = await asyncio.create_subprocess_exec(
-        "gitleaks", "detect",
-        "--source", repo_path,
-        "--report-format", "json",
-        "--report-path", "/dev/stdout",
-        "--no-banner",
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
+    # --no-git scans the working-tree files directly instead of git history.
+    # The PR clone's history doesn't always carry the secret in a detectable
+    # patch (shallow/squashed), so filesystem mode is the reliable choice for
+    # reviewing the current state of the changed files.
+    #
+    # Gitleaks 8.30+ does not reliably stream the JSON report to /dev/stdout
+    # (it silently writes nothing), so we write to a temp file and read it back.
+    fd, report_path = tempfile.mkstemp(suffix=".json", prefix="gitleaks-")
+    os.close(fd)
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "gitleaks", "detect",
+            "--source", repo_path,
+            "--no-git",
+            "--report-format", "json",
+            "--report-path", report_path,
+            "--no-banner",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        _, stderr = await proc.communicate()
 
-    output = stdout.decode().strip()
+        # Gitleaks exits with code 1 when findings exist, 0 when clean
+        if proc.returncode not in (0, 1):
+            error_msg = stderr.decode().strip()
+            log.error("gitleaks_scan_failed", returncode=proc.returncode, stderr=error_msg)
+            return {"findings": [], "count": 0, "error": error_msg}
 
-    # Gitleaks exits with code 1 when findings exist, 0 when clean
-    if proc.returncode not in (0, 1):
-        error_msg = stderr.decode().strip()
-        log.error("gitleaks_scan_failed", returncode=proc.returncode, stderr=error_msg)
-        return {"findings": [], "count": 0, "error": error_msg}
+        try:
+            with open(report_path, encoding="utf-8") as f:
+                output = f.read().strip()
+        except OSError:
+            output = ""
+    finally:
+        try:
+            os.unlink(report_path)
+        except OSError:
+            pass
 
     if not output or output == "null":
         log.info("gitleaks_clean", path=repo_path)

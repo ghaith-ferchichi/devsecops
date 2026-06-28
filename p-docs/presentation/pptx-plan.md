@@ -21,7 +21,7 @@
 - **Dividers « Plan » (timeline 6 nœuds)** avant chaque partie, nœud courant
   surligné — repère de navigation (convention ISI).
 - **Annoncer la contribution tôt** (slide 3) et la re-citer 3× (claim, pic P3, clôture).
-- **Tout chiffrer :** 24 h → 15 min · 5/5 détectées · −50 % durée · −52 % tokens ·
+- **Tout chiffrer :** 24 h → 15 min · 7/7 détectées · −50 % durée · −52 % tokens ·
   5 scanners · 0 code dehors · 19 outils · 28 métriques · 11 conteneurs.
 - **Une value line ferme chaque partie** (transforme la fonctionnalité en valeur, §3b).
 - **Cohérence visuelle :** thème Academic, dividers, couleurs verdict (vert/ambre/rouge),
@@ -56,7 +56,7 @@
    fusionnée dans une API de paiement peut compromettre la banque. »*
 3. **La contribution + 3 stats** — *« Un agent IA autonome qui revoit chaque PR selon
    l'OWASP Top 10 en 15 min, publie les correctifs, et s'exécute 100 % en local —
-   aucun code ne quitte la banque. »* Stats : **24 h→15 min · 5/5 · 0 code dehors**.
+   aucun code ne quitte la banque. »* Stats : **24 h→15 min · 7/7 · 0 code dehors**.
 
 **P1 · Contexte général**
 4. `[Plan▸1]` Contexte général.
@@ -87,9 +87,9 @@
 16. `[Plan▸4]` La sécurité en action.
 17. **Défense en profondeur** — Fig 2.2 (`sast_tools_overview`) : 5 scanners + LLM,
     complémentarité (le LLM rattrape un secret manqué par Gitleaks).
-18. **DÉMO PR #18** (≈2 min) — vidéo/captures : revue auto → 5 suggestions inline →
+18. **DÉMO PR #19** (≈2 min) — vidéo/captures : revue auto → 7 suggestions inline →
     verdict **`BLOCK`** → check commit rouge.
-19. **Bénéfices & preuve** — Tableau 4.14 (AS-IS/TO-BE) + Tableau 4.13 (**5/5 détectées**).
+19. **Bénéfices & preuve** — Tableau 4.14 (AS-IS/TO-BE) + Tableau 4.13 (**7/7 détectées**).
     *Value line : « la sécurité passe d'un contrôle humain variable à un gate systématique
     et conforme. »*
 
@@ -212,8 +212,8 @@ Pré-construire pour répondre instantanément **et** loger ce qu'on a coupé du
 | 14 | Graphe LangGraph | `langgraph_state_graph` |
 | 15 | Anti-hallucination + 2 modèles | `anti_hallucination_layers` · `two_model_architecture` |
 | 17 | 5 outils SAST | `sast_tools_overview` |
-| 18 | Démo PR #18 | `pr_comment-*` · `github_inline_suggestions` · vidéo |
-| 19 | AS-IS/TO-BE + 5/5 | tables recréées (4.14 / 4.13) |
+| 18 | Démo PR #19 | `pr_comment-*` · `github_inline_suggestions` · vidéo |
+| 19 | AS-IS/TO-BE + 7/7 | tables recréées (4.14 / 4.13) |
 | 21 | Observabilité + dashboards | `monitoring_stack` · `grafana_vps_host_dashboard` · `grafana_agent_dashboard` · `grafana_pr_reviews_dashboard` |
 | 22 | Chat + autonomie | `inter_react` · `chat_ui_screenshot` · `scheduler_tasks` · `slack_health_digest` |
 | 23 | Bug Phi-4 auto-détecté | callout métrique (0→51) · `grafana_agent_dashboard` (rows A/B) |
@@ -228,7 +228,7 @@ Logos couleur : `logo_BTE.png` · `LogoISI.png` · `Logo_UTM.png`.
 - [ ] Ajouter `plan_divider(s, active_index, titre)` au générateur (timeline 6 nœuds).
 - [ ] Construire les ~26 slides sur le thème **Academic** + rendre l'aperçu.
 - [ ] Slides Q&A de secours + notes orateur minutées.
-- [ ] Embarquer la vidéo de démo PR #18 (slide 18).
+- [ ] Embarquer la vidéo de démo PR #19 (slide 18).
 
 ---
 
@@ -275,7 +275,7 @@ douce · callouts gris arrondis.
 - `title_split()` — texte gauche + image héro à droite + chevron
 - `section_divider()` — grand numéro + titre + accent image clair + filet
 - `plan_divider(active)` — frise 6 pastilles circulaires (active = violet plein)
-- `stat_donuts()` — 3 jauges circulaires % (24 h→15 min · 5/5 · 0)
+- `stat_donuts()` — 3 jauges circulaires % (24 h→15 min · 7/7 · 0)
 - `icon_triad()` — 3 grandes icônes + label + texte (manifeste)
 - `icon_list_panel()` — panneau gris + badges circulaires (besoins/bénéfices)
 - `image_cards()` — grille de cartes images arrondies (dashboards, démo)

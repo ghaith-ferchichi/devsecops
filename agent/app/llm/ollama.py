@@ -55,7 +55,7 @@ def get_combined_llm() -> ChatOllama:
         base_url=s.ollama_base_url,
         model=s.ollama_model_deep,
         temperature=0.1,
-        num_ctx=12288,         # scan results + diff + annotated diff
+        num_ctx=8192,          # scan results + diff + annotated diff (trimmed findings fit comfortably)
         num_predict=2500,
         keep_alive="10m",
         request_timeout=float(s.ollama_timeout),

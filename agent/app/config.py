@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     agent_workspace: str = "/tmp/agent-workspace"
     trivy_severity: str = "CRITICAL,HIGH,MEDIUM"
     artifacts_path: str = "/opt/devsecops/artifacts"
+    # Demo override — force the full scanner suite (Semgrep+Checkov+OSV) regardless
+    # of classification. Off in production (routing matrix stays selective).
+    demo_full_scan: bool = False
 
     # Remote VPS monitoring — comma-separated list of SSH targets
     # Format: "alias:user@host:port,alias2:user@host2:22"

@@ -1,0 +1,47 @@
+2026-06-28 13:59:48 [info     ] webhook_received               action=opened github_event=pull_request service=webhooks
+2026-06-28 13:59:48 [info     ] webhook_dispatched             pr=22 service=webhooks task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+INFO:     172.20.0.7:34000 - "POST /webhooks/github HTTP/1.1" 202 Accepted
+2026-06-28 13:59:48 [info     ] dispatching_event              event_type=pull_request service=dispatcher task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T13:59:48.860953Z [info     ] intake_start                   pr=22 repo=GhaiethFerchichi/Vunl-application service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28 13:59:48 [info     ] posting_pr_comment             body_len=54 pr=22 repo=GhaiethFerchichi/Vunl-application service=github_api task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T13:59:49.381126Z [info     ] HTTP Request: POST https://api.github.com/repos/GhaiethFerchichi/Vunl-application/issues/22/comments "HTTP/1.1 201 Created" task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28 13:59:49 [info     ] pr_comment_posted              pr=22 repo=GhaiethFerchichi/Vunl-application service=github_api task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T13:59:49.382370Z [info     ] cloning_repo                   branch=demo/audit-complet dest=/tmp/agent-workspace/Vunl-application service=git task_id=45ca18c2-8a78-4405-99f4-e366464f3fde url=https://github_pat_11ASISU2A01jw8gJDjoJt...
+2026-06-28T13:59:50.012486Z [info     ] clone_success                  dest=/tmp/agent-workspace/Vunl-application service=git task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T13:59:50.013311Z [info     ] local_diff_start               base=main path=/tmp/agent-workspace/Vunl-application service=git task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T13:59:50.588614Z [info     ] local_diff_generated           length=1954 service=git task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T13:59:50.589468Z [info     ] dockerfile_check               exists=True path=/tmp/agent-workspace/Vunl-application service=docker task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T13:59:50.597150Z [info     ] intake_complete                diff_len=1954 files=3 has_dockerfile=True pr=22 service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T13:59:50.601173Z [info     ] classify_start                 pr=22 service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:09.775656Z [info     ] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK" task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:18.372859Z [info     ] classify_complete              classification=infrastructure duration=27.8s pr=22 risk_hint=medium service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:18.376741Z [info     ] scan_full_start                pr=22 service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:18.377230Z [info     ] building_image                 context=/tmp/agent-workspace/Vunl-application service=docker tag=ghaiethferchichi-vunl-application-pr-22:scan task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:26.941951Z [info     ] docker_build_success           service=docker tag=ghaiethferchichi-vunl-application-pr-22:scan task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:26.943745Z [info     ] scanning_dependencies          path=/tmp/agent-workspace/Vunl-application service=osv task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:26.967252Z [info     ] scanning_iac                   path=/tmp/agent-workspace/Vunl-application service=checkov task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:26.986061Z [info     ] scanning_sast                  path=/tmp/agent-workspace/Vunl-application service=semgrep task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:27.006101Z [info     ] scanning_image                 image=ghaiethferchichi-vunl-application-pr-22:scan service=trivy severity=CRITICAL,HIGH,MEDIUM task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:27.027008Z [info     ] scanning_secrets               path=/tmp/agent-workspace/Vunl-application service=gitleaks task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:27.049131Z [info     ] scanning_filesystem            path=/tmp/agent-workspace/Vunl-application service=trivy severity=CRITICAL,HIGH,MEDIUM task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:27.256704Z [info     ] trivy_parsed                   scan_type=trivy_fs service=trivy summary={'CRITICAL': 9, 'HIGH': 26, 'MEDIUM': 29, 'LOW': 0, 'UNKNOWN': 0} task_id=45ca18c2-8a78-4405-99f4-e366464f3fde total=64
+2026-06-28T14:00:27.257833Z [info     ] scan_complete                  duration=0.2s scanner=trivy_fs service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:27.849367Z [info     ] gitleaks_clean                 path=/tmp/agent-workspace/Vunl-application service=gitleaks task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:27.850180Z [info     ] scan_complete                  duration=0.8s scanner=gitleaks service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:30.508343Z [info     ] osv_parsed                     count=111 service=osv task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:30.510079Z [info     ] scan_complete                  duration=3.6s scanner=osv service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:33.515066Z [info     ] checkov_parsed                 failed=3 passed=4 service=checkov task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:33.516071Z [info     ] scan_complete                  duration=6.5s scanner=checkov service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:33.769437Z [info     ] semgrep_parsed                 count=43 service=semgrep summary={'ERROR': 36, 'WARNING': 7, 'INFO': 0} task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:33.770251Z [info     ] scan_complete                  duration=6.8s scanner=semgrep service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:41.035359Z [info     ] trivy_parsed                   scan_type=trivy_image service=trivy summary={'CRITICAL': 215, 'HIGH': 1717, 'MEDIUM': 4392, 'LOW': 0, 'UNKNOWN': 0} task_id=45ca18c2-8a78-4405-99f4-e366464f3fde total=6324
+2026-06-28T14:00:41.037974Z [info     ] scan_complete                  duration=14.0s scanner=trivy_image service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:41.047609Z [info     ] scan_result_saved              repo=GhaiethFerchichi/Vunl-application scan_type=trivy_fs service=knowledge task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:41.050488Z [info     ] scan_result_saved              repo=GhaiethFerchichi/Vunl-application scan_type=trivy_image service=knowledge task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:41.052003Z [info     ] scan_result_saved              repo=GhaiethFerchichi/Vunl-application scan_type=semgrep service=knowledge task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:41.789284Z [info     ] scan_full_complete             pr=22 scanners=['trivy_fs', 'gitleaks', 'trivy_image', 'semgrep', 'checkov', 'osv'] service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28T14:00:41.795023Z [info     ] analyze_review_start           pr=22 service=pr_review_nodes task_id=45ca18c2-8a78-4405-99f4-e366464f3fde
+2026-06-28 14:01:07 [info     ] alertmanager_webhook_received  count=1 service=webhooks
+INFO:     172.20.0.10:37718 - "POST /webhooks/alertmanager HTTP/1.1" 200 OK
+2026-06-28 14:01:07 [info     ] slack_notification_sent        channel=C0ARJD4H1K5 service=slack_api
+2026-06-28 14:01:07 [info     ] alerts_dispatched              firing=0 resolved=1 service=webhooks

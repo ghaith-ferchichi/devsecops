@@ -289,7 +289,9 @@ async def scan_full_node(state: PRReviewState) -> dict:
     repo_path = state["repo_path"]
     classification = state.get("pr_classification", "feature")
     repo_name = state["repo_full_name"].replace("/", "-")
-    image_tag = f"{repo_name}-pr-{state['pr_number']}:scan"
+    # Docker repository names must be lowercase; repo owners/names may contain
+    # capitals (e.g. GhaiethFerchichi), so normalise the whole tag.
+    image_tag = f"{repo_name}-pr-{state['pr_number']}:scan".lower()
 
     # Docker build (sequential — needed before image scan)
     build_ok, build_msg = await docker_service.build_image(Path(repo_path), image_tag)
@@ -298,6 +300,8 @@ async def scan_full_node(state: PRReviewState) -> dict:
 
     # Determine which scans to run based on classification matrix
     extra_scanners = SCAN_MATRIX.get(classification, set())
+    if settings.demo_full_scan:
+        extra_scanners = {"semgrep", "checkov", "osv"}
     tasks = []
 
     # Always: Trivy fs + Gitleaks
@@ -365,6 +369,8 @@ async def scan_fs_node(state: PRReviewState) -> dict:
     classification = state.get("pr_classification", "feature")
 
     extra_scanners = SCAN_MATRIX.get(classification, set())
+    if get_settings().demo_full_scan:
+        extra_scanners = {"semgrep", "checkov", "osv"}
     tasks = []
 
     # Always: Trivy fs + Gitleaks

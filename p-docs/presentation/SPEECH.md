@@ -31,7 +31,7 @@ Les marqueurs `[clic]` correspondent aux animations des diapositives 7, 18, 19 e
 | 21 | 04 | 5 s |
 | 22 | Environnement de travail | 20 s |
 | 23 | Défense en profondeur — cinq scanners et un LLM | 30 s |
-| 24 | Démonstration — Pull Request #18 | 50 s |
+| 24 | Démonstration — Pull Request #19 | 50 s |
 | 25 | 5 / 5 | 25 s |
 | 26 | Supervision complète du VPS | 35 s |
 | 27 | Assistant conversationnel et opérations autonomes | 25 s |
@@ -72,7 +72,7 @@ Quatre limites en découlent. Le délai, d'abord : jusqu'à vingt-quatre heures,
 
 ### 7. 24 h → 15 min — ≈ 40 s
 
-Notre contribution tient en une phrase : un agent d'intelligence artificielle autonome qui revoit chaque Pull Request selon la grille OWASP Top 10, publie ses correctifs directement sur GitHub, et s'exécute intégralement en local — aucun code ne quitte la banque. Trois chiffres résument le résultat. [clic] Le délai de revue passe de vingt-quatre heures à une quinzaine de minutes. [clic] Sur la validation contrôlée, cinq vulnérabilités sur cinq sont détectées, sans faux positif dans le fichier modifié. [clic] Et cent pour cent de l'inférence reste sur le VPS de la banque, conformément aux exigences de la Banque Centrale de Tunisie.
+Notre contribution tient en une phrase : un agent d'intelligence artificielle autonome qui revoit chaque Pull Request selon la grille OWASP Top 10, publie ses correctifs directement sur GitHub, et s'exécute intégralement en local — aucun code ne quitte la banque. Trois chiffres résument le résultat. [clic] Le délai de revue passe de vingt-quatre heures à une quinzaine de minutes. [clic] Sur la validation contrôlée, sept vulnérabilités sur sept sont détectées, sans faux positif dans le fichier modifié. [clic] Et cent pour cent de l'inférence reste sur le VPS de la banque, conformément aux exigences de la Banque Centrale de Tunisie.
 
 ### 8. Solution proposée (TO-BE) — ≈ 30 s
 
@@ -138,13 +138,13 @@ Le terrain d'exécution est volontairement contraint : un VPS de production de d
 
 La détection suit une logique de défense en profondeur : chaque scanner couvre une classe de risque, et le modèle consolide l'ensemble en une revue unique. Les deux niveaux se complètent réellement : sur la démonstration, c'est le modèle qui a détecté des secrets en dur que Gitleaks n'avait pas signalés. Et les findings des scanners sont déterministes : ils sont persistés en base quel que soit le texte produit par le modèle.
 
-### 24. Démonstration — Pull Request #18 — ≈ 50 s
+### 24. Démonstration — Pull Request #19 — ≈ 50 s
 
-Voici la démonstration, sur la Pull Request numéro dix-huit : un module bancaire en PHP contenant cinq vulnérabilités types — injection SQL, secrets en dur, path traversal, injection de commande et hachage MD5. À l'écran, la revue publiée par l'agent défile : l'analyse de chaque faille, puis les recommandations. [clic] Le verdict tombe : BLOCK. Cinq commentaires inline, chacun avec une suggestion de correction applicable en un clic depuis GitHub, et le statut de commit passe en échec : la fusion est techniquement bloquée tant que les corrections ne sont pas poussées. Durée totale pour cette revue : une quinzaine de minutes, notification Slack comprise.
+Voici la démonstration, sur la Pull Request numéro dix-neuf : un module de virement bancaire en PHP contenant sept vulnérabilités types — injection SQL, injection de commande, SSRF, désérialisation non sécurisée, XSS réfléchi, hachage MD5 et mot de passe transmis dans l'URL — ainsi que des secrets codés en dur. À l'écran, la revue publiée par l'agent défile : l'analyse de chaque faille, puis les recommandations. [clic] Le verdict tombe : BLOCK, risque élevé. Sept commentaires inline, chacun pointant une ligne précise du diff, et le statut de commit passe en échec : la fusion est techniquement bloquée tant que les corrections ne sont pas poussées. Fait notable : Gitleaks n'avait pas signalé les secrets — c'est le modèle qui les a rattrapés. Durée totale pour cette revue : dix-sept minutes, notification Slack comprise.
 
 ### 25. 5 / 5 — ≈ 25 s
 
-Le tableau résume le passage du manuel à l'agent : un délai divisé par près de cent, une couverture OWASP systématique, un gate effectif là où rien ne bloquait, une traçabilité complète en base. Sur le jeu contrôlé, cinq sur cinq, sans faux positif dans le fichier modifié. Au-delà de la démonstration, huit revues réelles sont persistées en base, et leurs verdicts suivent le risque.
+Le tableau résume le passage du manuel à l'agent : un délai divisé par près de cent, une couverture OWASP systématique, un gate effectif là où rien ne bloquait, une traçabilité complète en base. Sur le jeu contrôlé, sept sur sept, sans faux positif dans le fichier modifié. Au-delà de la démonstration, huit revues réelles sont persistées en base, et leurs verdicts suivent le risque.
 
 ### 26. Supervision complète du VPS — ≈ 35 s
 
@@ -173,4 +173,59 @@ Deux limites assumées et un point de vigilance. L'inférence sur CPU borne la r
 ### 32. Un agent IA agentique, déployé en production à la BTE, — ≈ 30 s
 
 En conclusion : parti d'un VPS vierge, ce projet livre un agent d'intelligence artificielle complet, déployé en production à la BTE, qui sécurise chaque Pull Request sans qu'aucun code ne quitte la banque. La plateforme est remise à la banque et constitue un socle concret pour sa transformation DevSecOps. Je vous remercie de votre attention et me tiens à votre disposition pour répondre à vos questions.
+
+---
+
+## Annexe — Démo « les six scanners » : logs réels et narration (PR #22)
+
+> Capture du 2026-06-28 sur `GhaiethFerchichi/Vunl-application`, branche `demo/audit-complet`, après correction de trois bogues de scanners (tag Docker en minuscules ; OSV-Scanner v2 `scan source --format json` ; Gitleaks `--no-git`). À conserver comme référence des chiffres exacts montrés dans la vidéo des logs.
+
+### Chiffres réels du run (task `45ca18c2`)
+
+| Étape / scanner | Log | Résultat |
+|---|---|---|
+| Réception | `webhook_received` action=opened → `webhook_dispatched` pr=22 → 202 | webhook signé, accusé immédiat |
+| Intake | `intake_complete` | diff 1954 o, 3 fichiers, Dockerfile présent |
+| Classification (7B) | `classify_complete` | `infrastructure`, risque moyen, 27,8 s |
+| Image Docker | `docker_build_success` (tag `…pr-22:scan` en minuscules) | build OK → scan d'image activé |
+| `scanning_dependencies` — **osv** | `osv_parsed count=111` | 111 vulns de dépendances (requirements.txt) |
+| `scanning_iac` — **checkov** | `checkov_parsed failed=3 passed=4` | 3 mauvaises configs (Dockerfile) |
+| `scanning_sast` — **semgrep** | `semgrep_parsed count=43` (36 ERROR) | 43 alertes SAST sur le code |
+| `scanning_secrets` — **gitleaks** | `gitleaks_findings count=3` ¹ | 3 secrets en dur (JWT, jeton interne, mot de passe BD) |
+| `scanning_filesystem` — **trivy** | `trivy_parsed trivy_fs total=64` | 64 vulns (9 CRIT / 26 HIGH / 29 MED) |
+| `scanning_image` — **trivy** | `trivy_parsed trivy_image total=6324` | CVEs de l'image de base python:3.8 ² |
+| Agrégation | `scan_full_complete scanners=['trivy_fs','gitleaks','trivy_image','semgrep','checkov','osv']` | les six ont statué |
+| Analyse (14B) | `analyze_review_start` | revue approfondie, ~10 min CPU |
+| Supervision | `slack_notification_sent` | notification équipe |
+
+¹ Dans le premier run capturé, Gitleaks affichait `gitleaks_clean` : la branche avait été clonée avant l'ajout des secrets (push protection GitHub). Après re-déclenchement, Gitleaks détecte bien 3 secrets. *Penser à vider le cache Redis (`scan:*`) avant chaque run de démo pour que les scanners s'exécutent à frais — sinon `scan_cache_hit`.*
+² Les 6324 CVEs proviennent des couches de l'image de base `python:3.8`, et non du code du candidat. Le couplage `scanning_image` → service `trivy` audite l'image complète, base comprise.
+
+### Narration (≈ 70 s) — la vidéo des logs + notification Slack
+
+> Dès qu'un développeur ouvre une pull request, GitHub envoie un webhook signé à l'agent. On le voit en haut de l'écran : `webhook_received`, action `opened`, puis `webhook_dispatched`. L'agent répond aussitôt par un 202 et prend la main.
+>
+> Première étape, l'*intake* : il clone la branche, calcule le diff — trois fichiers ici — et repère la présence d'un Dockerfile. En moins d'une seconde, il dispose de tout le contexte.
+>
+> Vient ensuite la classification. Le modèle 7B lit le diff et range la pull request : `classification=infrastructure`, risque moyen. Cette décision détermine quels scanners seront lancés.
+>
+> Et voici le cœur du système. L'agent déclenche six scanners en parallèle, chacun spécialisé. On les voit s'allumer ligne par ligne, couplés à leur service :
+> — `scanning_dependencies`, service **osv** : 111 vulnérabilités dans les dépendances de requirements.txt ;
+> — `scanning_iac`, service **checkov** : trois mauvaises configurations dans le Dockerfile ;
+> — `scanning_sast`, service **semgrep** : 43 alertes sur le code, dont 36 erreurs ;
+> — `scanning_secrets`, service **gitleaks** : trois secrets codés en dur — la clé JWT, le jeton interne et le mot de passe de la base ;
+> — `scanning_filesystem`, service **trivy** : 64 vulnérabilités, dont 9 critiques ;
+> — et `scanning_image`, toujours **trivy**, qui audite l'image Docker construite à partir de python:3.8.
+>
+> Ligne suivante, `scan_full_complete` : les six scanners ont rendu leur verdict. L'agent agrège l'ensemble et le transmet au modèle 14B pour l'analyse approfondie.
+
+#### Beat Slack — capture séparée (≈ 10 s)
+
+À enchaîner après la vidéo des logs, sur la capture d'écran Slack :
+
+> Et l'agent ne se limite pas à analyser : voici la notification reçue côté Slack. L'équipe est prévenue en temps réel, et chaque décision laisse une trace.
+
+#### Variante si la vidéo conservée montre `gitleaks_clean`
+
+> — `scanning_secrets`, service **gitleaks** : aucun secret détecté par signature sur ce commit. C'est précisément là qu'intervient le modèle 14B, qui repérera ensuite la clé codée en dur que les règles de signature laissent passer — la détection par motif et le raisonnement du modèle se complètent.
 
