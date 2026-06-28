@@ -153,6 +153,13 @@ def img(name):
         if os.path.exists(p): return p
     raise FileNotFoundError(name)
 
+RES = os.path.join(_HERE, "pres-ressources")
+def res(name):
+    """Captures réelles de la démonstration (pres-ressources/)."""
+    p = os.path.join(RES, name)
+    if os.path.exists(p): return p
+    raise FileNotFoundError(name)
+
 def rounded_pic(s, path, x, y, w, h, adj=9000):
     """Insère une image découpée en rectangle à coins arrondis (adj = rayon, 1/1000 %)."""
     pic = s.shapes.add_picture(path, Inches(x), Inches(y), Inches(w), Inches(h))
@@ -707,26 +714,52 @@ for t,d in tools:
     txt(s, 10.4, yy+0.06, 2.3, 0.4, [[P(d, 12, BODY, False, BODY_F)]]); yy += 0.55
 card_text(s, 8.4, 5.05, 4.25, 1.55, [
     [P("Complémentarité", 14, VIOLET_D, True, HEAD)],
-    [P("le LLM a détecté des secrets en dur que Gitleaks n'avait pas signalés — scanners et IA se renforcent.",
+    [P("Gitleaks repère les secrets, Semgrep le code, Checkov l'IaC ; le 14B consolide les six en une revue priorisée, un correctif par finding.",
        12, BODY, False, BODY_F)]], fill=T_VIOLET, line=None)
 
-# ---- Démonstration PR #19 (BLOCK animé) ----
-s = slide(); header(s, "04 · Réalisation", "Démonstration — Pull Request #19", 15)
-gif_box(s, "demo_pr18.gif", 0.7, 1.85, 7.0, 4.95,
-        fallback="pr_comment-security-review_0.png",
-        caption="Revue scrollée automatiquement jusqu'au verdict BLOCK")
-txt(s, 8.0, 2.05, 4.6, 0.5, [[P("Le déroulement, sans intervention humaine", 15, INK, True, HEAD)]])
-yy=2.65
-for t in ["Réception du webhook","Cinq scanners et LLM","Sept commentaires inline publiés","Suggestions de correction"]:
-    rect(s, 8.0, yy+0.04, 0.16,0.16, fill=TEAL, shape=MSO_SHAPE.OVAL)
-    txt(s, 8.3, yy-0.02, 4.5, 0.4, [[P(t, 13, BODY, False, BODY_F)]]); yy+=0.55
-badge = rect(s, 8.0, 5.2, 4.6, 0.7, fill=RED, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+# ---- Démonstration 1/3 — le code soumis (PR #22) ----
+s = slide(); header(s, "04 · Réalisation", "Démonstration — le code soumis", True)
+fit_image(s, res("wire_transfer_file.png"), 0.7, 1.85, 6.5, 4.9,
+          caption="wire_transfer.php — sept vulnérabilités volontaires + secrets en dur")
+fit_image(s, res("requirements_file.png"), 7.55, 2.0, 5.05, 1.2, caption="requirements.txt — dépendances obsolètes")
+fit_image(s, res("docker_file.png"), 7.55, 3.7, 5.05, 1.1, caption="Dockerfile — conteneur en root")
+card_text(s, 7.55, 5.35, 5.05, 1.5, [
+    [P("Une seule Pull Request", 13, VIOLET_D, True, HEAD)],
+    [P("Trois fichiers : injection SQL, commande, SSRF, désérialisation, XSS, MD5, mot de passe en URL ; clé JWT, jeton et mot de passe en clair.",
+       11, BODY, False, BODY_F)]], fill=T_VIOLET, line=None)
+
+# ---- Démonstration 2/3 — l'agent au travail ----
+s = slide(); header(s, "04 · Réalisation", "Démonstration — l'agent au travail", True)
+gif_box(s, "git_push.gif", 0.7, 1.95, 4.0, 2.3, caption="Branche, commit, push")
+gif_box(s, "pr_open.gif", 0.7, 4.8, 4.0, 1.95, caption="Pull Request ouverte")
+gif_box(s, "agent_logs.gif", 5.0, 1.9, 7.6, 3.7,
+        caption="Webhook signé → classification 7B → six scanners en parallèle → analyse 14B")
+yy=5.95
+for t in ["Webhook reçu et vérifié (HMAC-SHA256)",
+          "Six scanners : Trivy, Gitleaks, Semgrep, Checkov, OSV",
+          "Semgrep : 43 · OSV : 111 · Checkov : 3 · Trivy : 64 + 6324",
+          "Analyse approfondie par le modèle 14B — 100 % local"]:
+    rect(s, 5.0, yy+0.05, 0.15,0.15, fill=TEAL, shape=MSO_SHAPE.OVAL)
+    txt(s, 5.25, yy-0.02, 7.35, 0.32, [[P(t, 11.5, BODY, False, BODY_F)]]); yy+=0.3
+
+# ---- Démonstration 3/3 — verdict et revue inline (BLOCK animé) ----
+s = slide(); header(s, "04 · Réalisation", "Démonstration — verdict et revue inline", True)
+gif_box(s, "pr_review.gif", 0.7, 1.95, 7.3, 3.65,
+        caption="Synthèse CRITIQUE, puis huit commentaires inline sur l'onglet « Files changed »")
+txt(s, 8.2, 1.95, 4.45, 0.5, [[P("Huit commentaires inline", 14, INK, True, HEAD)]])
+yy=2.55
+for t in ["Injection SQL · commande · SSRF","Désérialisation · XSS · MD5",
+          "Mot de passe transmis dans l'URL","Dockerfile sans directive USER",
+          "+ une suggestion de correction par point"]:
+    rect(s, 8.2, yy+0.04, 0.15,0.15, fill=TEAL, shape=MSO_SHAPE.OVAL)
+    txt(s, 8.45, yy-0.02, 4.2, 0.32, [[P(t, 11.5, BODY, False, BODY_F)]]); yy+=0.4
+badge = rect(s, 8.2, 4.75, 4.45, 0.62, fill=RED, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
 badge.shadow.inherit=False; add_shadow(badge)
 tf=badge.text_frame; tf.word_wrap=True
-r=tf.paragraphs[0].add_run(); r.text="VERDICT :  BLOCK"; r.font.size=Pt(20); r.font.bold=True
+r=tf.paragraphs[0].add_run(); r.text="VERDICT :  BLOCK"; r.font.size=Pt(18); r.font.bold=True
 r.font.name=HEAD; r.font.color.rgb=WHITE; tf.paragraphs[0].alignment=PP_ALIGN.CENTER
 tf.vertical_anchor=MSO_ANCHOR.MIDDLE
-txt(s, 8.0, 6.0, 4.6, 0.4, [[P("→ statut de commit en échec, fusion bloquée", 12, SLATE, False, BODY_F, True)]])
+fit_image(s, res("slack_block_card.png"), 8.2, 5.65, 4.45, 1.05, caption="Notification Slack — équipe prévenue")
 ANIM_BUILDS.append((s, [badge]))
 
 # ---- Bénéfices et résultats ----
@@ -993,20 +1026,30 @@ SPEECH = [
 "source.",
 # 23 — Défense en profondeur (≈ 30 s)
 "(≈ 30 s) La détection suit une logique de défense en profondeur : chaque scanner couvre une "
-"classe de risque, et le modèle consolide l'ensemble en une revue unique. Les deux niveaux se "
-"complètent réellement : sur la démonstration, c'est le modèle qui a détecté des secrets en dur "
-"que Gitleaks n'avait pas signalés. Et les findings des scanners sont déterministes : ils sont "
-"persistés en base quel que soit le texte produit par le modèle.",
-# 24 — Démonstration (GIF + build BLOCK) (≈ 50 s)
-"(≈ 50 s) Voici la démonstration, sur la Pull Request numéro dix-neuf : un module de virement "
-"bancaire en PHP contenant sept vulnérabilités types — injection SQL, injection de commande, "
-"SSRF, désérialisation non sécurisée, XSS réfléchi, hachage MD5 et mot de passe transmis dans "
-"l'URL — ainsi que des secrets codés en dur. À l'écran, la revue publiée par l'agent défile : "
-"l'analyse de chaque faille, puis les recommandations. [clic] Le verdict tombe : BLOCK, risque "
-"élevé. Sept commentaires inline, chacun pointant une ligne précise du diff, et le statut de "
-"commit passe en échec : la fusion est techniquement bloquée tant que les corrections ne sont pas "
-"poussées. Fait notable : Gitleaks n'avait pas signalé les secrets — c'est le modèle qui les a "
-"rattrapés. Durée totale pour cette revue : dix-sept minutes, notification Slack comprise.",
+"classe de risque — secrets, code, dépendances, infrastructure, images — et le modèle 14B "
+"consolide l'ensemble en une revue unique, priorisée, avec une suggestion de correction par "
+"point. Les findings des scanners restent déterministes : ils sont persistés en base quel que "
+"soit le texte produit par le modèle.",
+# 24a — Démonstration 1/3 : le code soumis (≈ 25 s)
+"(≈ 25 s) La démonstration part d'une seule Pull Request, dans un dépôt de test. Trois fichiers : "
+"un module de virement en PHP qui concentre sept vulnérabilités types — injection SQL, injection "
+"de commande, SSRF, désérialisation non sécurisée, XSS, hachage MD5 et mot de passe transmis dans "
+"l'URL — avec en prime trois secrets codés en dur. À côté, un requirements aux dépendances "
+"obsolètes et un Dockerfile qui tourne en root. Le terrain de jeu idéal pour l'agent.",
+# 24b — Démonstration 2/3 : l'agent au travail (≈ 30 s)
+"(≈ 30 s) Le développeur crée sa branche, pousse, ouvre la Pull Request — et n'a plus rien à "
+"faire. À droite, les journaux de l'agent défilent en direct : le webhook signé est vérifié, le "
+"modèle 7B classe la Pull Request, puis six scanners s'exécutent en parallèle — Semgrep remonte "
+"quarante-trois alertes, OSV cent onze vulnérabilités de dépendances, Trivy soixante-quatre. Tout "
+"se passe en local, sans qu'aucune ligne ne quitte la banque. Le modèle 14B prend alors le relais "
+"pour l'analyse approfondie.",
+# 24c — Démonstration 3/3 : verdict et revue inline (≈ 30 s)
+"(≈ 30 s) Le résultat est publié directement sur la Pull Request. Une synthèse en tête — risque "
+"CRITIQUE, verdict BLOCK — puis huit commentaires inline, chacun ancré sur la ligne exacte du "
+"diff : l'injection SQL, la SSRF, le XSS, le MD5, le mot de passe en URL, et jusqu'au Dockerfile "
+"sans utilisateur. Chaque commentaire porte une suggestion de correction. [clic] Le statut du "
+"commit passe au rouge : la fusion est techniquement bloquée, et l'équipe est prévenue sur Slack. "
+"L'agent n'a pas seulement commenté — il a arrêté le code vulnérable à la porte.",
 # 25 — Bénéfices & résultats (≈ 25 s)
 "(≈ 25 s) Le tableau résume le passage du manuel à l'agent : un délai divisé par près de cent, "
 "une couverture OWASP systématique, un gate effectif là où rien ne bloquait, une traçabilité "
