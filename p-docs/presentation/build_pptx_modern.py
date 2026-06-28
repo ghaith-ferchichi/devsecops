@@ -730,17 +730,15 @@ card_text(s, 7.55, 5.35, 5.05, 1.5, [
 
 # ---- Démonstration 2/3 — l'agent au travail ----
 s = slide(); header(s, "04 · Réalisation", "Démonstration — l'agent au travail", True)
-gif_box(s, "git_push.gif", 0.7, 1.95, 4.0, 2.3, caption="Branche, commit, push")
-gif_box(s, "pr_open.gif", 0.7, 4.8, 4.0, 1.95, caption="Pull Request ouverte")
-gif_box(s, "agent_logs.gif", 5.0, 1.9, 7.6, 3.7,
-        caption="Webhook signé → classification 7B → six scanners en parallèle → analyse 14B")
-yy=5.95
-for t in ["Webhook reçu et vérifié (HMAC-SHA256)",
-          "Six scanners : Trivy, Gitleaks, Semgrep, Checkov, OSV",
-          "Semgrep : 43 · OSV : 111 · Checkov : 3 · Trivy : 64 + 6324",
-          "Analyse approfondie par le modèle 14B — 100 % local"]:
-    rect(s, 5.0, yy+0.05, 0.15,0.15, fill=TEAL, shape=MSO_SHAPE.OVAL)
-    txt(s, 5.25, yy-0.02, 7.35, 0.32, [[P(t, 11.5, BODY, False, BODY_F)]]); yy+=0.3
+gif_box(s, "agent_logs.gif", 0.7, 1.9, 8.4, 4.55,
+        caption="Journaux de l'agent en direct — webhook → clone → classification → six scanners → analyse 14B")
+txt(s, 9.15, 1.95, 3.5, 0.5, [[P("Sans intervention humaine", 14, INK, True, HEAD)]])
+yy=2.65
+for t in ["Webhook vérifié (HMAC-SHA256)","Classification par le modèle 7B",
+          "Six scanners en parallèle","Semgrep 43 · OSV 111 · Trivy 64",
+          "Analyse approfondie par le 14B","100 % local — rien ne sort du VPS"]:
+    rect(s, 9.15, yy+0.05, 0.15,0.15, fill=TEAL, shape=MSO_SHAPE.OVAL)
+    txt(s, 9.4, yy-0.02, 3.25, 0.5, [[P(t, 11.5, BODY, False, BODY_F)]]); yy+=0.62
 
 # ---- Démonstration 3/3 — verdict et revue inline (BLOCK animé) ----
 s = slide(); header(s, "04 · Réalisation", "Démonstration — verdict et revue inline", True)
@@ -759,7 +757,7 @@ tf=badge.text_frame; tf.word_wrap=True
 r=tf.paragraphs[0].add_run(); r.text="VERDICT :  BLOCK"; r.font.size=Pt(18); r.font.bold=True
 r.font.name=HEAD; r.font.color.rgb=WHITE; tf.paragraphs[0].alignment=PP_ALIGN.CENTER
 tf.vertical_anchor=MSO_ANCHOR.MIDDLE
-fit_image(s, res("slack_block_card.png"), 8.2, 5.65, 4.45, 1.05, caption="Notification Slack — équipe prévenue")
+fit_image(s, res("pr_slack_22.png"), 8.2, 5.65, 4.45, 1.05, caption="Notification Slack — équipe prévenue")
 ANIM_BUILDS.append((s, [badge]))
 
 # ---- Bénéfices et résultats ----
@@ -786,25 +784,48 @@ for r in range(len(rows)):
 card_text(s, 8.6, 1.95, 4.03, 3.7, [
     [P("7 / 7", 54, GREEN, True, HEAD)],
     [P("vulnérabilités plantées", 14, INK, True, HEAD)],
-    [P("détectées sur la PR #19", 12, SLATE, False, BODY_F)],
+    [P("détectées sur la PR #22", 12, SLATE, False, BODY_F)],
     [P("", 6, BODY)],
     [P("+ corpus de huit revues réelles", 12, BODY, False, BODY_F)],
 ], anchor=MSO_ANCHOR.MIDDLE)
 for pp in s.shapes[-1].text_frame.paragraphs: pp.alignment=PP_ALIGN.CENTER
 
-# ---- Observabilité ----
+# ---- Observabilité 1/2 — la stack + dashboard en direct ----
 s = slide(); header(s, "04 · Réalisation", "Supervision complète du VPS", 17)
-fit_image(s, img("monitoring_stack.png"), 0.7, 1.85, 6.2, 4.6, caption="Stack d'observabilité")
-gif_box(s, "grafana_live.gif", 7.2, 1.9, 5.4, 2.35, fallback="grafana_pr_reviews_dashboard.png", label="dashboard en direct")
-fit_image(s, img("grafana_vps_host_dashboard.png"), 7.2, 4.45, 5.4, 1.9, card=True)
-txt(s, 7.2, 6.45, 5.4, 0.4, [[P("Prometheus · VictoriaMetrics · Grafana · AlertManager  —  ", 11, SLATE, False, BODY_F),
-                              P("28 métriques · 15 alertes · 3 dashboards", 11, TEAL_D, True, HEAD)]],
-    align=PP_ALIGN.CENTER)
+gif_box(s, "grafana_live.gif", 0.7, 1.9, 7.3, 4.45, fallback="grafana_agent_dashboard.png",
+        caption="Tableau de bord DevSecOps en direct — rafraîchissement 30 s", label="dashboard en direct")
+txt(s, 8.35, 1.95, 4.28, 0.5, [[P("Quatre piliers open source", 14, INK, True, HEAD)]])
+pillars=[("Prometheus","collecte des métriques"),("VictoriaMetrics","stockage longue durée"),
+         ("Grafana","trois tableaux de bord"),("AlertManager","quinze règles d'alerte")]
+yy=2.55
+for t,d in pillars:
+    rect(s, 8.35, yy, 1.95, 0.42, fill=TEAL_D, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    txt(s, 8.35, yy+0.05, 1.95, 0.34, [[P(t, 11, WHITE, True, HEAD)]], align=PP_ALIGN.CENTER)
+    txt(s, 10.4, yy+0.07, 2.25, 0.4, [[P(d, 11, BODY, False, BODY_F)]]); yy+=0.52
+card_text(s, 8.35, 4.85, 4.28, 1.55, [
+    [P("28 métriques · 15 alertes · 3 dashboards", 12.5, VIOLET_D, True, HEAD)],
+    [P("Métriques conteneurs via le socket Docker, après l'échec de cAdvisor sur notre version ; les deux moteurs d'inférence comparés en continu.",
+       10.5, BODY, False, BODY_F)]], fill=T_VIOLET, line=None)
+
+# ---- Observabilité 2/2 — pannes détectées ----
+s = slide(); header(s, "04 · Réalisation", "Une supervision qui détecte de vraies pannes", True)
+fit_image(s, img("grafana_vps_host_dashboard.png"), 0.7, 1.9, 3.95, 2.1, caption="VPS — hôte")
+fit_image(s, img("grafana_pr_reviews_dashboard.png"), 4.75, 1.9, 3.95, 2.1, caption="Revues de PR")
+fit_image(s, img("grafana_agent_dashboard.png"), 8.75, 1.9, 3.9, 2.1, caption="Agent & LLM")
+txt(s, 0.7, 4.45, 11.95, 0.5, [[P("Deux pannes restées invisibles, révélées par la supervision elle-même :", 14, INK, True, HEAD)]])
+card_text(s, 0.7, 5.05, 5.85, 1.65, [
+    [P("AlertManager hors service", 13, RED, True, HEAD)],
+    [P("Silencieusement arrêté depuis le déploiement initial : aucune alerte n'aurait été émise. Repéré via le tableau de bord, puis corrigé en sprint.",
+       11, BODY, False, BODY_F)]], fill=WHITE)
+card_text(s, 6.75, 5.05, 5.88, 1.65, [
+    [P("VictoriaMetrics aveugle neuf jours", 13, RED, True, HEAD)],
+    [P("Collecte interrompue pendant neuf jours, sans aucune trace visible. Mise en évidence par les dashboards, puis restaurée.",
+       11, BODY, False, BODY_F)]], fill=WHITE)
 
 # ---- Assistant conversationnel & autonomie ----
 s = slide(); header(s, "04 · Réalisation", "Assistant conversationnel et opérations autonomes", 18)
 gif_box(s, "chat_demo.gif", 0.7, 1.85, 6.4, 4.9, fallback="inter_react.png", caption="Boucle ReAct — dix-neuf outils de supervision", label="chat répondant en direct")
-txt(s, 7.4, 2.05, 5.2, 0.6, [[P("« Quel est l'usage CPU ? »", 16, VIOLET_D, True, HEAD)]])
+txt(s, 7.4, 2.05, 5.2, 0.6, [[P("« Donne-moi la santé de mon VPS »", 16, VIOLET_D, True, HEAD)]])
 txt(s, 7.4, 2.65, 5.2, 0.9, [[P("L'agent invoque un outil réel ", 13, BODY, False, BODY_F),
     P("(vps_status)", 12, INK, True, MONO), P(" et répond avec la valeur mesurée — jamais inventée.", 13, BODY, False, BODY_F)]])
 txt(s, 7.4, 3.75, 5.2, 0.5, [[P("Et il s'auto-exploite :", 14, INK, True, HEAD)]])
@@ -910,13 +931,12 @@ SPEECH = [
 "de l'expertise du relecteur du jour. C'est ce constat qui motive ce travail.",
 # 4 — Divider 1 (≈ 5 s)
 "(≈ 5 s) Commençons par le contexte général.",
-# 5 — Organisme & AS-IS (≈ 30 s)
-"(≈ 30 s) La BTE est née en 1982 d'une convention entre l'État tunisien et l'Abu Dhabi Investment "
+# 5 — Organisme & AS-IS (≈ 24 s)
+"(≈ 24 s) La BTE est née en 1982 d'une convention entre l'État tunisien et l'Abu Dhabi Investment "
 "Authority. Mon stage s'est déroulé à la Direction Centrale de l'Informatique et de "
-"l'Organisation, auprès des équipes de sécurité opérationnelle. Le processus existant, à gauche, "
-"repose sur GitHub : à l'ouverture d'une Pull Request, un développeur senior ou un référent "
-"sécurité examine le diff à la main, commente, puis déclenche la fusion. Aucune analyse statique, "
-"aucun scanner, aucun gate de pipeline : tout repose sur l'examen humain.",
+"l'Organisation, en sécurité opérationnelle. Le processus existant, à gauche : à chaque Pull "
+"Request, un relecteur examine le diff à la main, commente, puis fusionne. Aucun scanner, aucun "
+"gate de pipeline — tout repose sur l'humain.",
 # 6 — Problématique (≈ 30 s)
 "(≈ 30 s) Quatre limites en découlent. Le délai, d'abord : jusqu'à vingt-quatre heures, pendant "
 "lesquelles la vulnérabilité reste exposée. L'absence de blocage technique, ensuite : une Pull "
@@ -939,35 +959,30 @@ SPEECH = [
 "local. Il publie sur GitHub la revue complète : score de risque, commentaires ligne par ligne et "
 "verdict — APPROVE, REQUEST_CHANGES ou BLOCK — posé comme statut de commit. C'est ce statut qui "
 "conditionne la fusion, laquelle reste déclenchée par un humain.",
-# 9 — Méthodologie (≈ 30 s)
-"(≈ 30 s) Le projet a été conduit selon la méthode Scrumban, retenue après comparaison avec "
-"Scrum, Kanban et XP : elle combine la cadence et les jalons de Scrum, utiles à l'encadrement, "
-"avec la discipline de flux de Kanban — un travail en cours limité à une seule carte. Dix sprints "
-"de deux semaines sur cinq mois, six jalons, et une étiquette Expedite qui permettait à un "
-"incident de production de passer devant tout le reste, sans replanifier le sprint en cours.",
+# 9 — Méthodologie (≈ 20 s)
+"(≈ 20 s) Le projet a suivi la méthode Scrumban, retenue après comparaison avec Scrum, Kanban et "
+"XP : la cadence et les jalons de Scrum, avec la discipline de flux de Kanban. Dix sprints de "
+"deux semaines sur cinq mois, et une étiquette Expedite pour traiter un incident de production "
+"sans replanifier le sprint en cours.",
 # 10 — Divider 2 (≈ 5 s)
 "(≈ 5 s) Passons à l'état de l'art et aux choix technologiques.",
-# 11 — DevSecOps (≈ 25 s)
-"(≈ 25 s) Le cadre conceptuel est le DevSecOps et son principe de shift-left : déplacer la "
-"détection des vulnérabilités au plus tôt du cycle, idéalement dès la Pull Request, là où une "
-"faille ne coûte presque rien à corriger comparée à la même faille découverte en production. "
-"Notre apport matérialise ce principe : le verdict de l'agent devient un gate technique, qui "
-"conditionne réellement la fusion.",
-# 12 — Besoins (≈ 25 s)
-"(≈ 25 s) Cinq besoins fonctionnels : détecter les vulnérabilités à chaque Pull Request, produire "
-"la revue OWASP avec score et verdict, publier les commentaires sur GitHub, persister chaque "
-"revue en base de connaissances, et offrir un assistant d'exploitation en langage naturel. Côté "
-"non fonctionnel, la contrainte dominante est la confidentialité — l'inférence doit rester locale "
-"—, complétée par la performance, la résilience par circuit breaker et l'observabilité complète.",
-# 13 — Benchmark (≈ 45 s)
-"(≈ 45 s) Le choix des modèles ne repose pas sur la littérature, mais sur un banc d'essai mené "
-"sur le matériel cible, avec le prompt système complet. Deux candidats sont éliminés : llama 3.2 "
-"trois milliards, dont la fenêtre de contexte est saturée par le seul prompt système — sa "
-"précision tombe à zéro —, et granite, dont le schéma d'appel d'outils est incompatible. Restent "
-"qwen2.5-coder 7B et 14B, à égalité de précision à quatre-vingts pour cent. D'où une architecture "
-"à deux modèles : le 7B classifie en trente secondes, le 14B mène l'analyse approfondie. Un "
-"benchmark croisé a par ailleurs confirmé le moteur Ollama : vingt-deux pour cent de débit de "
-"plus que LocalAI, sur un fichier de poids strictement identique.",
+# 11 — DevSecOps (≈ 18 s)
+"(≈ 18 s) Le cadre conceptuel est le DevSecOps et le shift-left : détecter les vulnérabilités au "
+"plus tôt, dès la Pull Request, là où une faille coûte presque rien à corriger. Notre apport "
+"matérialise ce principe : le verdict de l'agent devient un gate technique qui conditionne la "
+"fusion.",
+# 12 — Besoins (≈ 18 s)
+"(≈ 18 s) Cinq besoins fonctionnels : détecter les vulnérabilités, produire la revue OWASP avec "
+"verdict, publier les commentaires sur GitHub, persister chaque revue, et offrir un assistant en "
+"langage naturel. Côté non fonctionnel, la contrainte dominante est la confidentialité : "
+"l'inférence reste locale.",
+# 13 — Benchmark (≈ 32 s)
+"(≈ 32 s) Le choix des modèles repose non sur la littérature, mais sur un banc d'essai sur le "
+"matériel cible, prompt système complet. Deux candidats éliminés : llama 3.2 trois milliards, "
+"saturé par le seul prompt système, et granite, dont l'appel d'outils est incompatible. Restent "
+"qwen2.5-coder 7B et 14B, à quatre-vingts pour cent de précision. D'où deux modèles : le 7B "
+"classifie, le 14B analyse. Le banc a aussi confirmé Ollama : vingt-deux pour cent de débit de "
+"plus que LocalAI, à poids identiques.",
 # 14 — Technologies retenues (≈ 30 s)
 "(≈ 30 s) Trois briques portent l'ensemble. Cinq scanners spécialisés : Trivy pour les CVE, "
 "Gitleaks pour les secrets, Semgrep pour le code applicatif, Checkov pour l'infrastructure, "
@@ -976,13 +991,11 @@ SPEECH = [
 "pipeline de vingt minutes survit au redémarrage de son conteneur. Détail qui compte : les "
 "sorties des scanners sont nettoyées avant transmission au modèle — cinquante-deux pour cent de "
 "tokens en moins — pour préserver la fenêtre de contexte.",
-# 15 — Positionnement (≈ 30 s)
-"(≈ 30 s) Pourquoi ne pas avoir adopté un outil du marché ? Parce qu'aucun ne combine "
-"raisonnement par modèle de langage et inférence entièrement locale. CodeQL, Snyk et Copilot "
-"Autofix transmettent le code à une infrastructure tierce — rédhibitoire en contexte bancaire. "
-"SonarQube est auto-hébergeable, mais purement statique, sans explication en langage naturel. "
-"Notre contribution est l'intégration de ces deux mondes, sans qu'une ligne de code ne sorte du "
-"VPS.",
+# 15 — Positionnement (≈ 22 s)
+"(≈ 22 s) Pourquoi pas un outil du marché ? Aucun ne combine raisonnement par modèle de langage "
+"et inférence entièrement locale. CodeQL, Snyk et Copilot envoient le code à un tiers — "
+"rédhibitoire en banque. SonarQube est auto-hébergeable mais purement statique, sans explication. "
+"Notre contribution unit ces deux mondes, sans qu'une ligne ne sorte du VPS.",
 # 16 — Divider 3 (≈ 5 s)
 "(≈ 5 s) Venons-en à la conception.",
 # 17 — Architecture (≈ 25 s)
@@ -998,15 +1011,13 @@ SPEECH = [
 "conséquence. Il agit : il commente, il bloque, il escalade vers Slack. Il persiste : son état "
 "est sauvegardé après chaque nœud, et il reprend exactement où il s'était arrêté. Il manipule "
 "dix-neuf outils réels. Et il s'auto-exploite : gardien disque et bilan de santé quotidien.",
-# 19 — Pipeline (builds : 7 clics) (≈ 50 s)
-"(≈ 50 s) Le cœur du système est un graphe d'état à neuf nœuds. Suivons une Pull Request. [clics] "
-"Le webhook est vérifié et dédupliqué ; le dépôt est cloné et le diff généré localement avec "
-"quinze lignes de contexte. Le modèle 7B classifie en cinq catégories. Le routage adapte "
-"l'analyse : une PR de documentation saute les scanners, un Dockerfile déclenche le scan d'image "
-"complet. Les scanners s'exécutent en parallèle, chacun isolé dans sa coroutine — si l'un échoue, "
-"le pipeline continue. Le 14B mène ensuite l'analyse OWASP sur un diff annoté de numéros de "
-"lignes ; le verdict est rendu, avec escalade Slack si le risque est élevé, puis la revue est "
-"publiée. Une optimisation a changé l'échelle : la fusion des deux appels du 14B en un seul a "
+# 19 — Pipeline (builds : 7 clics) (≈ 42 s)
+"(≈ 42 s) Le cœur du système est un graphe d'état à neuf nœuds. Suivons une Pull Request. [clics] "
+"Le webhook est vérifié et dédupliqué ; le dépôt est cloné, le diff généré localement. Le 7B "
+"classifie en cinq catégories, et le routage adapte l'analyse : une PR de documentation saute les "
+"scanners, un Dockerfile déclenche le scan d'image. Les scanners tournent en parallèle, chacun "
+"isolé — si l'un échoue, le pipeline continue. Le 14B mène l'analyse OWASP, rend le verdict, "
+"escalade sur Slack si besoin, puis publie. Optimisation clé : fusionner les deux appels du 14B a "
 "fait passer le pipeline de trente-cinquante minutes à quinze-vingt-cinq.",
 # 20 — Fiabilité (≈ 35 s)
 "(≈ 35 s) Reste la question légitime : peut-on faire confiance à un modèle de langage ? Six "
@@ -1056,13 +1067,16 @@ SPEECH = [
 "complète en base. Sur le jeu contrôlé, sept sur sept, sans faux positif dans le fichier modifié. "
 "Au-delà de la démonstration, huit revues réelles sont persistées en base, et leurs verdicts "
 "suivent le risque.",
-# 26 — Observabilité (≈ 35 s)
-"(≈ 35 s) L'agent voit l'intégralité du VPS : vingt-huit métriques personnalisées, quinze règles "
-"d'alerte, trois tableaux de bord Grafana. Les dernières métriques interrogent directement le "
-"socket Docker — après l'échec de cAdvisor sur notre version de Docker — et comparent les deux "
-"moteurs d'inférence. Cette supervision n'est pas décorative : elle a révélé un AlertManager "
-"silencieusement hors service depuis le déploiement initial, et une panne de VictoriaMetrics "
-"restée neuf jours invisible. Deux anomalies détectées, puis corrigées en sprint.",
+# 26a — Observabilité 1/2 : la stack (≈ 18 s)
+"(≈ 18 s) L'agent voit l'intégralité du VPS : vingt-huit métriques, quinze règles d'alerte et "
+"trois tableaux de bord Grafana, rafraîchis toutes les trente secondes. Faute de compatibilité de "
+"cAdvisor avec notre version de Docker, les métriques de conteneurs passent directement par le "
+"socket Docker, et les deux moteurs d'inférence sont comparés en continu.",
+# 26b — Observabilité 2/2 : pannes détectées (≈ 17 s)
+"(≈ 17 s) Et cette supervision n'est pas décorative : elle a révélé deux pannes restées "
+"invisibles — un AlertManager hors service depuis le déploiement initial, et une collecte "
+"VictoriaMetrics interrompue pendant neuf jours. Les deux, repérées par les tableaux de bord, "
+"puis corrigées en sprint.",
 # 27 — Chat & autonomie (≈ 25 s)
 "(≈ 25 s) Un assistant conversationnel doté de dix-neuf outils permet d'interroger "
 "l'infrastructure en langage naturel, jusqu'à la base de connaissances sécurité, sans écrire de "
@@ -1070,13 +1084,11 @@ SPEECH = [
 "cite la valeur mesurée, jamais inventée. Et l'agent s'auto-exploite : gardien disque toutes les "
 "trente minutes, nettoyage automatique à quatre-vingt-dix pour cent, bilan de santé publié chaque "
 "matin sur Slack.",
-# 28 — Phi-4 (≈ 35 s)
-"(≈ 35 s) L'épisode le plus révélateur du projet : la télémétrie a mis en évidence un bug du "
-"modèle Phi-4, qui renvoyait zéro token alors que la requête se terminait sans aucune erreur "
-"journalisée. La cause : un template de conversation mal formé, qui présentait au modèle une "
-"conversation déjà close. Le correctif a été aligné sur la configuration officielle du modèle, "
-"puis vérifié : de zéro à cinquante et un tokens. Le système a détecté une panne invisible aux "
-"journaux — c'est la meilleure preuve qu'il se surveille lui-même.",
+# 28 — Phi-4 (≈ 22 s)
+"(≈ 22 s) Un épisode révélateur : la télémétrie a détecté qu'un modèle candidat, Phi-4, renvoyait "
+"zéro token sans la moindre erreur journalisée — un template de conversation mal formé. Corrigé, "
+"puis vérifié : de zéro à cinquante et un tokens. Le système a repéré une panne invisible aux "
+"journaux : la preuve qu'il se surveille lui-même.",
 # 29 — Tests et validation (≈ 20 s)
 "(≈ 20 s) La validation finale a couvert les mécanismes critiques : signature invalide rejetée "
 "avant tout traitement, webhook dupliqué ignoré, circuit breaker avec classification de repli si "
