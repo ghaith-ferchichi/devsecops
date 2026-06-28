@@ -14,3 +14,7 @@ __pycache__/
 
 # Docker
 *.log
+
+# Presentation media — large videos/gifs kept local only, not pushed to GitHub
+p-docs/presentation/pres-ressources/*.mp4
+p-docs/presentation/pres-ressources/*.gif
