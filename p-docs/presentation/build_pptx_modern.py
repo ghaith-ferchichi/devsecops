@@ -74,6 +74,24 @@ def add_shadow(sp):
     alpha = spPr.makeelement(qn('a:alpha'), {'val':'18000'})
     clr.append(alpha); sh.append(clr); el.append(sh); spPr.append(el)
 
+def round_shape(sp, radius_in, w_in, h_in):
+    """Force prstGeom=roundRect with an absolute corner radius (inches)."""
+    spPr = sp._element.spPr
+    frac = max(0.0, min(0.5, radius_in / min(w_in, h_in)))
+    val = str(int(frac * 100000))
+    geom = spPr.find(qn('a:prstGeom'))
+    if geom is None:
+        geom = parse_xml('<a:prstGeom xmlns:a="http://schemas.openxmlformats.org/'
+                         'drawingml/2006/main" prst="roundRect"><a:avLst/></a:prstGeom>')
+        xfrm = spPr.find(qn('a:xfrm'))
+        xfrm.addnext(geom)
+    geom.set('prst', 'roundRect')
+    avLst = geom.find(qn('a:avLst'))
+    if avLst is None:
+        avLst = geom.makeelement(qn('a:avLst'), {}); geom.append(avLst)
+    for gd in list(avLst): avLst.remove(gd)
+    avLst.append(avLst.makeelement(qn('a:gd'), {'name': 'adj', 'fmla': f'val {val}'}))
+
 def set_gradient(sp, c1, c2, angle_deg=0):
     spPr = sp._element.spPr
     for t in ('a:noFill','a:solidFill','a:gradFill','a:blipFill','a:pattFill','a:grpFill'):
@@ -137,11 +155,15 @@ def fit_image(s, path, bx, by, bw, bh, card=True, caption=None):
     if ar > bar: w = bw; h = bw/ar
     else: h = bh; w = bh*ar
     x = bx + (bw-w)/2; y = by + (bh-h)/2
+    pad = 0.10
+    img_r = 0.09  # corner radius of the image (inches)
     if card:
-        pad = 0.10
-        rect(s, x-pad, y-pad, w+2*pad, h+2*pad, fill=WHITE, line=HAIR,
+        c = rect(s, x-pad, y-pad, w+2*pad, h+2*pad, fill=WHITE, line=HAIR,
              line_w=1.0, shape=MSO_SHAPE.ROUNDED_RECTANGLE, shadow=True)
-    s.shapes.add_picture(path, Inches(x), Inches(y), Inches(w), Inches(h))
+        # card radius = image radius + pad → uniform rounded frame, no corner overhang
+        round_shape(c, img_r+pad, w+2*pad, h+2*pad)
+    pic = s.shapes.add_picture(path, Inches(x), Inches(y), Inches(w), Inches(h))
+    round_shape(pic, img_r, w, h)
     if caption:
         txt(s, bx, by+bh+0.05, bw, 0.3, [[P(caption, 10, SLATE, False, BODY_F, True)]],
             align=PP_ALIGN.CENTER)
@@ -181,10 +203,7 @@ def gif_box(s, gif_name, bx, by, bw, bh, fallback=None, caption=None, label=None
     if os.path.exists(gp):
         return fit_image(s, gp, bx, by, bw, bh, card=True, caption=caption)
     if fallback:
-        box = fit_image(s, img(fallback), bx, by, bw, bh, card=True, caption=caption)
-        rect(s, bx+0.12, by+0.12, 1.45, 0.32, fill=VIOLET, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-        txt(s, bx+0.12, by+0.145, 1.45, 0.28, [[P("▶ GIF à venir", 9, WHITE, True, BODY_F)]], align=PP_ALIGN.CENTER)
-        return box
+        return fit_image(s, img(fallback), bx, by, bw, bh, card=True, caption=caption)
     rect(s, bx, by, bw, bh, fill=PANEL, line=VIOLET, line_w=1.5, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
     txt(s, bx, by+bh/2-0.5, bw, 1.0, [[P("▶", 34, VIOLET, True, HEAD)],
         [P("GIF à venir — " + (label or gif_name), 12, SLATE, False, BODY_F)]],
@@ -428,7 +447,7 @@ s = slide(); section_divider(s, 0, "Organisme d'accueil, étude de l'existant et
 
 # ---- Organisme & étude de l'existant ----
 s = slide(); header(s, "01 · Contexte général", "Organisme d'accueil et étude de l'existant", 1)
-fit_image(s, img("asis_workflow.png"), 0.7, 1.85, 6.0, 5.0, caption="Processus de revue actuel (AS-IS) à la BTE")
+fit_image(s, img("asis_workflow.png"), 0.7, 1.85, 6.0, 5.0, caption="Processus de revue actuel à la BTE")
 txt(s, 7.1, 2.0, 5.5, 0.5, [[P("Banque de Tunisie et des Émirats", 16, INK, True, HEAD)]])
 for i,(t,d) in enumerate([("Banque universelle", "particuliers, professionnels, entreprises"),
                           ("DCIO — sécurité opérationnelle", "cadre d'accueil du stage"),
@@ -479,9 +498,9 @@ for i,(big_t,lab,c) in enumerate(stats):
     cards.append(sp)
 ANIM_BUILDS.append((s, cards))
 
-# ---- Solution proposée (TO-BE) ----
-s = slide(); header(s, "01 · Contexte général", "Solution proposée (TO-BE)", 4)
-fit_image(s, img("tobe_workflow.png"), 0.7, 1.8, 6.6, 5.05, caption="Processus cible (TO-BE) — BTE Security AI Agent")
+# ---- Solution proposée (processus cible) ----
+s = slide(); header(s, "01 · Contexte général", "Solution proposée", 4)
+fit_image(s, img("tobe_workflow.png"), 0.7, 1.8, 6.6, 5.05, caption="Processus cible — BTE Security AI Agent")
 txt(s, 7.7, 2.1, 5.0, 0.6, [[P("Un agent qui prend en charge tout le cycle", 16, INK, True, HEAD)]])
 yy = 2.8
 for t in ["Webhook signé, pipeline automatique","Cinq scanners SAST et deux LLM locaux",
@@ -511,7 +530,7 @@ s = slide(); section_divider(s, 1, "Concepts DevSecOps, spécification des besoi
 
 # ---- DevSecOps & shift-left ----
 s = slide(); header(s, "02 · État de l'art", "DevSecOps et approche shift-left", 6)
-fit_image(s, img("devsecops_lifecycle.jpg"), 0.7, 1.9, 6.4, 4.6, caption="Cycle de vie DevSecOps")
+fit_image(s, img("devsecops_lifecycle.png"), 0.7, 1.9, 6.4, 4.6, caption="Cycle de vie DevSecOps")
 txt(s, 7.4, 2.1, 5.2, 0.5, [[P("Intégrer la sécurité au plus tôt", 16, INK, True, HEAD)]])
 for t,d in [("Security as Code","politiques de sécurité versionnées et automatisées"),
             ("Shift Left","détecter la vulnérabilité dès la Pull Request"),
@@ -529,18 +548,19 @@ s = slide(); header(s, "02 · État de l'art", "Spécification des besoins", 7)
 fp = card_text(s, 0.7, 2.0, 5.85, 4.4, [
     [P("Besoins fonctionnels", 16, VIOLET_D, True, HEAD)], [P("", 4, BODY)],
     [P("•  Détecter les vulnérabilités (5 scanners)", 13, BODY, False, BODY_F)],
-    [P("•  Produire une revue OWASP + score + verdict", 13, BODY, False, BODY_F)],
-    [P("•  Publier les commentaires inline sur GitHub", 13, BODY, False, BODY_F)],
-    [P("•  Conditionner la fusion (gate CI/CD)", 13, BODY, False, BODY_F)],
-    [P("•  Assistant conversationnel d'exploitation", 13, BODY, False, BODY_F)],
+    [P("•  Produire la revue OWASP (score, verdict, inline)", 13, BODY, False, BODY_F)],
+    [P("•  Publier sur GitHub + gate CI/CD", 13, BODY, False, BODY_F)],
+    [P("•  Persister chaque revue (PostgreSQL)", 13, BODY, False, BODY_F)],
+    [P("•  Chat opérationnel temps réel (19 outils)", 13, BODY, False, BODY_F)],
+    [P("•  Sécuriser la plateforme (HMAC, secrets exclus)", 13, BODY, False, BODY_F)],
 ], fill=PANEL, line=None)
 fp = card_text(s, 6.78, 2.0, 5.85, 4.4, [
     [P("Besoins non fonctionnels", 16, TEAL_D, True, HEAD)], [P("", 4, BODY)],
     [P("•  Confidentialité — 100 % local (conformité BCT)", 13, BODY, False, BODY_F)],
     [P("•  Performance — 15 à 25 min par revue", 13, BODY, False, BODY_F)],
-    [P("•  Résilience — reprise et circuit breaker", 13, BODY, False, BODY_F)],
-    [P("•  Observabilité — métriques et alertes", 13, BODY, False, BODY_F)],
-    [P("•  Sécurité de la plateforme — HMAC, secrets exclus", 13, BODY, False, BODY_F)],
+    [P("•  Résilience — circuit breaker et fallbacks", 13, BODY, False, BODY_F)],
+    [P("•  Fiabilité — reprise après redémarrage du conteneur", 13, BODY, False, BODY_F)],
+    [P("•  Observabilité — Prometheus / Grafana", 13, BODY, False, BODY_F)],
 ], fill=T_TEAL, line=None)
 
 # ---- Choix des modèles LLM — benchmark ----
@@ -675,7 +695,7 @@ s = slide(); header(s, "03 · Conception", "Fiabilité — anti-hallucination et
 fit_image(s, img("anti_hallucination_layers.png"), 0.7, 1.8, 6.0, 4.5, caption="Six couches de protection")
 fit_image(s, img("two_model_architecture.png"), 7.0, 1.8, 5.6, 3.0, caption="Deux modèles : 7B pour classer, 14B pour analyser")
 card_text(s, 7.0, 5.1, 5.6, 1.5, [
-    [P("Répondre au doute n°1 du jury sur les LLM", 13, INK, True, HEAD)],
+    [P("Garantir la fiabilité des sorties du LLM", 13, INK, True, HEAD)],
     [P("temperature=0 · num_ctx maîtrisé · garde sans-outil · prompt anti-hallucination · "
        "parser éliminant les lignes inexistantes · fusion réduisant le temps de moitié.", 12, BODY, False, BODY_F)],
 ], fill=PANEL, line=None)
@@ -714,7 +734,7 @@ for t,d in tools:
     txt(s, 10.4, yy+0.06, 2.3, 0.4, [[P(d, 12, BODY, False, BODY_F)]]); yy += 0.55
 card_text(s, 8.4, 5.05, 4.25, 1.55, [
     [P("Complémentarité", 14, VIOLET_D, True, HEAD)],
-    [P("Gitleaks repère les secrets, Semgrep le code, Checkov l'IaC ; le 14B consolide les six en une revue priorisée, un correctif par finding.",
+    [P("Chaque scanner couvre une classe de risque — secrets, code, dépendances, IaC, images ; le modèle 14B consolide leurs résultats en une revue unique et priorisée, avec une suggestion de correction par vulnérabilité.",
        12, BODY, False, BODY_F)]], fill=T_VIOLET, line=None)
 
 # ---- Démonstration 1/3 — le code soumis (PR #22) ----
@@ -762,7 +782,7 @@ ANIM_BUILDS.append((s, [badge]))
 
 # ---- Bénéfices et résultats ----
 s = slide(); header(s, "04 · Réalisation", "Bénéfices et résultats", 16)
-rows=[("Critère","Revue manuelle (AS-IS)","Agent IA (TO-BE)"),
+rows=[("Critère","Revue manuelle","Agent IA"),
       ("Délai","jusqu'à 24 h (selon le relecteur)","15–25 min"),
       ("Couverture","variable","OWASP Top 10 systématique"),
       ("Gate CI/CD","aucun","APPROVE / CHANGES / BLOCK"),
@@ -931,7 +951,7 @@ SPEECH = [
 "de l'expertise du relecteur du jour. C'est ce constat qui motive ce travail.",
 # 4 — Divider 1 (≈ 5 s)
 "(≈ 5 s) Commençons par le contexte général.",
-# 5 — Organisme & AS-IS (≈ 24 s)
+# 5 — Organisme & processus actuel (≈ 24 s)
 "(≈ 24 s) La BTE est née en 1982 d'une convention entre l'État tunisien et l'Abu Dhabi Investment "
 "Authority. Mon stage s'est déroulé à la Direction Centrale de l'Informatique et de "
 "l'Organisation, en sécurité opérationnelle. Le processus existant, à gauche : à chaque Pull "
@@ -952,7 +972,7 @@ SPEECH = [
 "minutes. [clic] Sur la validation contrôlée, sept vulnérabilités sur sept sont détectées, sans "
 "faux positif dans le fichier modifié. [clic] Et cent pour cent de l'inférence reste sur le VPS "
 "de la banque, conformément aux exigences de la Banque Centrale de Tunisie.",
-# 8 — Solution TO-BE (≈ 30 s)
+# 8 — Solution proposée (≈ 30 s)
 "(≈ 30 s) Voici le processus cible. GitHub émet un webhook signé HMAC-SHA256 ; l'agent vérifie la "
 "signature, élimine les doublons, classifie la Pull Request en une trentaine de secondes, exécute "
 "en parallèle les scanners pertinents, puis consolide leurs résultats avec un modèle de langage "
@@ -972,10 +992,11 @@ SPEECH = [
 "matérialise ce principe : le verdict de l'agent devient un gate technique qui conditionne la "
 "fusion.",
 # 12 — Besoins (≈ 18 s)
-"(≈ 18 s) Cinq besoins fonctionnels : détecter les vulnérabilités, produire la revue OWASP avec "
-"verdict, publier les commentaires sur GitHub, persister chaque revue, et offrir un assistant en "
-"langage naturel. Côté non fonctionnel, la contrainte dominante est la confidentialité : "
-"l'inférence reste locale.",
+"(≈ 18 s) Six besoins fonctionnels : détecter les vulnérabilités, produire la revue OWASP avec "
+"score et verdict, publier sur GitHub avec le gate CI/CD, persister chaque revue, offrir un chat "
+"opérationnel, et sécuriser la plateforme elle-même. Côté non fonctionnel, cinq contraintes : la "
+"confidentialité — l'inférence reste locale —, la performance, la résilience, la fiabilité et "
+"l'observabilité.",
 # 13 — Benchmark (≈ 32 s)
 "(≈ 32 s) Le choix des modèles repose non sur la littérature, mais sur un banc d'essai sur le "
 "matériel cible, prompt système complet. Deux candidats éliminés : llama 3.2 trois milliards, "

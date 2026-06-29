@@ -94,7 +94,7 @@ Le cadre conceptuel est le DevSecOps et le shift-left : détecter les vulnérabi
 
 ### 12. Besoins — ≈ 18 s
 
-Cinq besoins fonctionnels : détecter les vulnérabilités, produire la revue OWASP avec verdict, publier les commentaires sur GitHub, persister chaque revue, et offrir un assistant en langage naturel. Côté non fonctionnel, la contrainte dominante est la confidentialité : l'inférence reste locale.
+Six besoins fonctionnels : détecter les vulnérabilités, produire la revue OWASP avec score et verdict, publier sur GitHub avec le gate CI/CD, persister chaque revue, offrir un chat opérationnel, et sécuriser la plateforme elle-même. Côté non fonctionnel, cinq contraintes : la confidentialité — l'inférence reste locale —, la performance, la résilience, la fiabilité et l'observabilité.
 
 ### 13. Benchmark — ≈ 32 s
 
