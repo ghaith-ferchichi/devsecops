@@ -363,50 +363,62 @@ def section_divider(s, active, subtitle):
 
 # ===================== SLIDES =====================
 
-# ---- 1. PAGE DE TITRE ----
+# ---- 1. PAGE DE TITRE (mise en page institutionnelle ISI, centrée) ----
 s = slide()
 rect(s, 0, 0, 13.333, 7.5, fill=WHITE)
-# bandeau hero (dégradé) + image, à droite
-panel = rect(s, 8.25, 0, 5.083, 7.5, fill=VIOLET); set_gradient(panel, VIOLET, TEAL, 60)
-# hero visuel : image aux coins arrondis, dans une carte au rayon assorti
-_hero = img("solution_overview.png")
-_bx, _by, _bw, _bh = 8.62, 2.3, 4.35, 2.95
-_iw, _ih = Image.open(_hero).size
-if _iw/_ih > _bw/_bh: _w = _bw; _h = _bw*_ih/_iw
-else: _h = _bh; _w = _bh*_iw/_ih
-_x = _bx+(_bw-_w)/2; _y = _by+(_bh-_h)/2
-_pad = 0.13
-_card = rect(s, _x-_pad, _y-_pad, _w+2*_pad, _h+2*_pad, fill=WHITE,
-             shape=MSO_SHAPE.ROUNDED_RECTANGLE, shadow=True)
-_card.adjustments[0] = 0.10
-rounded_pic(s, _hero, _x, _y, _w, _h, adj=8000)
-chevron(s, 8.6, 5.85, 0.45, WHITE, n=3, gap=0.4)
-# logos institutionnels : BTE · ISI · UTM
+# fines bandes dégradé (identité « Modern Light Tech ») en haut et en bas
+_t = rect(s, 0, 0, 13.333, 0.15, fill=VIOLET); set_gradient(_t, VIOLET, TEAL, 0)
+_b = rect(s, 0, 7.35, 13.333, 0.15, fill=TEAL);  set_gradient(_b, TEAL, VIOLET, 0)
+# logos institutionnels : BTE (gauche) · ISI + UTM (droite)
 def _logo(nm, x, y, h):
     try: s.shapes.add_picture(img(nm), Inches(x), Inches(y), height=Inches(h))
     except Exception: pass
-_logo("logo_BTE.png", 0.7, 0.5, 0.55)
-_logo("LogoISI.png", 5.0, 0.5, 0.55)
-_logo("Logo_UTM.png", 6.95, 0.46, 0.62)
-txt(s, 0.7, 1.85, 7.3, 0.35, [[P("UNIVERSITÉ DE TUNIS EL MANAR · INSTITUT SUPÉRIEUR D'INFORMATIQUE", 9.5, SLATE, True, BODY_F)]])
-txt(s, 0.7, 2.2, 7.2, 0.35, [[P("Rapport de Stage de Fin d'Études", 13, TEAL_D, True, HEAD)]])
-txt(s, 0.7, 2.62, 7.3, 1.5, [
-    [P("BTE Security", 36, INK, False, HEAD)],
-    [P("AI Agent", 36, VIOLET_D, False, HEAD)],
-])
-txt(s, 0.7, 3.98, 7.3, 0.6, [[P("Agent IA pour la revue automatisée de code",
-                                14, BODY, False, BODY_F)]])
-txt(s, 0.7, 4.55, 7.4, 0.7, [
-    [P("Diplôme National de Mastère Professionnel", 12.5, INK, True, HEAD)],
-    [P("Spécialité : Sécurité des Systèmes d'Information et des Infrastructures", 11.5, BODY, False, BODY_F)],
-])
-rect(s, 0.72, 5.42, 1.3, 0.05, fill=VIOLET)
-txt(s, 0.7, 5.58, 7.4, 1.5, [
-    [P("Réalisé par  ", 12, SLATE, False, BODY_F), P("Ghaith FERCHICHI", 12, INK, True, HEAD)],
-    [P("Encadrant professionnel : ", 10.5, SLATE, False, BODY_F), P("M. Kamel KAOUECH", 10.5, BODY, False, BODY_F)],
-    [P("Encadrante académique : ", 10.5, SLATE, False, BODY_F), P("Mme Ghayet El Mouna ZHIOUA", 10.5, BODY, False, BODY_F)],
-    [P("Banque de Tunisie et des Émirats · Année universitaire 2025–2026", 10.5, SLATE, False, BODY_F, True)],
-])
+_logo("logo_BTE.png", 0.62, 0.60, 0.50)     # AR 5.93 -> ~2.97 large
+_logo("LogoISI.png", 10.78, 0.52, 0.56)     # AR 2.00 -> ~1.12 large
+_logo("Logo_UTM.png", 12.16, 0.42, 0.72)    # AR 1.06 -> ~0.76 large
+# en-tête institutionnel, centré entre les logos
+txt(s, 3.0, 0.46, 7.33, 1.65, [
+    [P("République Tunisienne", 13, INK, True, HEAD)],
+    [P("Ministère de l'Enseignement Supérieur et de la Recherche Scientifique", 11, BODY, False, BODY_F)],
+    [P("Université de Tunis El Manar", 11, BODY, False, BODY_F)],
+    [P("Institut Supérieur d'Informatique", 11.5, TEAL_D, True, HEAD)],
+], align=PP_ALIGN.CENTER, sp_after=2)
+# filet de séparation
+rect(s, 1.6, 2.30, 10.13, 0.018, fill=HAIR)
+# acte de soutenance + spécialité (centré)
+txt(s, 1.0, 2.46, 11.33, 0.45, [[P("Soutenance de Stage de Fin d'Études", 18, TEAL_D, True, HEAD)]],
+    align=PP_ALIGN.CENTER)
+txt(s, 1.0, 2.92, 11.33, 0.7, [
+    [P("En vue de l'obtention du Diplôme National de Mastère Professionnel", 12, INK, True, HEAD)],
+    [P("Spécialité : Sécurité des Systèmes d'Informations et des Infrastructures", 11.5, SLATE, False, BODY_F)],
+], align=PP_ALIGN.CENTER, sp_after=2)
+# carte-titre centrée + barre d'accent dégradé (identité moderne)
+_cw, _ch = 8.4, 1.66
+_cx = (13.333 - _cw) / 2
+_cy = 3.80
+_card = rect(s, _cx, _cy, _cw, _ch, fill=WHITE, shape=MSO_SHAPE.ROUNDED_RECTANGLE, shadow=True)
+round_shape(_card, 0.16, _cw, _ch)
+_bar = rect(s, _cx + 0.18, _cy, _cw - 0.36, 0.10, fill=VIOLET, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+set_gradient(_bar, VIOLET, TEAL, 0)
+txt(s, _cx, _cy + 0.30, _cw, 0.7,
+    [[P("BTE Security ", 34, INK, False, HEAD), P("AI Agent", 34, VIOLET_D, False, HEAD)]],
+    align=PP_ALIGN.CENTER)
+txt(s, _cx, _cy + 1.08, _cw, 0.45,
+    [[P("Agent IA pour la revue automatisée de code", 14, BODY, False, BODY_F)]],
+    align=PP_ALIGN.CENTER)
+# bloc bas : encadrants (gauche) · réalisé par (droite) · année (centre)
+txt(s, 0.9, 5.82, 5.6, 1.2, [
+    [P("Encadrants", 12, VIOLET_D, True, HEAD)],
+    [P("M. Kamel KAOUECH ", 11, INK, True, HEAD), P("— professionnel", 10.5, SLATE, False, BODY_F)],
+    [P("Mme Ghayet El Mouna ZHIOUA ", 11, INK, True, HEAD), P("— académique", 10.5, SLATE, False, BODY_F)],
+], sp_after=3)
+txt(s, 6.8, 5.82, 5.63, 1.2, [
+    [P("Réalisé par", 12, TEAL_D, True, HEAD)],
+    [P("Ghaith FERCHICHI", 13, INK, True, HEAD)],
+], align=PP_ALIGN.RIGHT, sp_after=3)
+txt(s, 1.0, 6.97, 11.33, 0.35,
+    [[P("Année universitaire 2025–2026", 10.5, SLATE, False, BODY_F, True)]],
+    align=PP_ALIGN.CENTER)
 
 # ---- 2. SOMMAIRE ----
 s = slide(); header(s, "Plan", "Sommaire", None)
@@ -434,12 +446,10 @@ txt(s, 0.9, 2.5, 11.5, 2.0, [
 ])
 rect(s, 0.92, 4.95, 1.6, 0.05, fill=GOLD)
 txt(s, 0.9, 5.2, 11.0, 1.0, [
-    [P("À la BTE, la revue de sécurité demeure ", 17, BODY, False, BODY_F),
-     P("manuelle", 17, GOLD, True, HEAD),
-     P(", peut atteindre ", 17, BODY, False, BODY_F),
-     P("vingt-quatre heures", 17, GOLD, True, HEAD),
-     P(",", 17, BODY, False, BODY_F)],
-    [P("et dépend de la disponibilité et de l'expertise du relecteur.", 17, BODY, False, BODY_F)],
+    [P("À la BTE, la revue de sécurité du code reste ", 17, BODY, False, BODY_F),
+     P("entièrement manuelle", 17, GOLD, True, HEAD),
+     P(".", 17, BODY, False, BODY_F)],
+    [P("Aujourd'hui, aucun contrôle automatique n'arrête une faille.", 17, BODY, False, BODY_F)],
 ])
 
 # ======================= CHAPITRE 1 — CONTEXTE GÉNÉRAL =======================
@@ -462,9 +472,9 @@ card_text(s, 7.1, 5.2, 5.5, 1.3, [
 # ---- Problématique ----
 s = slide(); header(s, "01 · Contexte général", "Problématique", 2)
 rect(s, 0.7, 2.0, 11.93, 4.4, fill=PANEL, line=None, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-items = [("Délai pouvant atteindre 24 h", "selon la disponibilité et l'expertise du relecteur", RED),
+items = [("Délai pouvant atteindre 24 h", "le temps qu'une Pull Request soit revue à la main", RED),
          ("Absence de gate CI/CD", "une Pull Request vulnérable peut être fusionnée sans blocage", RED),
-         ("Qualité de revue variable", "la couverture de sécurité diffère d'un relecteur à l'autre", AMBER),
+         ("Qualité de revue variable", "selon la disponibilité et l'expertise du relecteur", AMBER),
          ("Angles morts", "secrets commités et dépendances vulnérables non détectés à l'œil nu", AMBER)]
 for i,(t,d,c) in enumerate(items):
     col = i % 2; row = i // 2
@@ -616,7 +626,6 @@ txt(s, 0.7, 6.1, 11.93, 0.5, [[P("Sortie SAST nettoyée (−52 % de tokens) avan
 # ---- Positionnement ----
 s = slide(); header(s, "02 · État de l'art", "Positionnement par rapport aux solutions existantes", 9)
 rows = [("Solution","Données / inférence","LLM","100 % local"),
-        ("GitHub CodeQL","Cloud GitHub","Non","Non"),
         ("Snyk","Code envoyé au cloud","Limité","Non"),
         ("SonarQube","Auto-hébergeable","Non","Règles statiques"),
         ("Copilot Autofix","Cloud","Oui","Non"),
@@ -827,20 +836,34 @@ card_text(s, 8.35, 4.85, 4.28, 1.55, [
     [P("Métriques conteneurs via le socket Docker, après l'échec de cAdvisor sur notre version ; les deux moteurs d'inférence comparés en continu.",
        10.5, BODY, False, BODY_F)]], fill=T_VIOLET, line=None)
 
-# ---- Observabilité 2/2 — pannes détectées ----
-s = slide(); header(s, "04 · Réalisation", "Une supervision qui détecte de vraies pannes", True)
+# ---- Observabilité 2/2 — la supervision agit (reliée à Slack) ----
+s = slide(); header(s, "04 · Réalisation", "Une supervision opérationnelle, reliée à Slack", True)
 fit_image(s, img("grafana_vps_host_dashboard.png"), 0.7, 1.9, 3.95, 2.1, caption="VPS — hôte")
 fit_image(s, img("grafana_pr_reviews_dashboard.png"), 4.75, 1.9, 3.95, 2.1, caption="Revues de PR")
 fit_image(s, img("grafana_agent_dashboard.png"), 8.75, 1.9, 3.9, 2.1, caption="Agent & LLM")
-txt(s, 0.7, 4.45, 11.95, 0.5, [[P("Deux pannes restées invisibles, révélées par la supervision elle-même :", 14, INK, True, HEAD)]])
-card_text(s, 0.7, 5.05, 5.85, 1.65, [
-    [P("AlertManager hors service", 13, RED, True, HEAD)],
-    [P("Silencieusement arrêté depuis le déploiement initial : aucune alerte n'aurait été émise. Repéré via le tableau de bord, puis corrigé en sprint.",
-       11, BODY, False, BODY_F)]], fill=WHITE)
-card_text(s, 6.75, 5.05, 5.88, 1.65, [
-    [P("VictoriaMetrics aveugle neuf jours", 13, RED, True, HEAD)],
-    [P("Collecte interrompue pendant neuf jours, sans aucune trace visible. Mise en évidence par les dashboards, puis restaurée.",
-       11, BODY, False, BODY_F)]], fill=WHITE)
+# Notification Slack : une alerte réelle déclenchée puis résolue (recadrée sur le fil de messages)
+_SLK = img("slack_notification_pr_result.png")
+_cl, _cr, _ct, _cb = 0.29, 0.02, 0.45, 0.18           # recadrage : retire barre latérale, haut (404) et barre de saisie
+_sw, _sh = Image.open(_SLK).size
+_var = (_sw*(1-_cl-_cr)) / (_sh*(1-_ct-_cb))           # ratio de la zone visible
+_ph = 1.95; _pw = _ph*_var
+_px, _py = 0.7, 4.6
+_pcard = rect(s, _px-0.1, _py-0.1, _pw+0.2, _ph+0.2, fill=WHITE,
+              shape=MSO_SHAPE.ROUNDED_RECTANGLE, shadow=True)
+round_shape(_pcard, 0.12, _pw+0.2, _ph+0.2)
+_pic = s.shapes.add_picture(_SLK, Inches(_px), Inches(_py), Inches(_pw), Inches(_ph))
+_pic.crop_left=_cl; _pic.crop_right=_cr; _pic.crop_top=_ct; _pic.crop_bottom=_cb
+txt(s, _px, _py+_ph+0.16, _pw, 0.3,
+    [[P("Canal #bte-security-ai-agent — alerte réelle, émise puis résolue", 10, SLATE, False, BODY_F, True)]],
+    align=PP_ALIGN.CENTER)
+_tx = _px + _pw + 0.55
+txt(s, _tx, 4.7, 12.63-_tx, 0.55, [[P("La supervision agit — elle ne décore pas", 16, INK, True, HEAD)]])
+for i, t in enumerate([
+        "Une alerte réelle se déclenche : CPU de l'hôte à 99 %, notifiée sur Slack",
+        "L'agent confirme ensuite la résolution automatique de l'incident",
+        "Le même canal reçoit le verdict de chaque revue de Pull Request"]):
+    rect(s, _tx, 5.4+i*0.52+0.04, 0.15, 0.15, fill=TEAL_D, shape=MSO_SHAPE.OVAL)
+    txt(s, _tx+0.27, 5.37+i*0.52, 12.63-(_tx+0.27), 0.5, [[P(t, 12, BODY, False, BODY_F)]])
 
 # ---- Assistant conversationnel & autonomie ----
 s = slide(); header(s, "04 · Réalisation", "Assistant conversationnel et opérations autonomes", 18)
@@ -853,22 +876,6 @@ for i,t in enumerate(["Scheduler autonome (tâches asyncio)","Health digest Slac
                       "Gardien disque auto-réparateur à 90 %"]):
     rect(s, 7.4, 4.3+i*0.62+0.03, 0.16,0.16, fill=GOLD, shape=MSO_SHAPE.OVAL)
     txt(s, 7.7, 4.3+i*0.62-0.03, 4.9, 0.5, [[P(t, 13, BODY, False, BODY_F)]])
-
-# ---- Détection autonome des pannes ----
-s = slide(); header(s, "04 · Réalisation", "Détection autonome de ses propres pannes", 19)
-blob(s, 10.6, 4.0, 2.3, 2.3, T_VIOLET)
-card_text(s, 0.7, 2.1, 5.6, 3.1, [
-    [P("0 → 51", 56, VIOLET_D, True, HEAD)],
-    [P("tokens", 16, INK, True, HEAD)], [P("", 8, BODY)],
-    [P("La télémétrie A/B a révélé un bug du modèle Phi-4", 13, BODY, False, BODY_F)],
-    [P("qui renvoyait zéro token, sans aucune erreur journalisée.", 13, BODY, False, BODY_F)],
-], fill=PANEL, line=None, anchor=MSO_ANCHOR.MIDDLE)
-txt(s, 6.7, 2.4, 5.9, 0.6, [[P("La preuve d'un système qui se surveille lui-même", 17, INK, True, HEAD)]])
-for i,t in enumerate(["Le système supervise sa propre infrastructure",
-                      "Une anomalie invisible aux journaux est captée par sa métrique",
-                      "Diagnostic, correctif puis vérification (0 → 51 tokens)"]):
-    rect(s, 6.7, 3.3+i*0.8+0.03, 0.16,0.16, fill=VIOLET, shape=MSO_SHAPE.OVAL)
-    txt(s, 7.0, 3.25+i*0.8, 5.5, 0.7, [[P(t, 13, BODY, False, BODY_F)]])
 
 # ---- Tests et validation ----
 s = slide(); header(s, "04 · Réalisation", "Tests et validation de la plateforme")
@@ -944,26 +951,23 @@ SPEECH = [
 "conclusion et les perspectives.",
 # 3 — Introduction (≈ 35 s)
 "(≈ 35 s) Partons de trois scénarios concrets : une injection SQL fusionnée dans une API de "
-"paiement, un secret d'authentification commité par mégarde dans un dépôt, une image Docker bâtie "
-"sur une bibliothèque exposée à un CVE critique. Chacune de ces failles peut compromettre le "
-"système d'information de la banque. Or, à la BTE, la revue de sécurité du code est entièrement "
-"manuelle : elle peut atteindre vingt-quatre heures, et sa qualité dépend de la disponibilité et "
-"de l'expertise du relecteur du jour. C'est ce constat qui motive ce travail.",
+"paiement, un secret d'authentification commité par erreur dans un dépôt, une image Docker construite "
+"sur une bibliothèque touchée par une faille critique. Chacune de ces failles peut compromettre le "
+"système d'information de la banque. Et aujourd'hui, aucun contrôle automatique ne les arrête : "
+"la revue de sécurité du code reste entièrement manuelle. C'est ce constat qui motive ce travail.",
 # 4 — Divider 1 (≈ 5 s)
 "(≈ 5 s) Commençons par le contexte général.",
-# 5 — Organisme & processus actuel (≈ 24 s)
-"(≈ 24 s) La BTE est née en 1982 d'une convention entre l'État tunisien et l'Abu Dhabi Investment "
-"Authority. Mon stage s'est déroulé à la Direction Centrale de l'Informatique et de "
-"l'Organisation, en sécurité opérationnelle. Le processus existant, à gauche : à chaque Pull "
-"Request, un relecteur examine le diff à la main, commente, puis fusionne. Aucun scanner, aucun "
-"gate de pipeline — tout repose sur l'humain.",
-# 6 — Problématique (≈ 30 s)
-"(≈ 30 s) Quatre limites en découlent. Le délai, d'abord : jusqu'à vingt-quatre heures, pendant "
-"lesquelles la vulnérabilité reste exposée. L'absence de blocage technique, ensuite : une Pull "
-"Request porteuse d'une faille critique peut être fusionnée sans obstacle. Une qualité de revue "
-"qui varie d'un relecteur à l'autre. Et deux angles morts structurels : les secrets commités par "
-"accident et les dépendances vulnérables, deux catégories pour lesquelles l'œil humain n'est pas "
-"le bon outil.",
+# 5 — Organisme & étude de l'existant (≈ 18 s)
+"(≈ 18 s) Mon stage s'est déroulé à la Banque de Tunisie et des Émirats, à la Direction Centrale "
+"de l'Informatique et de l'Organisation, au sein de l'équipe sécurité opérationnelle. Le "
+"processus existant, à gauche : à chaque Pull Request, un relecteur examine le diff à la main, "
+"commente, puis fusionne. Aucun scanner, aucun gate de pipeline — tout repose sur l'humain.",
+# 6 — Problématique (≈ 27 s)
+"(≈ 27 s) Quatre limites en découlent. Le délai : jusqu'à vingt-quatre heures. L'absence de "
+"blocage technique : une Pull Request critique peut être fusionnée sans obstacle. Une qualité de "
+"revue inégale, qui dépend de la disponibilité et de l'expertise du relecteur. Et deux angles "
+"morts : les secrets commités et les dépendances vulnérables, pour lesquels l'œil humain n'est "
+"pas le bon outil.",
 # 7 — Objectifs et contribution (builds : 3 clics) (≈ 40 s)
 "(≈ 40 s) Notre contribution tient en une phrase : un agent d'intelligence artificielle autonome "
 "qui revoit chaque Pull Request selon la grille OWASP Top 10, publie ses correctifs directement "
@@ -1014,8 +1018,8 @@ SPEECH = [
 "tokens en moins — pour préserver la fenêtre de contexte.",
 # 15 — Positionnement (≈ 22 s)
 "(≈ 22 s) Pourquoi pas un outil du marché ? Aucun ne combine raisonnement par modèle de langage "
-"et inférence entièrement locale. CodeQL, Snyk et Copilot envoient le code à un tiers — "
-"rédhibitoire en banque. SonarQube est auto-hébergeable mais purement statique, sans explication. "
+"et inférence entièrement locale. Snyk et Copilot envoient le code à un tiers — "
+"inacceptable en banque. SonarQube est auto-hébergeable mais purement statique, sans explication. "
 "Notre contribution unit ces deux mondes, sans qu'une ligne ne sorte du VPS.",
 # 16 — Divider 3 (≈ 5 s)
 "(≈ 5 s) Venons-en à la conception.",
@@ -1034,7 +1038,7 @@ SPEECH = [
 "dix-neuf outils réels. Et il s'auto-exploite : gardien disque et bilan de santé quotidien.",
 # 19 — Pipeline (builds : 7 clics) (≈ 42 s)
 "(≈ 42 s) Le cœur du système est un graphe d'état à neuf nœuds. Suivons une Pull Request. [clics] "
-"Le webhook est vérifié et dédupliqué ; le dépôt est cloné, le diff généré localement. Le 7B "
+"Le webhook est vérifié, les doublons éliminés ; le dépôt est cloné, le diff généré localement. Le 7B "
 "classifie en cinq catégories, et le routage adapte l'analyse : une PR de documentation saute les "
 "scanners, un Dockerfile déclenche le scan d'image. Les scanners tournent en parallèle, chacun "
 "isolé — si l'un échoue, le pipeline continue. Le 14B mène l'analyse OWASP, rend le verdict, "
@@ -1075,13 +1079,12 @@ SPEECH = [
 "quarante-trois alertes, OSV cent onze vulnérabilités de dépendances, Trivy soixante-quatre. Tout "
 "se passe en local, sans qu'aucune ligne ne quitte la banque. Le modèle 14B prend alors le relais "
 "pour l'analyse approfondie.",
-# 24c — Démonstration 3/3 : verdict et revue inline (≈ 30 s)
-"(≈ 30 s) Le résultat est publié directement sur la Pull Request. Une synthèse en tête — risque "
+# 24c — Démonstration 3/3 : verdict et revue inline (≈ 26 s)
+"(≈ 26 s) Le résultat est publié directement sur la Pull Request. Une synthèse en tête — risque "
 "CRITIQUE, verdict BLOCK — puis huit commentaires inline, chacun ancré sur la ligne exacte du "
-"diff : l'injection SQL, la SSRF, le XSS, le MD5, le mot de passe en URL, et jusqu'au Dockerfile "
-"sans utilisateur. Chaque commentaire porte une suggestion de correction. [clic] Le statut du "
-"commit passe au rouge : la fusion est techniquement bloquée, et l'équipe est prévenue sur Slack. "
-"L'agent n'a pas seulement commenté — il a arrêté le code vulnérable à la porte.",
+"diff et porteur d'une suggestion de correction. [clic] Le statut du commit passe au rouge : la "
+"fusion est techniquement bloquée, et l'équipe est prévenue sur Slack. L'agent n'a pas seulement "
+"commenté — il a arrêté le code vulnérable à la porte.",
 # 25 — Bénéfices & résultats (≈ 25 s)
 "(≈ 25 s) Le tableau résume le passage du manuel à l'agent : un délai divisé par près de cent, "
 "une couverture OWASP systématique, un gate effectif là où rien ne bloquait, une traçabilité "
@@ -1093,11 +1096,11 @@ SPEECH = [
 "trois tableaux de bord Grafana, rafraîchis toutes les trente secondes. Faute de compatibilité de "
 "cAdvisor avec notre version de Docker, les métriques de conteneurs passent directement par le "
 "socket Docker, et les deux moteurs d'inférence sont comparés en continu.",
-# 26b — Observabilité 2/2 : pannes détectées (≈ 17 s)
-"(≈ 17 s) Et cette supervision n'est pas décorative : elle a révélé deux pannes restées "
-"invisibles — un AlertManager hors service depuis le déploiement initial, et une collecte "
-"VictoriaMetrics interrompue pendant neuf jours. Les deux, repérées par les tableaux de bord, "
-"puis corrigées en sprint.",
+# 26b — Observabilité 2/2 : la supervision agit (≈ 17 s)
+"(≈ 17 s) Et cette supervision n'est pas décorative : elle agit. Quand la charge processeur de "
+"l'hôte grimpe, une alerte se déclenche et part sur Slack ; une fois la situation rétablie, "
+"l'agent confirme lui-même la résolution. Le même canal reçoit le verdict de chaque revue. La "
+"boucle observation, alerte, action est ainsi bouclée, en conditions réelles.",
 # 27 — Chat & autonomie (≈ 25 s)
 "(≈ 25 s) Un assistant conversationnel doté de dix-neuf outils permet d'interroger "
 "l'infrastructure en langage naturel, jusqu'à la base de connaissances sécurité, sans écrire de "
@@ -1105,29 +1108,23 @@ SPEECH = [
 "cite la valeur mesurée, jamais inventée. Et l'agent s'auto-exploite : gardien disque toutes les "
 "trente minutes, nettoyage automatique à quatre-vingt-dix pour cent, bilan de santé publié chaque "
 "matin sur Slack.",
-# 28 — Phi-4 (≈ 22 s)
-"(≈ 22 s) Un épisode révélateur : la télémétrie a détecté qu'un modèle candidat, Phi-4, renvoyait "
-"zéro token sans la moindre erreur journalisée — un template de conversation mal formé. Corrigé, "
-"puis vérifié : de zéro à cinquante et un tokens. Le système a repéré une panne invisible aux "
-"journaux : la preuve qu'il se surveille lui-même.",
-# 29 — Tests et validation (≈ 20 s)
+# 28 — Tests et validation (≈ 20 s)
 "(≈ 20 s) La validation finale a couvert les mécanismes critiques : signature invalide rejetée "
 "avant tout traitement, webhook dupliqué ignoré, circuit breaker avec classification de repli si "
 "le modèle est indisponible, gardien disque vérifié en conditions réelles. Au total, quatorze "
 "vérifications de bout en bout, toutes validées avant la livraison.",
-# 30 — Divider 5 (≈ 5 s)
+# 29 — Divider 5 (≈ 5 s)
 "(≈ 5 s) J'en viens à la conclusion.",
-# 31 — Limites assumées & perspectives (≈ 40 s)
-"(≈ 40 s) Deux limites assumées et un point de vigilance. L'inférence sur CPU borne la revue à "
+# 30 — Limites assumées & perspectives (≈ 34 s)
+"(≈ 34 s) Deux limites assumées et un point de vigilance. L'inférence sur CPU borne la revue à "
 "quinze-vingt-cinq minutes : c'est le prix de la confidentialité. Le corpus d'évaluation reste "
-"restreint — un jeu contrôlé et huit revues réelles. Et le diff analysé est par nature une entrée "
-"non fiable : l'architecture y oppose déjà les findings déterministes des scanners, qu'aucun "
-"texte ne peut effacer, et le plan de durcissement prévoit d'ancrer davantage le verdict sur ces "
-"findings. Trois perspectives : la migration GPU — environ trois mille euros, dans l'enveloppe de "
-"la DCIO — ramènerait chaque revue à deux à cinq minutes, sans toucher ni à l'architecture ni à "
-"la confidentialité ; le passage à l'échelle de l'ensemble des dépôts de la banque ; et un "
-"tableau de bord de risque alimenté par les revues accumulées, destiné au RSSI.",
-# 32 — Conclusion (≈ 30 s)
+"restreint — un jeu contrôlé et huit revues réelles. Et le diff est par nature une entrée non "
+"fiable : l'architecture y oppose déjà les findings déterministes des scanners, qu'aucun texte ne "
+"peut effacer. Trois perspectives : la migration GPU — environ trois mille euros — ramènerait "
+"chaque revue à deux à cinq minutes, sans toucher à l'architecture ni à la confidentialité ; le "
+"passage à l'échelle de tous les dépôts de la banque ; et un tableau de bord de risque pour le "
+"RSSI.",
+# 31 — Conclusion (≈ 30 s)
 "(≈ 30 s) En conclusion : parti d'un VPS vierge, ce projet livre un agent d'intelligence "
 "artificielle complet, déployé en production à la BTE, qui sécurise chaque Pull Request sans "
 "qu'aucun code ne quitte la banque. La plateforme est remise à la banque et constitue un socle "

@@ -2,7 +2,7 @@
 
 > Script aligné sur le deck généré (`build_pptx_modern.py`). Miroir exact des notes du présentateur intégrées dans le `.pptx`.
 
-**35 diapositives · durée cible : 13 min 53 s.**
+**34 diapositives · durée cible : 13 min 12 s.**
 
 
 ## Minutage
@@ -13,10 +13,10 @@
 | 2 | Sommaire | ≈ 10 s |
 | 3 | Introduction | ≈ 35 s |
 | 4 | Divider 1 | ≈ 5 s |
-| 5 | Organisme & AS-IS | ≈ 24 s |
-| 6 | Problématique | ≈ 30 s |
+| 5 | Organisme & étude de l'existant | ≈ 18 s |
+| 6 | Problématique | ≈ 27 s |
 | 7 | Objectifs et contribution (builds : 3 clics) | ≈ 40 s |
-| 8 | Solution TO-BE | ≈ 30 s |
+| 8 | Solution proposée | ≈ 30 s |
 | 9 | Méthodologie | ≈ 20 s |
 | 10 | Divider 2 | ≈ 5 s |
 | 11 | DevSecOps | ≈ 18 s |
@@ -34,17 +34,16 @@
 | 23 | Défense en profondeur | ≈ 30 s |
 | 24a | Démonstration 1/3 : le code soumis | ≈ 25 s |
 | 24b | Démonstration 2/3 : l'agent au travail | ≈ 30 s |
-| 24c | Démonstration 3/3 : verdict et revue inline | ≈ 30 s |
+| 24c | Démonstration 3/3 : verdict et revue inline | ≈ 26 s |
 | 25 | Bénéfices & résultats | ≈ 25 s |
 | 26a | Observabilité 1/2 : la stack | ≈ 18 s |
-| 26b | Observabilité 2/2 : pannes détectées | ≈ 17 s |
+| 26b | Observabilité 2/2 : la supervision agit | ≈ 17 s |
 | 27 | Chat & autonomie | ≈ 25 s |
-| 28 | Phi-4 | ≈ 22 s |
-| 29 | Tests et validation | ≈ 20 s |
-| 30 | Divider 5 | ≈ 5 s |
-| 31 | Limites assumées & perspectives | ≈ 40 s |
-| 32 | Conclusion | ≈ 30 s |
-| | **Total** | **13 min 53 s** |
+| 28 | Tests et validation | ≈ 20 s |
+| 29 | Divider 5 | ≈ 5 s |
+| 30 | Limites assumées & perspectives | ≈ 34 s |
+| 31 | Conclusion | ≈ 30 s |
+| | **Total** | **13 min 12 s** |
 
 ## Discours
 
@@ -58,25 +57,25 @@ Mon exposé suit la structure du rapport : le contexte général, l'état de l'a
 
 ### 3. Introduction — ≈ 35 s
 
-Partons de trois scénarios concrets : une injection SQL fusionnée dans une API de paiement, un secret d'authentification commité par mégarde dans un dépôt, une image Docker bâtie sur une bibliothèque exposée à un CVE critique. Chacune de ces failles peut compromettre le système d'information de la banque. Or, à la BTE, la revue de sécurité du code est entièrement manuelle : elle peut atteindre vingt-quatre heures, et sa qualité dépend de la disponibilité et de l'expertise du relecteur du jour. C'est ce constat qui motive ce travail.
+Partons de trois scénarios concrets : une injection SQL fusionnée dans une API de paiement, un secret d'authentification commité par erreur dans un dépôt, une image Docker construite sur une bibliothèque touchée par une faille critique. Chacune de ces failles peut compromettre le système d'information de la banque. Et aujourd'hui, aucun contrôle automatique ne les arrête : la revue de sécurité du code reste entièrement manuelle. C'est ce constat qui motive ce travail.
 
 ### 4. Divider 1 — ≈ 5 s
 
 Commençons par le contexte général.
 
-### 5. Organisme & AS-IS — ≈ 24 s
+### 5. Organisme & étude de l'existant — ≈ 18 s
 
-La BTE est née en 1982 d'une convention entre l'État tunisien et l'Abu Dhabi Investment Authority. Mon stage s'est déroulé à la Direction Centrale de l'Informatique et de l'Organisation, en sécurité opérationnelle. Le processus existant, à gauche : à chaque Pull Request, un relecteur examine le diff à la main, commente, puis fusionne. Aucun scanner, aucun gate de pipeline — tout repose sur l'humain.
+Mon stage s'est déroulé à la Banque de Tunisie et des Émirats, à la Direction Centrale de l'Informatique et de l'Organisation, au sein de l'équipe sécurité opérationnelle. Le processus existant, à gauche : à chaque Pull Request, un relecteur examine le diff à la main, commente, puis fusionne. Aucun scanner, aucun gate de pipeline — tout repose sur l'humain.
 
-### 6. Problématique — ≈ 30 s
+### 6. Problématique — ≈ 27 s
 
-Quatre limites en découlent. Le délai, d'abord : jusqu'à vingt-quatre heures, pendant lesquelles la vulnérabilité reste exposée. L'absence de blocage technique, ensuite : une Pull Request porteuse d'une faille critique peut être fusionnée sans obstacle. Une qualité de revue qui varie d'un relecteur à l'autre. Et deux angles morts structurels : les secrets commités par accident et les dépendances vulnérables, deux catégories pour lesquelles l'œil humain n'est pas le bon outil.
+Quatre limites en découlent. Le délai : jusqu'à vingt-quatre heures. L'absence de blocage technique : une Pull Request critique peut être fusionnée sans obstacle. Une qualité de revue inégale, qui dépend de la disponibilité et de l'expertise du relecteur. Et deux angles morts : les secrets commités et les dépendances vulnérables, pour lesquels l'œil humain n'est pas le bon outil.
 
 ### 7. Objectifs et contribution (builds : 3 clics) — ≈ 40 s
 
 Notre contribution tient en une phrase : un agent d'intelligence artificielle autonome qui revoit chaque Pull Request selon la grille OWASP Top 10, publie ses correctifs directement sur GitHub, et s'exécute intégralement en local — aucun code ne quitte la banque. Trois chiffres résument le résultat. [clic] Le délai de revue passe de vingt-quatre heures à une quinzaine de minutes. [clic] Sur la validation contrôlée, sept vulnérabilités sur sept sont détectées, sans faux positif dans le fichier modifié. [clic] Et cent pour cent de l'inférence reste sur le VPS de la banque, conformément aux exigences de la Banque Centrale de Tunisie.
 
-### 8. Solution TO-BE — ≈ 30 s
+### 8. Solution proposée — ≈ 30 s
 
 Voici le processus cible. GitHub émet un webhook signé HMAC-SHA256 ; l'agent vérifie la signature, élimine les doublons, classifie la Pull Request en une trentaine de secondes, exécute en parallèle les scanners pertinents, puis consolide leurs résultats avec un modèle de langage local. Il publie sur GitHub la revue complète : score de risque, commentaires ligne par ligne et verdict — APPROVE, REQUEST_CHANGES ou BLOCK — posé comme statut de commit. C'est ce statut qui conditionne la fusion, laquelle reste déclenchée par un humain.
 
@@ -106,7 +105,7 @@ Trois briques portent l'ensemble. Cinq scanners spécialisés : Trivy pour les C
 
 ### 15. Positionnement — ≈ 22 s
 
-Pourquoi pas un outil du marché ? Aucun ne combine raisonnement par modèle de langage et inférence entièrement locale. CodeQL, Snyk et Copilot envoient le code à un tiers — rédhibitoire en banque. SonarQube est auto-hébergeable mais purement statique, sans explication. Notre contribution unit ces deux mondes, sans qu'une ligne ne sorte du VPS.
+Pourquoi pas un outil du marché ? Aucun ne combine raisonnement par modèle de langage et inférence entièrement locale. Snyk et Copilot envoient le code à un tiers — inacceptable en banque. SonarQube est auto-hébergeable mais purement statique, sans explication. Notre contribution unit ces deux mondes, sans qu'une ligne ne sorte du VPS.
 
 ### 16. Divider 3 — ≈ 5 s
 
@@ -122,7 +121,7 @@ Ce point fonde le titre du projet : il s'agit d'un agent, et non d'un simple app
 
 ### 19. Pipeline (builds : 7 clics) — ≈ 42 s
 
-Le cœur du système est un graphe d'état à neuf nœuds. Suivons une Pull Request. [clics] Le webhook est vérifié et dédupliqué ; le dépôt est cloné, le diff généré localement. Le 7B classifie en cinq catégories, et le routage adapte l'analyse : une PR de documentation saute les scanners, un Dockerfile déclenche le scan d'image. Les scanners tournent en parallèle, chacun isolé — si l'un échoue, le pipeline continue. Le 14B mène l'analyse OWASP, rend le verdict, escalade sur Slack si besoin, puis publie. Optimisation clé : fusionner les deux appels du 14B a fait passer le pipeline de trente-cinquante minutes à quinze-vingt-cinq.
+Le cœur du système est un graphe d'état à neuf nœuds. Suivons une Pull Request. [clics] Le webhook est vérifié, les doublons éliminés ; le dépôt est cloné, le diff généré localement. Le 7B classifie en cinq catégories, et le routage adapte l'analyse : une PR de documentation saute les scanners, un Dockerfile déclenche le scan d'image. Les scanners tournent en parallèle, chacun isolé — si l'un échoue, le pipeline continue. Le 14B mène l'analyse OWASP, rend le verdict, escalade sur Slack si besoin, puis publie. Optimisation clé : fusionner les deux appels du 14B a fait passer le pipeline de trente-cinquante minutes à quinze-vingt-cinq.
 
 ### 20. Fiabilité — ≈ 35 s
 
@@ -148,9 +147,9 @@ La démonstration part d'une seule Pull Request, dans un dépôt de test. Trois 
 
 Le développeur crée sa branche, pousse, ouvre la Pull Request — et n'a plus rien à faire. À droite, les journaux de l'agent défilent en direct : le webhook signé est vérifié, le modèle 7B classe la Pull Request, puis six scanners s'exécutent en parallèle — Semgrep remonte quarante-trois alertes, OSV cent onze vulnérabilités de dépendances, Trivy soixante-quatre. Tout se passe en local, sans qu'aucune ligne ne quitte la banque. Le modèle 14B prend alors le relais pour l'analyse approfondie.
 
-### 24c. Démonstration 3/3 : verdict et revue inline — ≈ 30 s
+### 24c. Démonstration 3/3 : verdict et revue inline — ≈ 26 s
 
-Le résultat est publié directement sur la Pull Request. Une synthèse en tête — risque CRITIQUE, verdict BLOCK — puis huit commentaires inline, chacun ancré sur la ligne exacte du diff : l'injection SQL, la SSRF, le XSS, le MD5, le mot de passe en URL, et jusqu'au Dockerfile sans utilisateur. Chaque commentaire porte une suggestion de correction. [clic] Le statut du commit passe au rouge : la fusion est techniquement bloquée, et l'équipe est prévenue sur Slack. L'agent n'a pas seulement commenté — il a arrêté le code vulnérable à la porte.
+Le résultat est publié directement sur la Pull Request. Une synthèse en tête — risque CRITIQUE, verdict BLOCK — puis huit commentaires inline, chacun ancré sur la ligne exacte du diff et porteur d'une suggestion de correction. [clic] Le statut du commit passe au rouge : la fusion est techniquement bloquée, et l'équipe est prévenue sur Slack. L'agent n'a pas seulement commenté — il a arrêté le code vulnérable à la porte.
 
 ### 25. Bénéfices & résultats — ≈ 25 s
 
@@ -160,31 +159,27 @@ Le tableau résume le passage du manuel à l'agent : un délai divisé par près
 
 L'agent voit l'intégralité du VPS : vingt-huit métriques, quinze règles d'alerte et trois tableaux de bord Grafana, rafraîchis toutes les trente secondes. Faute de compatibilité de cAdvisor avec notre version de Docker, les métriques de conteneurs passent directement par le socket Docker, et les deux moteurs d'inférence sont comparés en continu.
 
-### 26b. Observabilité 2/2 : pannes détectées — ≈ 17 s
+### 26b. Observabilité 2/2 : la supervision agit — ≈ 17 s
 
-Et cette supervision n'est pas décorative : elle a révélé deux pannes restées invisibles — un AlertManager hors service depuis le déploiement initial, et une collecte VictoriaMetrics interrompue pendant neuf jours. Les deux, repérées par les tableaux de bord, puis corrigées en sprint.
+Et cette supervision n'est pas décorative : elle agit. Quand la charge processeur de l'hôte grimpe, une alerte se déclenche et part sur Slack ; une fois la situation rétablie, l'agent confirme lui-même la résolution. Le même canal reçoit le verdict de chaque revue. La boucle observation, alerte, action est ainsi bouclée, en conditions réelles.
 
 ### 27. Chat & autonomie — ≈ 25 s
 
 Un assistant conversationnel doté de dix-neuf outils permet d'interroger l'infrastructure en langage naturel, jusqu'à la base de connaissances sécurité, sans écrire de SQL. Chaque question sur une donnée réelle déclenche l'appel d'outil correspondant : la réponse cite la valeur mesurée, jamais inventée. Et l'agent s'auto-exploite : gardien disque toutes les trente minutes, nettoyage automatique à quatre-vingt-dix pour cent, bilan de santé publié chaque matin sur Slack.
 
-### 28. Phi-4 — ≈ 22 s
-
-Un épisode révélateur : la télémétrie a détecté qu'un modèle candidat, Phi-4, renvoyait zéro token sans la moindre erreur journalisée — un template de conversation mal formé. Corrigé, puis vérifié : de zéro à cinquante et un tokens. Le système a repéré une panne invisible aux journaux : la preuve qu'il se surveille lui-même.
-
-### 29. Tests et validation — ≈ 20 s
+### 28. Tests et validation — ≈ 20 s
 
 La validation finale a couvert les mécanismes critiques : signature invalide rejetée avant tout traitement, webhook dupliqué ignoré, circuit breaker avec classification de repli si le modèle est indisponible, gardien disque vérifié en conditions réelles. Au total, quatorze vérifications de bout en bout, toutes validées avant la livraison.
 
-### 30. Divider 5 — ≈ 5 s
+### 29. Divider 5 — ≈ 5 s
 
 J'en viens à la conclusion.
 
-### 31. Limites assumées & perspectives — ≈ 40 s
+### 30. Limites assumées & perspectives — ≈ 34 s
 
-Deux limites assumées et un point de vigilance. L'inférence sur CPU borne la revue à quinze-vingt-cinq minutes : c'est le prix de la confidentialité. Le corpus d'évaluation reste restreint — un jeu contrôlé et huit revues réelles. Et le diff analysé est par nature une entrée non fiable : l'architecture y oppose déjà les findings déterministes des scanners, qu'aucun texte ne peut effacer, et le plan de durcissement prévoit d'ancrer davantage le verdict sur ces findings. Trois perspectives : la migration GPU — environ trois mille euros, dans l'enveloppe de la DCIO — ramènerait chaque revue à deux à cinq minutes, sans toucher ni à l'architecture ni à la confidentialité ; le passage à l'échelle de l'ensemble des dépôts de la banque ; et un tableau de bord de risque alimenté par les revues accumulées, destiné au RSSI.
+Deux limites assumées et un point de vigilance. L'inférence sur CPU borne la revue à quinze-vingt-cinq minutes : c'est le prix de la confidentialité. Le corpus d'évaluation reste restreint — un jeu contrôlé et huit revues réelles. Et le diff est par nature une entrée non fiable : l'architecture y oppose déjà les findings déterministes des scanners, qu'aucun texte ne peut effacer. Trois perspectives : la migration GPU — environ trois mille euros — ramènerait chaque revue à deux à cinq minutes, sans toucher à l'architecture ni à la confidentialité ; le passage à l'échelle de tous les dépôts de la banque ; et un tableau de bord de risque pour le RSSI.
 
-### 32. Conclusion — ≈ 30 s
+### 31. Conclusion — ≈ 30 s
 
 En conclusion : parti d'un VPS vierge, ce projet livre un agent d'intelligence artificielle complet, déployé en production à la BTE, qui sécurise chaque Pull Request sans qu'aucun code ne quitte la banque. La plateforme est remise à la banque et constitue un socle concret pour sa transformation DevSecOps. Je vous remercie de votre attention et me tiens à votre disposition pour répondre à vos questions.
 
